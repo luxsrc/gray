@@ -18,11 +18,49 @@
 
 #include <iostream>
 
+#ifdef __APPLE__
+#  include <GLUT/glut.h>
+#else
+#  include <GL/glut.h>
+#endif
+
+static void display(void)
+{
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  glutSwapBuffers();
+}
+
+static void keyboard(unsigned char key, int x, int y)
+{
+  switch(key) {
+  case 27 : // ESCAPE key
+  case 'q':
+  case 'Q':
+    exit(0);
+    break;
+  }
+}
+
 int main(int argc, char **argv)
 {
   std::cout
     << "Geode: a massive parallel geodesic integrator"
     << std::endl;
+
+  glutInit(&argc, argv);
+  glutInitWindowSize(512, 512);
+  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+
+  glutCreateWindow(argv[0]);
+  glutDisplayFunc(display);
+  glutKeyboardFunc(keyboard);
+
+  std::cout
+    << "Press 'ESC' or 'q' to quit"
+    << std::endl;
+
+  glutMainLoop();
 
   return 0;
 }

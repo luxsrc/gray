@@ -8,7 +8,15 @@ else
 endif
 
 CPPFLAGS = -Isrc/$@
-LDFLAGS  = $(addprefix -Xlinker ,-rpath $(RPATH))
+
+ifneq ($(shell uname),Darwin)
+	LDFLAGS = $(addprefix -Xlinker ,\
+	            -rpath $(RPATH)) -lglut -lgl
+else
+	LDFLAGS = $(addprefix -Xlinker ,\
+	            -rpath $(RPATH) -framework Glut -framework OpenGL)
+endif
+
 CFLAGS   = $(addprefix --compiler-options ,-Wall) -O3
 
 help:
