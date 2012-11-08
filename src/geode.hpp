@@ -16,19 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "geode.hpp"
+#ifndef GEODE_HPP
+#define GEODE_HPP
 
-int main(int argc, char **argv)
-{
-  std::cout
-    << "Geode: a massive parallel geodesic integrator"
-    << std::endl;
+#include <iostream>
 
-  setup(argc, argv);
+int setup(int &, char **);
+int solve(void);
 
-  std::cout
-    << "Press 'ESC' or 'q' to quit"
-    << std::endl;
-
-  return solve();
-}
+#endif
