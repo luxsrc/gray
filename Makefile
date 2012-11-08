@@ -11,7 +11,7 @@ CPPFLAGS = -Isrc/$@
 
 ifneq ($(shell uname),Darwin)
 	LDFLAGS = $(addprefix -Xlinker ,\
-	            -rpath $(RPATH)) -lglut -lgl
+	            -rpath $(RPATH)) -lglut -lglu -lgl
 else
 	LDFLAGS = $(addprefix -Xlinker ,\
 	            -rpath $(RPATH) -framework Glut -framework OpenGL)

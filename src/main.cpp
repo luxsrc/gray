@@ -28,7 +28,27 @@ static void display(void)
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+  gluLookAt(0.0,-50.0,  0.0,
+            0.0,  0.0,  0.0,
+            0.0,  0.0,  1.0);
+
+  glColor3f(0.0, 1.0, 0.0);
+  glutWireSphere(2.0, 32, 16);
+
   glutSwapBuffers();
+}
+
+static void reshape(int w, int h)
+{
+  glViewport(0, 0, w, h);
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+
+  gluPerspective(27.0, (double)w / h, 1.0, 100.0);
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
 }
 
 static void keyboard(unsigned char key, int x, int y)
@@ -53,7 +73,9 @@ int main(int argc, char **argv)
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 
   glutCreateWindow(argv[0]);
+
   glutDisplayFunc(display);
+  glutReshapeFunc(reshape);
   glutKeyboardFunc(keyboard);
 
   std::cout
