@@ -1,0 +1,3 @@
+The Makefile looks for sub-folders in src/ to compile geode with
+different settings.  Hence, problem specific source codes should go
+inside this folder.
