@@ -18,13 +18,35 @@
 
 #include "geode.hpp"
 
+namespace global {
+  size_t n = 0;
+  State *s = NULL;
+}
+
+static void cleanup(void)
+{
+  delete[] global::s;
+}
+
 int main(int argc, char **argv)
 {
   std::cout
     << "Geode: a massive parallel geodesic integrator"
     << std::endl;
 
-  setup(argc, argv);
+  global::n = 1024;
+  global::s = new State[global::n];
+
+  for(size_t i = 0; i < global::n; ++i) {
+    global::s[i].x = 20.0 * ((double)rand() / RAND_MAX - 0.5);
+    global::s[i].y = 20.0 * ((double)rand() / RAND_MAX - 0.5);
+    global::s[i].z = 20.0 * ((double)rand() / RAND_MAX - 0.5);
+    global::s[i].u =  0.5 * ((double)rand() / RAND_MAX + 1.0);
+    global::s[i].v =  0.5 * ((double)rand() / RAND_MAX + 1.0);
+    global::s[i].w =  0.5 * ((double)rand() / RAND_MAX + 1.0);
+  }
+
+  if(!atexit(cleanup)) setup(argc, argv);
 
   std::cout
     << "Press 'ESC' or 'q' to quit"

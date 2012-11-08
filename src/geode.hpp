@@ -21,6 +21,22 @@
 
 #include <iostream>
 
+#if defined(DOUBLE) || defined(OUBLE) /* So -DOUBLE works */
+  typedef double Real;
+#else
+  typedef float Real;
+#endif
+
+typedef struct {
+  Real x, y, z;
+  Real u, v, w;
+} State;
+
+namespace global {
+  extern size_t n;
+  extern State *s;
+}
+
 int setup(int &, char **);
 int solve(void);
 

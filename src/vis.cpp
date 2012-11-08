@@ -24,6 +24,12 @@
 #  include <GL/glut.h>
 #endif
 
+#if defined(DOUBLE) || defined(OUBLE) /* So -DOUBLE works */
+#  define GL_REAL GL_DOUBLE
+#else
+#  define GL_REAL GL_FLOAT
+#endif
+
 static void display(void)
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -32,8 +38,18 @@ static void display(void)
             0.0,  0.0,  0.0,
             0.0,  0.0,  1.0);
 
+  // Draw wire sphere, i.e., the "black hole"
   glColor3f(0.0, 1.0, 0.0);
   glutWireSphere(2.0, 32, 16);
+
+  // Draw particles, i.e., photon locations
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glEnableClientState(GL_COLOR_ARRAY);
+  glVertexPointer(3, GL_REAL, sizeof(State), &global::s->x);
+  glColorPointer (3, GL_REAL, sizeof(State), &global::s->u);
+  glDrawArrays(GL_POINTS, 0, global::n);
+  glDisableClientState(GL_COLOR_ARRAY);
+  glDisableClientState(GL_VERTEX_ARRAY);
 
   glutSwapBuffers();
 }
