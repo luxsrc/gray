@@ -1,0 +1,10 @@
+Massive parallel ODE integrator written in CUDA C/C++
+=====================================================
+
+The "geode" code is a massive parallel ordinary differential equation
+integrator that employs the "stream processing paradigm".  It is
+designed to efficiently integrate billions of photons in curved
+spacetime according to Einstein's general theory of relativity.  The
+key component of the code is an adaptive scheduler that intelligently
+rearrange the photons to reduce process idle time while maintaining
+memory locality.  The code is implemented in CUDA C/C++.
