@@ -21,12 +21,6 @@
 #include <cuda_runtime_api.h> // C-style CUDA runtime API
 #include <cuda_gl_interop.h>  // OpenGL interoperability runtime API
 
-#ifdef __APPLE__
-#  include <GLUT/glut.h>
-#else
-#  include <GL/glut.h>
-#endif
-
 #if defined(DOUBLE) || defined(OUBLE) /* So -DOUBLE works */
 #  define GL_REAL GL_DOUBLE
 #else
@@ -110,7 +104,7 @@ int setup(int &argc, char **argv)
   return id;
 }
 
-int solve(void)
+void vis(void)
 {
   size_t size = 0;
   void  *head = NULL;
@@ -121,8 +115,4 @@ int solve(void)
   cudaGraphicsUnmapResources(1, &res, 0); // unmap resource
 
   cudaDeviceSynchronize();
-
-  glutMainLoop();
-
-  return 0;
 }

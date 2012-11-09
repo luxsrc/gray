@@ -16,35 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef GEODE_HPP
-#define GEODE_HPP
+#include "geode.hpp"
 
-#include <iostream>
+int solve(void)
+{
+  vis();
 
-#ifdef __APPLE__
-#  include <GLUT/glut.h>
-#else
-#  include <GL/glut.h>
-#endif
+  glutMainLoop();
 
-#if defined(DOUBLE) || defined(OUBLE) /* So -DOUBLE works */
-  typedef double Real;
-#else
-  typedef float Real;
-#endif
-
-typedef struct {
-  Real x, y, z;
-  Real u, v, w;
-} State;
-
-namespace global {
-  extern size_t n;
-  extern State *s;
+  return 0;
 }
-
-int setup(int &, char **);
-int solve(void);
-void vis(void);
-
-#endif
