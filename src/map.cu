@@ -16,43 +16,29 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef GEODE_HPP
-#define GEODE_HPP
+#include "geode.hpp"
 
-#include <iostream>
+static __global__ void kernel(Point *p, const State *s, size_t n)
+{
+  const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-#ifdef __APPLE__
-#  include <GLUT/glut.h>
-#else
-#  include <GL/glut.h>
-#endif
-
-#if defined(DOUBLE) || defined(OUBLE) /* So -DOUBLE works */
-  typedef double Real;
-#else
-  typedef float Real;
-#endif
-
-typedef struct {
-  Real x, y, z;
-  Real u, v, w;
-} State;
-
-typedef struct {
-  float x, y, z;
-  float r, g, b;
-} Point;
-
-namespace global {
-  extern size_t n;
-  extern State *s;
+  if(i < n) {
+    const float E = 0.5f * (s[i].u * s[i].u +
+                            s[i].v * s[i].v +
+                            s[i].w * s[i].w);
+    p[i].x = s[i].x;
+    p[i].y = s[i].y;
+    p[i].z = s[i].z;
+    p[i].r = E;
+    p[i].g = E;
+    p[i].b = E;
+  }
 }
 
-void evolve(void);
-State *init(size_t);
-void map(Point *, const State *, size_t);
-int setup(int &, char **);
-int solve(void);
-void vis(void);
+void map(Point *p, const State *s, size_t n)
+{
+  const int bsz = 256;
+  const int gsz = (global::n - 1) / bsz + 1;
 
-#endif
+  kernel<<<gsz, bsz>>>(p, s, n);
+}

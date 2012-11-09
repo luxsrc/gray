@@ -21,12 +21,6 @@
 #include <cuda_runtime_api.h> // C-style CUDA runtime API
 #include <cuda_gl_interop.h>  // OpenGL interoperability runtime API
 
-#if defined(DOUBLE) || defined(OUBLE) /* So -DOUBLE works */
-#  define GL_REAL GL_DOUBLE
-#else
-#  define GL_REAL GL_FLOAT
-#endif
-
 static GLuint vbo = 0; // OpenGL Vertex Buffer Object
 static struct cudaGraphicsResource *res = NULL;
 
@@ -40,11 +34,18 @@ static void display(void)
 
   // Draw particles, i.e., photon locations
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);
-  glVertexPointer(3, GL_REAL, sizeof(State), 0);
-  glColorPointer (3, GL_REAL, sizeof(State), (char *)(3 * sizeof(Real)));
-  glDrawArrays(GL_POINTS, 0, global::n);
+  {
+    const size_t full = 6 * sizeof(float);
+    const size_t half = 3 * sizeof(float);
+
+    glVertexPointer(3, GL_FLOAT, full, 0);
+    glColorPointer (3, GL_FLOAT, full, (char *)half);
+
+    glDrawArrays(GL_POINTS, 0, global::n);
+  }
   glDisableClientState(GL_COLOR_ARRAY);
   glDisableClientState(GL_VERTEX_ARRAY);
 
@@ -88,7 +89,7 @@ static void setup(void)
 
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(State) * global::n, 0, GL_DYNAMIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(Point) * global::n, 0, GL_DYNAMIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind all buffer
 
   cudaGraphicsGLRegisterBuffer(&res, vbo, cudaGraphicsMapFlagsWriteDiscard);
@@ -103,7 +104,7 @@ void vis(void)
 
   cudaGraphicsMapResources(1, &res, 0);
   cudaGraphicsResourceGetMappedPointer(&head, &size, res);
-  cudaMemcpy(head, global::s, size, cudaMemcpyDeviceToDevice);
+  map((Point *)head, global::s, global::n);
   cudaGraphicsUnmapResources(1, &res, 0); // unmap resource
 
   cudaDeviceSynchronize();
