@@ -77,14 +77,8 @@ static void keyboard(unsigned char key, int x, int y)
   }
 }
 
-int setup(int &argc, char **argv)
+static void setup(void)
 {
-  glutInit(&argc, argv);
-  glutInitWindowSize(512, 512);
-  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-
-  int id = glutCreateWindow(argv[0]);
-
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
   glutKeyboardFunc(keyboard);
@@ -98,12 +92,12 @@ int setup(int &argc, char **argv)
   glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind all buffer
 
   cudaGraphicsGLRegisterBuffer(&res, vbo, cudaGraphicsMapFlagsWriteDiscard);
-
-  return id;
 }
 
 void vis(void)
 {
+  if(!vbo) setup();
+
   size_t size = 0;
   void  *head = NULL;
 

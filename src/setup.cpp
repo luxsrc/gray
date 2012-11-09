@@ -20,24 +20,34 @@
 
 #include <cuda_runtime_api.h>
 
-static void *d = NULL;
+namespace global {
+  size_t n = 0;
+  State *s = NULL;
+}
 
-static void fini(void)
+static void cleanup(void)
 {
-  if(d) {
-    cudaFree(d);
-    d = NULL;
+  using namespace global;
+
+  if(s) {
+    cudaFree(s);
+    s = NULL;
   }
 }
 
-State *init(size_t n)
+int setup(int &argc, char **argv)
 {
-  const size_t size = sizeof(State) * n;
+  using namespace global;
 
-  if(!d) {
-    atexit(fini);
-    cudaMalloc(&d, size);
-  }
+  glutInit(&argc, argv);
+  glutInitWindowSize(512, 512);
+  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+
+  n = 1024;
+  size_t size = sizeof(State) * n;
+
+  atexit(cleanup);
+  cudaMalloc((void **)&s, size);
 
   State *h = new State[n];
   for(size_t i = 0; i < n; ++i) {
@@ -48,8 +58,8 @@ State *init(size_t n)
     h[i].v =  0.5 * ((double)rand() / RAND_MAX + 1.0);
     h[i].w =  0.5 * ((double)rand() / RAND_MAX + 1.0);
   }
-  cudaMemcpy(d, h, size, cudaMemcpyHostToDevice);
+  cudaMemcpy(s, h, size, cudaMemcpyHostToDevice);
   delete[] h;
 
-  return (State *)d;
+  return glutCreateWindow(argv[0]);
 }

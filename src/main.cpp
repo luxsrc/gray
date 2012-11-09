@@ -18,19 +18,11 @@
 
 #include "geode.hpp"
 
-namespace global {
-  size_t n = 0;
-  State *s = NULL;
-}
-
 int main(int argc, char **argv)
 {
   std::cout
     << "Geode: a massive parallel geodesic integrator"
     << std::endl;
-
-  global::n = 1024;
-  global::s = init(global::n);
 
   setup(argc, argv);
 
