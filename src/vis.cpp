@@ -18,6 +18,9 @@
 
 #include "geode.hpp"
 
+#include <cuda_runtime_api.h> // C-style CUDA runtime API
+#include <cuda_gl_interop.h>  // OpenGL interoperability runtime API
+
 #ifdef __APPLE__
 #  include <GLUT/glut.h>
 #else
@@ -29,6 +32,9 @@
 #else
 #  define GL_REAL GL_FLOAT
 #endif
+
+static GLuint vbo = 0; // OpenGL Vertex Buffer Object
+static struct cudaGraphicsResource *res = NULL;
 
 static void display(void)
 {
@@ -43,10 +49,11 @@ static void display(void)
   glutWireSphere(2.0, 32, 16);
 
   // Draw particles, i.e., photon locations
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);
-  glVertexPointer(3, GL_REAL, sizeof(State), &global::s->x);
-  glColorPointer (3, GL_REAL, sizeof(State), &global::s->u);
+  glVertexPointer(3, GL_REAL, sizeof(State), 0);
+  glColorPointer (3, GL_REAL, sizeof(State), (char *)(3 * sizeof(Real)));
   glDrawArrays(GL_POINTS, 0, global::n);
   glDisableClientState(GL_COLOR_ARRAY);
   glDisableClientState(GL_VERTEX_ARRAY);
@@ -93,11 +100,28 @@ int setup(int &argc, char **argv)
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.0, 0.0, 0.0, 1.0);
 
+  glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(State) * global::n, 0, GL_DYNAMIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind all buffer
+
+  cudaGraphicsGLRegisterBuffer(&res, vbo, cudaGraphicsMapFlagsWriteDiscard);
+
   return id;
 }
 
 int solve(void)
 {
+  size_t size = 0;
+  void  *head = NULL;
+
+  cudaGraphicsMapResources(1, &res, 0);
+  cudaGraphicsResourceGetMappedPointer(&head, &size, res);
+  cudaMemcpy(head, global::s, size, cudaMemcpyHostToDevice);
+  cudaGraphicsUnmapResources(1, &res, 0); // unmap resource
+
+  cudaDeviceSynchronize();
+
   glutMainLoop();
 
   return 0;
