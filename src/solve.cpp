@@ -18,10 +18,18 @@
 
 #include "geode.hpp"
 
+static void idle(void)
+{
+  evolve();
+  vis();
+  glutPostRedisplay();
+}
+
 int solve(void)
 {
   vis();
 
+  glutIdleFunc(idle);
   glutMainLoop();
 
   return 0;

@@ -39,7 +39,7 @@ help:
 
 	@mkdir -p bin
 	@echo -n 'Compiling... '
-	@$(NVCC) src/*.cpp $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o bin/$@
+	@$(NVCC) src/*.{cu,cpp} $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o bin/$@
 	@if [ -f bin/$@ ]; then              \
 	   echo 'DONE';                      \
 	   echo 'Use `bin/$@` to run geode'; \

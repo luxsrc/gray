@@ -16,37 +16,23 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef GEODE_HPP
-#define GEODE_HPP
+#include "geode.hpp"
 
-#include <iostream>
+static __global__ void kernel(State *s, size_t n)
+{
+  const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-#ifdef __APPLE__
-#  include <GLUT/glut.h>
-#else
-#  include <GL/glut.h>
-#endif
-
-#if defined(DOUBLE) || defined(OUBLE) /* So -DOUBLE works */
-  typedef double Real;
-#else
-  typedef float Real;
-#endif
-
-typedef struct {
-  Real x, y, z;
-  Real u, v, w;
-} State;
-
-namespace global {
-  extern size_t n;
-  extern State *s;
+  if(i < n) {
+    s[i].x *= (Real)1.001;
+    s[i].y *= (Real)1.001;
+    s[i].z *= (Real)1.001;
+  }
 }
 
-void evolve(void);
-State *init(size_t);
-int setup(int &, char **);
-int solve(void);
-void vis(void);
+void evolve(void)
+{
+  const int bsz = 256;
+  const int gsz = (global::n - 1) / bsz + 1;
 
-#endif
+  kernel<<<gsz, bsz>>>(global::s, global::n);
+}

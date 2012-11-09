@@ -34,10 +34,6 @@ static void display(void)
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  gluLookAt(0.0,-50.0,  0.0,
-            0.0,  0.0,  0.0,
-            0.0,  0.0,  1.0);
-
   // Draw wire sphere, i.e., the "black hole"
   glColor3f(0.0, 1.0, 0.0);
   glutWireSphere(2.0, 32, 16);
@@ -61,11 +57,13 @@ static void reshape(int w, int h)
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-
   gluPerspective(27.0, (double)w / h, 1.0, 100.0);
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
+  gluLookAt(0.0,-50.0,  0.0,
+            0.0,  0.0,  0.0,
+            0.0,  0.0,  1.0);
 }
 
 static void keyboard(unsigned char key, int x, int y)
