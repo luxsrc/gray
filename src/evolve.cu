@@ -22,7 +22,7 @@ static __global__ void kernel(State *s, size_t n, Real dt)
 {
   const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-  if(i < n) {
+  if(i < n) for(int h = 0; h < 100; ++h) {
     const Real x = s[i].x;
     const Real y = s[i].y;
     const Real z = s[i].z;

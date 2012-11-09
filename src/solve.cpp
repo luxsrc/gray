@@ -31,8 +31,8 @@ static void idle(void)
   cudaEventElapsedTime(&ns, c0, c1);
 
   std::cout
-    << ns                   << " ms/step, "
-    << 1.0e-6 * n * 21 / ns << " Gflops"
+    << ns                         << " ms/step, "
+    << 1.0e-6 * n * 21 * 100 / ns << " Gflops"
     << std::endl;
 
   vis();
