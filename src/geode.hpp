@@ -43,6 +43,7 @@ namespace global {
   extern State *s;
 }
 
+State *init(size_t);
 int setup(int &, char **);
 int solve(void);
 void vis(void);

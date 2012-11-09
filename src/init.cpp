@@ -18,25 +18,38 @@
 
 #include "geode.hpp"
 
-namespace global {
-  size_t n = 0;
-  State *s = NULL;
+#include <cuda_runtime_api.h>
+
+static void *d = NULL;
+
+static void fini(void)
+{
+  if(d) {
+    cudaFree(d);
+    d = NULL;
+  }
 }
 
-int main(int argc, char **argv)
+State *init(size_t n)
 {
-  std::cout
-    << "Geode: a massive parallel geodesic integrator"
-    << std::endl;
+  const size_t size = sizeof(State) * n;
 
-  global::n = 1024;
-  global::s = init(global::n);
+  if(!d) {
+    atexit(fini);
+    cudaMalloc(&d, size);
+  }
 
-  setup(argc, argv);
+  State *h = new State[n];
+  for(size_t i = 0; i < n; ++i) {
+    h[i].x = 20.0 * ((double)rand() / RAND_MAX - 0.5);
+    h[i].y = 20.0 * ((double)rand() / RAND_MAX - 0.5);
+    h[i].z = 20.0 * ((double)rand() / RAND_MAX - 0.5);
+    h[i].u =  0.5 * ((double)rand() / RAND_MAX + 1.0);
+    h[i].v =  0.5 * ((double)rand() / RAND_MAX + 1.0);
+    h[i].w =  0.5 * ((double)rand() / RAND_MAX + 1.0);
+  }
+  cudaMemcpy(d, h, size, cudaMemcpyHostToDevice);
+  delete[] h;
 
-  std::cout
-    << "Press 'ESC' or 'q' to quit"
-    << std::endl;
-
-  return solve();
+  return (State *)d;
 }

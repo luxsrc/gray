@@ -111,7 +111,7 @@ void vis(void)
 
   cudaGraphicsMapResources(1, &res, 0);
   cudaGraphicsResourceGetMappedPointer(&head, &size, res);
-  cudaMemcpy(head, global::s, size, cudaMemcpyHostToDevice);
+  cudaMemcpy(head, global::s, size, cudaMemcpyDeviceToDevice);
   cudaGraphicsUnmapResources(1, &res, 0); // unmap resource
 
   cudaDeviceSynchronize();
