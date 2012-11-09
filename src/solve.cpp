@@ -20,8 +20,23 @@
 
 static void idle(void)
 {
-  evolve();
+  using namespace global;
+
+  cudaEventRecord(c0, 0);
+  evolve(); // n * 21 FLOP
+  cudaEventRecord(c1, 0);
+  cudaEventSynchronize(c1);
+
+  float ns;
+  cudaEventElapsedTime(&ns, c0, c1);
+
+  std::cout
+    << ns                   << " ms/step, "
+    << 1.0e-6 * n * 21 / ns << " Gflops"
+    << std::endl;
+
   vis();
+
   glutPostRedisplay();
 }
 

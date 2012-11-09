@@ -18,8 +18,7 @@
 
 #include "geode.hpp"
 
-#include <cuda_runtime_api.h> // C-style CUDA runtime API
-#include <cuda_gl_interop.h>  // OpenGL interoperability runtime API
+#include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 
 static GLuint vbo = 0; // OpenGL Vertex Buffer Object
 static struct cudaGraphicsResource *res = NULL;

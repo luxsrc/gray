@@ -18,9 +18,8 @@
 
 #include "geode.hpp"
 
-#include <cuda_runtime_api.h>
-
 namespace global {
+  cudaEvent_t c0, c1;
   size_t n = 0;
   State *s = NULL;
 }
@@ -33,11 +32,17 @@ static void cleanup(void)
     cudaFree(s);
     s = NULL;
   }
+
+  cudaEventDestroy(c1);
+  cudaEventDestroy(c0);
 }
 
 int setup(int &argc, char **argv)
 {
   using namespace global;
+
+  cudaEventCreate(&c0);
+  cudaEventCreate(&c1);
 
   glutInit(&argc, argv);
   glutInitWindowSize(512, 512);

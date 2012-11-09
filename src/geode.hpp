@@ -27,6 +27,8 @@
 #  include <GL/glut.h>
 #endif
 
+#include <cuda_runtime_api.h> // C-style CUDA runtime API
+
 #if defined(DOUBLE) || defined(OUBLE) /* So -DOUBLE works */
   typedef double Real;
 #else
@@ -44,6 +46,7 @@ typedef struct {
 } Point;
 
 namespace global {
+  extern cudaEvent_t c0, c1;
   extern size_t n;
   extern State *s;
 }

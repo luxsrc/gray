@@ -26,12 +26,12 @@ static __global__ void kernel(State *s, size_t n, Real dt)
     const Real x = s[i].x;
     const Real y = s[i].y;
     const Real z = s[i].z;
-    const Real r = sqrt(x * x + y * y + z * z);
-    const Real f = dt / (r * r * r);
+    const Real r = sqrt(x * x + y * y + z * z); // 6 FLOP
+    const Real f = dt / (r * r * r);            // 3 FLOP
 
-    s[i].x += dt * (s[i].u -= f * x);
-    s[i].y += dt * (s[i].v -= f * y);
-    s[i].z += dt * (s[i].w -= f * z);
+    s[i].x += dt * (s[i].u -= f * x); // 4 FLOP
+    s[i].y += dt * (s[i].v -= f * y); // 4 FLOP
+    s[i].z += dt * (s[i].w -= f * z); // 4 FLOP
   }
 }
 
