@@ -54,9 +54,9 @@ int setup(int &argc, char **argv)
     h[i].x = 20.0 * ((double)rand() / RAND_MAX - 0.5);
     h[i].y = 20.0 * ((double)rand() / RAND_MAX - 0.5);
     h[i].z = 20.0 * ((double)rand() / RAND_MAX - 0.5);
-    h[i].u =  0.5 * ((double)rand() / RAND_MAX + 1.0);
-    h[i].v =  0.5 * ((double)rand() / RAND_MAX + 1.0);
-    h[i].w =  0.5 * ((double)rand() / RAND_MAX + 1.0);
+    h[i].u =  2.0 * ((double)rand() / RAND_MAX - 0.5);
+    h[i].v =  2.0 * ((double)rand() / RAND_MAX - 0.5);
+    h[i].w =  2.0 * ((double)rand() / RAND_MAX - 0.5);
   }
   cudaMemcpy(s, h, size, cudaMemcpyHostToDevice);
   delete[] h;

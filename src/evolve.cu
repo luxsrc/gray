@@ -18,14 +18,20 @@
 
 #include "geode.hpp"
 
-static __global__ void kernel(State *s, size_t n)
+static __global__ void kernel(State *s, size_t n, Real dt)
 {
   const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
   if(i < n) {
-    s[i].x *= (Real)1.001;
-    s[i].y *= (Real)1.001;
-    s[i].z *= (Real)1.001;
+    const Real x = s[i].x;
+    const Real y = s[i].y;
+    const Real z = s[i].z;
+    const Real r = sqrt(x * x + y * y + z * z);
+    const Real f = dt / (r * r * r);
+
+    s[i].x += dt * (s[i].u -= f * x);
+    s[i].y += dt * (s[i].v -= f * y);
+    s[i].z += dt * (s[i].w -= f * z);
   }
 }
 
@@ -34,5 +40,5 @@ void evolve(void)
   const int bsz = 256;
   const int gsz = (global::n - 1) / bsz + 1;
 
-  kernel<<<gsz, bsz>>>(global::s, global::n);
+  kernel<<<gsz, bsz>>>(global::s, global::n, 1.0e-3);
 }
