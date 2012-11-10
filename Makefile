@@ -42,8 +42,8 @@ help:
 
 %:
 	@if [ ! -d src/$@ ]; then                                \
-	   echo 'The setting "$@" is not available.';            \
-	   echo 'Use `make help` to obtain a list of settings.'; \
+	   echo 'The problem "$@" is not available.';            \
+	   echo 'Use `make help` to obtain a list of problems.'; \
 	   false;                                                \
 	 fi
 

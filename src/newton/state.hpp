@@ -16,33 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "geode.hpp"
+#ifndef STATE_HPP
+#define STATE_HPP
 
-#ifndef DISABLE_GL
+typedef struct {
+  Real x, y, z;
+  Real u, v, w;
+} State;
 
-static __global__ void kernel(Point *p, const State *s, size_t n)
-{
-  const int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-  if(i < n) {
-    const float E = 0.5f * (s[i].u * s[i].u +
-                            s[i].v * s[i].v +
-                            s[i].w * s[i].w);
-    p[i].x = s[i].x;
-    p[i].y = s[i].y;
-    p[i].z = s[i].z;
-    p[i].r = E;
-    p[i].g = E;
-    p[i].b = E;
-  }
-}
-
-void map(Point *p, const State *s, size_t n)
-{
-  const int bsz = 256;
-  const int gsz = (global::n - 1) / bsz + 1;
-
-  kernel<<<gsz, bsz>>>(p, s, n);
-}
-
-#endif // !DISABLE_GL
+#endif // STATE_HPP

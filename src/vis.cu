@@ -22,6 +22,11 @@
 
 #include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 
+typedef struct {
+  float x, y, z;
+  float r, g, b;
+} Point;
+
 static GLuint vbo = 0; // OpenGL Vertex Buffer Object
 static struct cudaGraphicsResource *res = NULL;
 
@@ -39,8 +44,8 @@ static void display(void)
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);
   {
-    const size_t full = 6 * sizeof(float);
-    const size_t half = 3 * sizeof(float);
+    const size_t full = sizeof(Point);
+    const size_t half = full / 2;
 
     glVertexPointer(3, GL_FLOAT, full, 0);
     glColorPointer (3, GL_FLOAT, full, (char *)half);
@@ -96,6 +101,8 @@ static void setup(void)
   cudaGraphicsGLRegisterBuffer(&res, vbo, cudaGraphicsMapFlagsWriteDiscard);
 }
 
+#include <map.cu>
+
 void vis(void)
 {
   if(!vbo) setup();
@@ -105,7 +112,14 @@ void vis(void)
 
   cudaGraphicsMapResources(1, &res, 0);
   cudaGraphicsResourceGetMappedPointer(&head, &size, res);
-  map((Point *)head, global::s, global::n);
+  {
+    using namespace global;
+
+    const int bsz = 256;
+    const int gsz = (n - 1) / bsz + 1;
+
+    kernel<<<gsz, bsz>>>((Point *)head, s, n);
+  }
   cudaGraphicsUnmapResources(1, &res, 0); // unmap resource
 
   cudaDeviceSynchronize();

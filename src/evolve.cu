@@ -18,40 +18,27 @@
 
 #include "geode.hpp"
 
-static __global__ void kernel(State *s, size_t n, Real dt)
-{
-  const int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-  if(i < n) {
-    Real x = s[i].x;
-    Real y = s[i].y;
-    Real z = s[i].z;
-    Real u = s[i].u;
-    Real v = s[i].v;
-    Real w = s[i].w;
-
-    for(int h = 0; h < 100; ++h) {
-      const Real r = sqrt(x * x + y * y + z * z); // 6 FLOP
-      const Real f = dt / (r * r * r);            // 3 FLOP
-
-      x += dt * (u -= f * x); // 4 FLOP
-      y += dt * (v -= f * y); // 4 FLOP
-      z += dt * (w -= f * z); // 4 FLOP
-    }
-
-    s[i].x = x;
-    s[i].y = y;
-    s[i].z = z;
-    s[i].u = u;
-    s[i].v = v;
-    s[i].w = w;
-  }
-}
+#include <kern.cu>
 
 void evolve(void)
 {
-  const int bsz = 256;
-  const int gsz = (global::n - 1) / bsz + 1;
+  using namespace global;
 
-  kernel<<<gsz, bsz>>>(global::s, global::n, 1.0e-3);
+  cudaEventRecord(c0, 0);
+  {
+    const int bsz = 256;
+    const int gsz = (n - 1) / bsz + 1;
+
+    kernel<<<gsz, bsz>>>(s, n, 1.0e-3);
+  }
+  cudaEventRecord(c1, 0);
+  cudaEventSynchronize(c1);
+
+  float ns;
+  cudaEventElapsedTime(&ns, c0, c1);
+
+  std::cout
+    << ns                         << " ms/step, "
+    << 1.0e-6 * n * 21 * 100 / ns << " Gflops"
+    << std::endl;
 }

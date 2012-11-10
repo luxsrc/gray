@@ -18,38 +18,30 @@
 
 #include "geode.hpp"
 
+#ifndef DISABLE_GL
 static void idle(void)
 {
-  using namespace global;
-
-  cudaEventRecord(c0, 0);
-  evolve(); // n * 21 FLOP
-  cudaEventRecord(c1, 0);
-  cudaEventSynchronize(c1);
-
-  float ns;
-  cudaEventElapsedTime(&ns, c0, c1);
-
-  std::cout
-    << ns                         << " ms/step, "
-    << 1.0e-6 * n * 21 * 100 / ns << " Gflops"
-    << std::endl;
-
-#ifndef DISABLE_GL
+  evolve();
   vis();
   glutPostRedisplay();
-#endif
 }
 
 int solve(void)
 {
-#ifndef DISABLE_GL
   vis();
   glutIdleFunc(idle);
   glutMainLoop();
-#else
-  for(;;) idle();
-#endif
-
   return 0;
 }
+#else
+static void mainloop(void)
+{
+  for(;;) evolve();
+}
+
+int solve(void)
+{
+  mainloop();
+  return 0;
+}
+#endif

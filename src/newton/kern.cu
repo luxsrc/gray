@@ -16,44 +16,32 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef GEODE_HPP
-#define GEODE_HPP
+static __global__ void kernel(State *s, size_t n, Real dt)
+{
+  const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-#ifdef ISABLE_GL
-#  define DISABLE_GL
-#endif
+  if(i < n) {
+    Real x = s[i].x;
+    Real y = s[i].y;
+    Real z = s[i].z;
+    Real u = s[i].u;
+    Real v = s[i].v;
+    Real w = s[i].w;
 
-#ifndef DISABLE_GL
-#  ifdef __APPLE__
-#    include <GLUT/glut.h>
-#  else
-#    include <GL/glut.h>
-#  endif
-#endif
+    for(int h = 0; h < 100; ++h) {
+      const Real r = sqrt(x * x + y * y + z * z); // 6 FLOP
+      const Real f = dt / (r * r * r);            // 3 FLOP
 
-#ifdef OUBLE
-#  define DOUBLE
-#endif
+      x += dt * (u -= f * x); // 4 FLOP
+      y += dt * (v -= f * y); // 4 FLOP
+      z += dt * (w -= f * z); // 4 FLOP
+    }
 
-#ifdef DOUBLE
-  typedef double Real;
-#else
-  typedef float Real;
-#endif
-
-#include <iostream>
-#include <cuda_runtime_api.h> // C-style CUDA runtime API
-#include <state.hpp>          // problem specific state structure
-
-namespace global {
-  extern cudaEvent_t c0, c1;
-  extern size_t n;
-  extern State *s;
+    s[i].x = x;
+    s[i].y = y;
+    s[i].z = z;
+    s[i].u = u;
+    s[i].v = v;
+    s[i].w = w;
+  }
 }
-
-void evolve(void);
-int  setup (int &, char **);
-int  solve (void);
-void vis   (void);
-
-#endif // GEODE_HPP
