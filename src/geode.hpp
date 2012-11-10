@@ -45,6 +45,8 @@
 #include <cuda_runtime_api.h> // C-style CUDA runtime API
 #include <state.hpp>          // problem specific state structure
 
+#define NVAR (sizeof(State) / sizeof(Real))
+
 namespace global {
   extern cudaEvent_t c0, c1;
   extern size_t n;

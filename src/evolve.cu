@@ -39,6 +39,6 @@ void evolve(void)
 
   std::cout
     << ns                         << " ms/step, "
-    << 1.0e-6 * n * 21 * 100 / ns << " Gflops"
+    << 1.0e-6 * n * 23 * 100 / ns << " Gflops"
     << std::endl;
 }

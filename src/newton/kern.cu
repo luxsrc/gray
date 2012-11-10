@@ -16,32 +16,30 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-static __global__ void kernel(State *s, size_t n, Real dt)
+static __device__ State rhs(State s)
+{
+  const Real r2 = s.x * s.x + s.y * s.y + s.z * s.z; // 5 FLOP
+  const Real f  = -1 / (r2 * sqrt(r2));              // 3 FLOP
+
+  return (State){    s.u,     s.v,     s.w,
+                 f * s.x, f * s.y, f * s.z}; // 3 FLOP
+}
+
+static __global__ void kernel(State *state, size_t n, Real dt)
 {
   const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
   if(i < n) {
-    Real x = s[i].x;
-    Real y = s[i].y;
-    Real z = s[i].z;
-    Real u = s[i].u;
-    Real v = s[i].v;
-    Real w = s[i].w;
+    State s = state[i];
 
-    for(int h = 0; h < 100; ++h) {
-      const Real r2 = x * x + y * y + z * z; // 5 FLOP
-      const Real f  = -dt / (r2 * sqrt(r2)); // 4 FLOP
+    for(int j = 0; j < 100; ++j) {
+      const State ds = rhs(s);
 
-      x += dt * (u += f * x); // 4 FLOP
-      y += dt * (v += f * y); // 4 FLOP
-      z += dt * (w += f * z); // 4 FLOP
+      #pragma unroll
+      for(int k = 0; k < NVAR; ++k)
+        ((Real *)&s)[k] += dt * ((Real *)&ds)[k]; // 2 * NVAR FLOP
     }
 
-    s[i].x = x;
-    s[i].y = y;
-    s[i].z = z;
-    s[i].u = u;
-    s[i].v = v;
-    s[i].w = w;
+    state[i] = s;
   }
 }
