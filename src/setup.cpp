@@ -18,6 +18,8 @@
 
 #include "geode.hpp"
 
+#include <math.h>
+
 namespace global {
   cudaEvent_t c0, c1;
   size_t n = 0;
@@ -58,12 +60,39 @@ int setup(int &argc, char **argv)
 
   State *h = new State[n];
   for(size_t i = 0; i < n; ++i) {
-    h[i].x = 20.0 * ((double)rand() / RAND_MAX - 0.5);
-    h[i].y = 20.0 * ((double)rand() / RAND_MAX - 0.5);
-    h[i].z = 20.0 * ((double)rand() / RAND_MAX - 0.5);
-    h[i].u =  2.0 * ((double)rand() / RAND_MAX - 0.5);
-    h[i].v =  2.0 * ((double)rand() / RAND_MAX - 0.5);
-    h[i].w =  2.0 * ((double)rand() / RAND_MAX - 0.5);
+    Real x, y, z, R;
+    Real u, v, w, V;
+
+    do {
+      x = 20.0 * ((double)rand() / RAND_MAX - 0.5);
+      y = 20.0 * ((double)rand() / RAND_MAX - 0.5);
+      z = 20.0 * ((double)rand() / RAND_MAX - 0.5);
+      R = sqrt(x * x + y * y + z * z);
+    } while(R < 2.0 || 10.0 < R);
+
+    do {
+      u = 2.0 * ((double)rand() / RAND_MAX - 0.5);
+      v = 2.0 * ((double)rand() / RAND_MAX - 0.5);
+      w = 2.0 * ((double)rand() / RAND_MAX - 0.5);
+      V = sqrt(u * u + v * v + w * w);
+    } while(1.0 < V);
+
+    V  = (x * u + y * v + z * w) / (R * R);
+    u -= x * V;
+    v -= y * V;
+    w -= z * V;
+
+    V  = 1.0 / sqrt((u * u + v * v + w * w) * R);
+    u *= V;
+    v *= V;
+    w *= V;
+
+    h[i].x = x;
+    h[i].y = y;
+    h[i].z = z;
+    h[i].u = u;
+    h[i].v = v;
+    h[i].w = w;
   }
   cudaMemcpy(s, h, size, cudaMemcpyHostToDevice);
   delete[] h;
