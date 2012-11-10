@@ -18,25 +18,43 @@
 
 #include "geode.hpp"
 
-#ifndef NLOOP
-#define NLOOP 5
-#endif
+#define GET(s)  ((Real *)&(s))[index]
+#define EACH(s) for(int index = 0; index < NVAR; ++index) GET(s)
 
-void evolve(void)
+#include <rhs.cu>
+#include <rk4.cu>
+
+static __global__ void kernel(State *state, size_t n, Real dt, size_t m)
+{
+  const int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if(i < n) {
+    State s = state[i];
+    for(int j = 0; j < m; ++j) s = rk4(s, dt);
+    state[i] = s;
+  }
+}
+
+void evolve(double dt, size_t nloop)
 {
   using namespace global;
 
   cudaEventRecord(c0, 0);
-  rk4(0.05, NLOOP);
-  cudaEventRecord(c1, 0);
-  cudaEventSynchronize(c1);
+  {
+    const int bsz = 256;
+    const int gsz = (n - 1) / bsz + 1;
 
-  float ns;
-  cudaEventElapsedTime(&ns, c0, c1);
-  ns /= NLOOP;
+    kernel<<<gsz, bsz>>>(s, n, dt / nloop, nloop);
+  }
+  cudaEventRecord(c1, 0);
+
+  float ms;
+  cudaEventSynchronize(c1);
+  cudaEventElapsedTime(&ms, c0, c1);
+  ms /= nloop;
 
   std::cout
-    << ns                   << " ms/step, "
-    << 1.0e-6 * flop() / ns << " Gflops"
+    << ms                     << " ms/step, "
+    << 1e-6 * flop() * n / ms << " Gflops"
     << std::endl;
 }

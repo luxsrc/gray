@@ -16,32 +16,30 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "geode.hpp"
+static __device__ State rk4(State x, Real dt)
+{
+  State y = x;
 
-#ifndef DISABLE_GL
-static void idle(void)
-{
-  evolve(0.05, 5);
-  vis();
-  glutPostRedisplay();
+  const State k1 = rhs(y);
+  #pragma unroll
+  EACH(y) = GET(x) + (dt / 2) * GET(k1);
+
+  const State k2 = rhs(y);
+  #pragma unroll
+  EACH(y) = GET(x) + (dt / 2) * GET(k2);
+
+  const State k3 = rhs(y);
+  #pragma unroll
+  EACH(y) = GET(x) + (dt    ) * GET(k3);
+
+  const State k4 = rhs(y);
+  #pragma unrol
+  EACH(y) = GET(x) + (dt / 6) * (GET(k1) + 2 * (GET(k2) + GET(k3)) + GET(k4));
+
+  return y;
 }
 
-int solve(void)
+static double flop(void)
 {
-  vis();
-  glutIdleFunc(idle);
-  glutMainLoop();
-  return 0;
+  return 12 * NVAR + 4 * FLOP;
 }
-#else
-static void mainloop(void)
-{
-  for(;;) evolve(0.05, 5);
-}
-
-int solve(void)
-{
-  mainloop();
-  return 0;
-}
-#endif

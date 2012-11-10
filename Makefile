@@ -23,16 +23,18 @@ else
 	LDFLAGS += $(addprefix -Xlinker ,-rpath $(CUDA)/lib64)
 endif
 
-CPPFLAGS += -Isrc/$@
+CPPFLAGS += -Isrc/scheme -Isrc/$@
 CFLAGS   += $(addprefix --compiler-options ,-Wall) -O3
 
 help:
 	@echo 'The follow problems are avilable:'
 	@echo
-	@c=0; for F in src/*/; do  \
-	   f=$${F##src/};          \
-	   c=`expr $$c + 1`;       \
-	   echo "  $$c. $${f%%/}"; \
+	@c=0; for F in src/*/; do        \
+	   f=$${F##src/};                \
+	   if [ $$f != 'scheme/' ]; then \
+	     c=`expr $$c + 1`;           \
+	     echo "  $$c. $${f%%/}";     \
+	   fi                            \
 	 done
 	@echo
 	@echo 'Use `make <prob> [DOUBLE=1] [GL=0]`'            \
@@ -41,7 +43,7 @@ help:
 	      'while GL=0 disable OpenGL.'
 
 %:
-	@if [ ! -d src/$@ ]; then                                \
+	@if [ $@ == 'scheme' ] || [ ! -d src/$@ ]; then          \
 	   echo 'The problem "$@" is not available.';            \
 	   echo 'Use `make help` to obtain a list of problems.'; \
 	   false;                                                \
