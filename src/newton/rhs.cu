@@ -25,21 +25,4 @@ static __device__ State rhs(State s)
                  f * s.x, f * s.y, f * s.z}; // 3 FLOP
 }
 
-static __global__ void kernel(State *state, size_t n, Real dt)
-{
-  const int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-  if(i < n) {
-    State s = state[i];
-
-    for(int j = 0; j < 100; ++j) {
-      const State ds = rhs(s);
-
-      #pragma unroll
-      for(int k = 0; k < NVAR; ++k)
-        ((Real *)&s)[k] += dt * ((Real *)&ds)[k]; // 2 * NVAR FLOP
-    }
-
-    state[i] = s;
-  }
-}
+#define FLOP 11
