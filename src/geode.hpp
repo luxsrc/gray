@@ -19,17 +19,26 @@
 #ifndef GEODE_HPP
 #define GEODE_HPP
 
-#include <iostream>
-
-#ifdef __APPLE__
-#  include <GLUT/glut.h>
-#else
-#  include <GL/glut.h>
+#ifdef ISABLE_GL
+#  define DISABLE_GL
 #endif
 
+#ifdef OUBLE
+#  define DOUBLE
+#endif
+
+#include <iostream>
 #include <cuda_runtime_api.h> // C-style CUDA runtime API
 
-#if defined(DOUBLE) || defined(OUBLE) /* So -DOUBLE works */
+#ifndef DISABLE_GL
+#  ifdef __APPLE__
+#    include <GLUT/glut.h>
+#  else
+#    include <GL/glut.h>
+#  endif
+#endif
+
+#ifdef DOUBLE
   typedef double Real;
 #else
   typedef float Real;
@@ -51,11 +60,14 @@ namespace global {
   extern State *s;
 }
 
-void evolve(void);
-State *init(size_t);
-void map(Point *, const State *, size_t);
 int setup(int &, char **);
 int solve(void);
-void vis(void);
 
+void evolve(void);
+
+#ifndef DISABLE_GL
+void map(Point *, const State *, size_t);
+void vis(void);
 #endif
+
+#endif // GEODE_HPP

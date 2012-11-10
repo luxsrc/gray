@@ -18,6 +18,8 @@
 
 #include "geode.hpp"
 
+#ifndef DISABLE_GL
+
 #include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 
 static GLuint vbo = 0; // OpenGL Vertex Buffer Object
@@ -108,3 +110,5 @@ void vis(void)
 
   cudaDeviceSynchronize();
 }
+
+#endif // !DISABLE_GL

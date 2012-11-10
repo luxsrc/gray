@@ -18,6 +18,8 @@
 
 #include "geode.hpp"
 
+#ifndef DISABLE_GL
+
 static __global__ void kernel(Point *p, const State *s, size_t n)
 {
   const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -42,3 +44,5 @@ void map(Point *p, const State *s, size_t n)
 
   kernel<<<gsz, bsz>>>(p, s, n);
 }
+
+#endif // !DISABLE_GL

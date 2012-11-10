@@ -35,17 +35,21 @@ static void idle(void)
     << 1.0e-6 * n * 21 * 100 / ns << " Gflops"
     << std::endl;
 
+#ifndef DISABLE_GL
   vis();
-
   glutPostRedisplay();
+#endif
 }
 
 int solve(void)
 {
+#ifndef DISABLE_GL
   vis();
-
   glutIdleFunc(idle);
   glutMainLoop();
+#else
+  for(;;) idle();
+#endif
 
   return 0;
 }

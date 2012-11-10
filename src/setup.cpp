@@ -44,9 +44,11 @@ int setup(int &argc, char **argv)
   cudaEventCreate(&c0);
   cudaEventCreate(&c1);
 
+#ifndef DISABLE_GL
   glutInit(&argc, argv);
   glutInitWindowSize(512, 512);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+#endif
 
   n = 1024;
   size_t size = sizeof(State) * n;
@@ -66,5 +68,9 @@ int setup(int &argc, char **argv)
   cudaMemcpy(s, h, size, cudaMemcpyHostToDevice);
   delete[] h;
 
+#ifndef DISABLE_GL
   return glutCreateWindow(argv[0]);
+#else
+  return 0;
+#endif
 }
