@@ -18,11 +18,11 @@
 
 static inline __device__ State rhs(const State s)
 {
-  const Real r2 = s.x * s.x + s.y * s.y + s.z * s.z; // 5 FLOP
-  const Real f  = -1 / (r2 * sqrt(r2) + 1.0e-6);     // 3 FLOP
+  const Real r2 = s.x * s.x + s.y * s.y + s.z * s.z;     // 5 FLOP
+  const Real f  = -1 / ((r2 + (Real)1.0e-6) * sqrt(r2)); // 4 FLOP
 
   return (State){    s.u,     s.v,     s.w,
                  f * s.x, f * s.y, f * s.z}; // 3 FLOP
 }
 
-#define FLOP 11
+#define FLOP 12
