@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-static __device__ State rhs(State s)
+static inline __device__ State rhs(const State s)
 {
   const Real r2 = s.x * s.x + s.y * s.y + s.z * s.z; // 5 FLOP
   const Real f  = -1 / (r2 * sqrt(r2));              // 3 FLOP
