@@ -64,7 +64,7 @@ static void reshape(int w, int h)
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(27.0, (double)w / h, 1.0, 100.0);
+  gluPerspective(27.0, (double)w / h, 1.0, 2500.0);
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -102,6 +102,13 @@ static void setup(void)
 }
 
 #include <map.cu>
+
+static __global__ void kernel(Point *p, const State *s, size_t n)
+{
+  const int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if(i < n) p[i] = map(s[i]);
+}
 
 void vis(void)
 {

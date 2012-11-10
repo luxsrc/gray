@@ -42,7 +42,7 @@ static inline State init(int i)
   v -= y * V;
   w -= z * V;
 
-  V  = 1.0 / sqrt((u * u + v * v + w * w) * R);
+  V  = (1.5 * rand() / RAND_MAX + 0.5) / sqrt((u * u + v * v + w * w) * R);
   u *= V;
   v *= V;
   w *= V;
