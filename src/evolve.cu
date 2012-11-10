@@ -19,7 +19,7 @@
 #include "geode.hpp"
 
 #ifndef NLOOP
-#define NLOOP 100
+#define NLOOP 5
 #endif
 
 void evolve(void)
@@ -27,7 +27,7 @@ void evolve(void)
   using namespace global;
 
   cudaEventRecord(c0, 0);
-  rk4(NLOOP);
+  rk4(0.05, NLOOP);
   cudaEventRecord(c1, 0);
   cudaEventSynchronize(c1);
 

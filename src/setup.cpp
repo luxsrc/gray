@@ -50,7 +50,7 @@ int setup(int &argc, char **argv)
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 #endif
 
-  n = 1024;
+  n = 1024 * 1024;
   size_t size = sizeof(State) * n;
 
   atexit(cleanup);

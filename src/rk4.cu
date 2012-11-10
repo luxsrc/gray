@@ -70,14 +70,14 @@ static __global__ void kernel(State *s, size_t n, Real dt, size_t m)
   }
 }
 
-void rk4(size_t m)
+void rk4(Real dt, size_t m)
 {
   using namespace global;
 
   const int bsz = BSZ;
   const int gsz = (n - 1) / bsz + 1;
 
-  kernel<<<gsz, bsz>>>(s, n, 1.0e-3, m);
+  kernel<<<gsz, bsz>>>(s, n, dt / m, m);
 }
 
 double flop(void)
