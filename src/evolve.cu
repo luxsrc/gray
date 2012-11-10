@@ -22,16 +22,29 @@ static __global__ void kernel(State *s, size_t n, Real dt)
 {
   const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-  if(i < n) for(int h = 0; h < 100; ++h) {
-    const Real x = s[i].x;
-    const Real y = s[i].y;
-    const Real z = s[i].z;
-    const Real r = sqrt(x * x + y * y + z * z); // 6 FLOP
-    const Real f = dt / (r * r * r);            // 3 FLOP
+  if(i < n) {
+    Real x = s[i].x;
+    Real y = s[i].y;
+    Real z = s[i].z;
+    Real u = s[i].u;
+    Real v = s[i].v;
+    Real w = s[i].w;
 
-    s[i].x += dt * (s[i].u -= f * x); // 4 FLOP
-    s[i].y += dt * (s[i].v -= f * y); // 4 FLOP
-    s[i].z += dt * (s[i].w -= f * z); // 4 FLOP
+    for(int h = 0; h < 100; ++h) {
+      const Real r = sqrt(x * x + y * y + z * z); // 6 FLOP
+      const Real f = dt / (r * r * r);            // 3 FLOP
+
+      x += dt * (u -= f * x); // 4 FLOP
+      y += dt * (v -= f * y); // 4 FLOP
+      z += dt * (w -= f * z); // 4 FLOP
+    }
+
+    s[i].x = x;
+    s[i].y = y;
+    s[i].z = z;
+    s[i].u = u;
+    s[i].v = v;
+    s[i].w = w;
   }
 }
 
