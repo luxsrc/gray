@@ -1,26 +1,33 @@
+ifeq ($(DOUBLE),1) # use `make <prob> DOUBLE=1` to compile in double precision
+	CPPFLAGS += -DOUBLE
+	CFLAGS   += -arch sm_13
+endif
+
+ifeq ($(GL),0) # use `make <prob> GL=0` to disable OpenGL visualization
+	CPPFLAGS += -DISABLE_GL
+else
+	ifeq ($(shell uname),Darwin)
+		LDFLAGS += $(addprefix -Xlinker ,\
+		             -framework Glut -framework OpenGL)
+	else
+		LDFLAGS += -lglut -lglu -lgl
+	endif
+endif
+
 CUDA = $(subst /bin/nvcc,,$(shell which nvcc))
 NVCC = $(CUDA)/bin/nvcc
 
-ifneq ($(wildcard $(CUDA)/lib64/libcuda*),)
-	RPATH = $(CUDA)/lib64
+ifeq ($(wildcard $(CUDA)/lib64/libcuda*),)
+	LDFLAGS += $(addprefix -Xlinker ,-rpath $(CUDA)/lib)
 else
-	RPATH = $(CUDA)/lib
+	LDFLAGS += $(addprefix -Xlinker ,-rpath $(CUDA)/lib64)
 endif
 
-CPPFLAGS = -Isrc/$@
-
-ifneq ($(shell uname),Darwin)
-	LDFLAGS = $(addprefix -Xlinker ,\
-	            -rpath $(RPATH)) -lglut -lglu -lgl
-else
-	LDFLAGS = $(addprefix -Xlinker ,\
-	            -rpath $(RPATH) -framework Glut -framework OpenGL)
-endif
-
-CFLAGS   = $(addprefix --compiler-options ,-Wall) -O3
+CPPFLAGS += -Isrc/$@
+CFLAGS   += $(addprefix --compiler-options ,-Wall) -O3
 
 help:
-	@echo 'The follow settings are avilable:'
+	@echo 'The follow problems are avilable:'
 	@echo
 	@c=0; for F in src/*/; do  \
 	   f=$${F##src/};          \
@@ -28,7 +35,10 @@ help:
 	   echo "  $$c. $${f%%/}"; \
 	 done
 	@echo
-	@echo 'Use `make NAME` and `bin/NAME` to compile and run geode.'
+	@echo 'Use `make <prob> [DOUBLE=1] [GL=0]`'            \
+	      'and `bin/<prob>` to compile and run geode.'
+	@echo 'The option DOUBLE=1 enforces double precision,' \
+	      'while GL=0 disable OpenGL.'
 
 %:
 	@if [ ! -d src/$@ ]; then                                \
@@ -38,13 +48,12 @@ help:
 	 fi
 
 	@mkdir -p bin
-	@echo -n 'Compiling... '
-	@$(NVCC) src/*.{cu,cpp} $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o bin/$@
-	@if [ -f bin/$@ ]; then              \
-	   echo 'DONE';                      \
-	   echo 'Use `bin/$@` to run geode'; \
-	 else                                \
-	   echo 'FAIL!!!';                   \
+	@echo -n 'Compiling $@... '
+	@$(NVCC) src/*.{cu,cpp} $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/$@
+	@if [ -f bin/$@ ]; then                      \
+	   echo 'DONE.  Use `bin/$@` to run geode.'; \
+	 else                                        \
+	   echo 'FAIL!!!';                           \
 	 fi
 
 clean:
