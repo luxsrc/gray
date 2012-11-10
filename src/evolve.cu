@@ -32,22 +32,46 @@
 #define FLOP 0
 #endif
 
-static __global__ void kernel(State *state, size_t n, Real dt)
+
+static __global__ void kernel(State *s, size_t n, Real dt)
 {
   const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
   if(i < n) {
-    State s = state[i];
+    const Real dt_2 = dt / 2;
+    const Real dt_6 = dt / 6;
+
+    State x = s[i];
+    State y = x;
 
     for(int j = 0; j < NLOOP; ++j) {
-      const State ds = rhs(s);
 
+      #define GET(s)  ((Real *)&(s))[index]
+      #define EACH(s) for(int index = 0; index < NVAR; ++index) GET(s)
+
+      const State k1 = rhs(y);
       #pragma unroll
-      for(int k = 0; k < NVAR; ++k)
-        ((Real *)&s)[k] += dt * ((Real *)&ds)[k]; // 2 * NVAR FLOP
+      EACH(y) = GET(x) + dt_2 * GET(k1);
+
+      const State k2 = rhs(y);
+      #pragma unroll
+      EACH(y) = GET(x) + dt_2 * GET(k2);
+
+      const State k3 = rhs(y);
+      #pragma unroll
+      EACH(y) = GET(x) + dt   * GET(k3);
+
+      const State k4 = rhs(y);
+      #pragma unrol
+      EACH(y) = GET(x) + dt_6 * (GET(k1) + 2 * (GET(k2) + GET(k3)) + GET(k4));
+
+      #undef EACH
+      #undef GET
+
+      x = y;
     }
 
-    state[i] = s;
+    s[i] = x;
   }
 }
 
@@ -70,7 +94,7 @@ void evolve(void)
   ns /= NLOOP;
 
   std::cout
-    << ns                                  << " ms/step, "
-    << 1.0e-6 * n * (2 * NVAR + FLOP) / ns << " Gflops"
+    << ns                                       << " ms/step, "
+    << 1.0e-6 * n * (12 * NVAR + 4 * FLOP) / ns << " Gflops"
     << std::endl;
 }
