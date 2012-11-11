@@ -18,8 +18,8 @@
 
 #include <metric.cpp>
 
-#define R_OBS     1000 // radius in GM/c^2
-#define THETA_OBS 30   // theta in degrees
+#define R_OBS     10 // radius in GM/c^2
+#define THETA_OBS 30 // theta in degrees
 
 static inline State init(int i)
 {

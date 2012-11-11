@@ -21,7 +21,7 @@
 #ifndef DISABLE_GL
 static void idle(void)
 {
-  evolve(0.05, 5);
+  evolve(-0.05, 5);
 
   static size_t i = 0;
   if(++i == 20) {
@@ -50,7 +50,7 @@ static void mainloop(void)
 
   dump();
   for(;;) {
-    evolve(1, 100);
+    evolve(-1, 100);
     dump();
   }
 }

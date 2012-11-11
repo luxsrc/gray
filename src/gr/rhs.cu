@@ -16,26 +16,11 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <math.h>
+#include <metric.cpp> // to get R_SCHW and A_SPIN
 
-#define R_SCHW 2.0
-#define A_SPIN 0.999
-
-static inline void metric(Real *g, Real r, Real theta)
+static inline __device__ State rhs(const State s, const Real t)
 {
-  Real s2, sum, Sigma, cross;
-  {
-    const Real s  = sin(theta);
-    const Real r2 = r * r;
-    const Real a2 = A_SPIN * A_SPIN;
-    s2    = s  * s ;
-    sum   = r2 + a2;
-    Sigma = sum - a2 * s2;
-    cross = -R_SCHW * r * A_SPIN * s2 / Sigma;
-  }
-  g[0] = R_SCHW * r / Sigma - 1.0;    // g_tt
-  g[1] = Sigma / (sum - R_SCHW * r);  // g_rr
-  g[2] = Sigma;                       // g_thetatheta
-  g[3] = (sum - A_SPIN * cross) * s2; // g_phiphi
-  g[4] = cross;                       // g_tphi
+  return (State){-1, s.kr, s.ktheta, 0, 0, 0, 0};
 }
+
+#define FLOP 0
