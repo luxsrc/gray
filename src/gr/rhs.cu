@@ -16,11 +16,18 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <metric.cpp> // to get R_SCHW and A_SPIN
+__device__ // to make metric() a device function
+#include <metric.cpp>
 
 static inline __device__ State rhs(const State s, const Real t)
 {
-  return (State){-1, s.kr, s.ktheta, 0, 0, 0, 0};
+  Real g[5]; metric(g, s.r, s.theta); // 18 FLOP
+
+  const Real tmp  = 1 / (g[3] * g[0] - g[4] * g[4]);  // 4 FLOP
+  const Real kt   = -(g[3] + s.bimpact * g[4]) * tmp; // 4 FLOP
+  const Real kphi =  (g[4] + s.bimpact * g[0]) * tmp; // 3 FLOP
+
+  return (State){kt, s.kr, s.ktheta, kphi, 0, 0, 0};
 }
 
-#define FLOP 0
+#define FLOP 29

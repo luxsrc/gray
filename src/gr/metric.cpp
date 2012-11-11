@@ -18,10 +18,10 @@
 
 #include <math.h>
 
-#define R_SCHW 2.0
-#define A_SPIN 0.999
+#define R_SCHW 2
+#define A_SPIN ((Real)0.999)
 
-static inline void metric(Real *g, Real r, Real theta)
+static inline void metric(Real *g, Real r, Real theta) // 18 FLOP
 {
   Real s2, sum, Sigma, cross;
   {
@@ -30,11 +30,11 @@ static inline void metric(Real *g, Real r, Real theta)
     const Real a2 = A_SPIN * A_SPIN;
     s2    = s  * s ;
     sum   = r2 + a2;
-    Sigma = sum - a2 * s2;
-    cross = -R_SCHW * r * A_SPIN * s2 / Sigma;
+    Sigma = sum - a2 * s2; // = r2 + a2 * [cos(theta)]^2
+    cross = -R_SCHW * A_SPIN * r * s2 / Sigma;
   }
-  g[0] = R_SCHW * r / Sigma - 1.0;    // g_tt
-  g[1] = Sigma / (sum - R_SCHW * r);  // g_rr
+  g[0] = R_SCHW * r / Sigma - 1;      // g_tt
+  g[1] = Sigma / (sum - R_SCHW * r);  // g_rr, denominator is denoted by Delta
   g[2] = Sigma;                       // g_thetatheta
   g[3] = (sum - A_SPIN * cross) * s2; // g_phiphi
   g[4] = cross;                       // g_tphi
