@@ -20,14 +20,19 @@
 
 namespace global {
   cudaEvent_t c0, c1;
+  double t = 0.0;
   size_t n = 0;
-  State *s = NULL;
+  State *s = 0, *h = 0;
 }
 
 static void cleanup(void)
 {
   using namespace global;
 
+  if(h) {
+    delete[] h;
+    h = NULL;
+  }
   if(s) {
     cudaFree(s);
     s = NULL;
@@ -58,10 +63,9 @@ int setup(int &argc, char **argv)
   atexit(cleanup);
   cudaMalloc((void **)&s, size);
 
-  State *h = new State[n];
+  h = new State[n];
   for(size_t i = 0; i < n; ++i) h[i] = init(i);
   cudaMemcpy(s, h, size, cudaMemcpyHostToDevice);
-  delete[] h;
 
 #ifndef DISABLE_GL
   return glutCreateWindow(argv[0]);

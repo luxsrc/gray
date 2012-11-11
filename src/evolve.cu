@@ -45,8 +45,6 @@ void evolve(double dt, size_t nloop)
 {
   using namespace global;
 
-  static double t = 0;
-
   cudaEventRecord(c0, 0);
   {
     const int bsz = 256;

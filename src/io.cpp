@@ -17,48 +17,23 @@
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "geode.hpp"
+#include <cstdio>
 
-#ifndef DISABLE_GL
-static void idle(void)
-{
-  evolve(0.05, 5);
-
-  static size_t i = 0;
-  if(++i == 20) {
-    i = 0;
-    dump();
-  }
-  vis();
-
-  glutPostRedisplay();
-}
-
-int solve(void)
-{
-  dump();
-  vis();
-
-  glutIdleFunc(idle);
-  glutMainLoop();
-
-  return 0;
-}
-#else
-static void mainloop(void)
+void dump(void)
 {
   using namespace global;
 
-  dump();
-  for(;;) {
-    evolve(1, 100);
-    dump();
-  }
-}
+  static size_t frame = 0;
 
-int solve(void)
-{
-  mainloop();
+  const size_t size = sizeof(State) * n;
+  cudaMemcpy(h, s, size, cudaMemcpyDeviceToHost);
 
-  return 0;
+  char name[256];
+  snprintf(name, sizeof(name), "%04zu.raw", frame++);
+
+  FILE *file = fopen(name, "wb");
+  fwrite(&t, sizeof(double), 1, file);
+  fwrite(&n, sizeof(size_t), 1, file);
+  fwrite( h, sizeof(State),  n, file);
+  fclose(file);
 }
-#endif

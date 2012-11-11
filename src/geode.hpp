@@ -49,10 +49,12 @@
 
 namespace global {
   extern cudaEvent_t c0, c1;
+  extern double t;
   extern size_t n;
-  extern State *s;
+  extern State *s, *h;
 }
 
+extern void dump  (void);
 extern void evolve(double, size_t);
 extern int  setup (int &, char **);
 extern int  solve (void);
