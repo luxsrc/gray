@@ -17,6 +17,7 @@
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "geode.hpp"
+#include <metric.cpp> // to get A_SPIN
 
 #ifndef DISABLE_GL
 
@@ -36,7 +37,7 @@ static void display(void)
 
   // Draw wire sphere, i.e., the "black hole"
   glColor3f(0.0, 1.0, 0.0);
-  glutWireSphere(2.0, 32, 16);
+  glutWireSphere(1.0 + sqrt(1.0 - A_SPIN * A_SPIN), 32, 16);
 
   // Draw particles, i.e., photon locations
   glBindBuffer(GL_ARRAY_BUFFER, vbo);

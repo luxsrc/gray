@@ -35,6 +35,9 @@ static __global__ void kernel(State *state, size_t n, Real t, Real dt, size_t m)
     for(int j = 0; j < m; ++j) {
       s  = scheme(s, t, dt);
       t += dt;
+
+      if(s.r < 1 + sqrt(1 - A_SPIN * A_SPIN))
+        s.r = 0.0; // "eat" the particle if it passes the event horizon
     }
 
     state[i] = s;
