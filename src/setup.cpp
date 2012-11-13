@@ -57,7 +57,7 @@ int setup(int &argc, char **argv)
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 #endif
 
-  n = N_PHOTON;
+  n = argc > 1 ? std::max(atoi(argv[1]), 1) : 65536;
   size_t size = sizeof(State) * n;
 
   atexit(cleanup);
