@@ -21,32 +21,46 @@ function load, i
   f = string(i, format='(i04)') + '.raw'
 
   openr, lun, f, /get_lun
-  time = 0.0d         & readu, lun, time
-  m    = 0L           & readu, lun, m
-  n    = 0L           & readu, lun, n
-  data = fltarr(m, n) & readu, lun, data
+  t = 0.0d         & readu, lun, t
+  m = 0L           & readu, lun, m
+  n = 0L           & readu, lun, n
+  d = fltarr(m, n) & readu, lun, d
   close, lun & free_lun, lun
 
-  print, time
+  if m eq 6 then begin
+    x = reform(d[0,*])
+    y = reform(d[1,*])
+    z = reform(d[2,*])
 
-  x = reform(data[0,*])
-  y = reform(data[1,*])
-  z = reform(data[2,*])
+    print, t
+  end else begin
+    t     = reform(d[0,*])
+    r     = reform(d[1,*])
+    theta = reform(d[2,*])
+    phi   = reform(d[3,*])
 
-  return, {t:time, x:x, y:y, z:z}
+    r_cyl = r * sin(theta)
+    x     = r_cyl * cos(phi)
+    y     = r_cyl * sin(phi)
+    z     = r * cos(theta)
+
+    print, min(t), max(t)
+  endelse
+
+  return, {t:t, x:x, y:y, z:z}
 
 end
 
-pro vis
+pro vis, t, n
 
-  n = 16
-  m = 100
+  if n_elements(t) eq 0 then t = 16
+  if n_elements(n) eq 0 then n = 16
 
-  x = fltarr(m,n)
-  y = fltarr(m,n)
-  z = fltarr(m,n)
+  x = fltarr(t,n)
+  y = fltarr(t,n)
+  z = fltarr(t,n)
 
-  for i = 0, m-1 do begin
+  for i = 0, t-1 do begin
     l      = load(i)
     x[i,*] = l.x[0:n-1]
     y[i,*] = l.y[0:n-1]
