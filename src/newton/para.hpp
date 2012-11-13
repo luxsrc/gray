@@ -20,5 +20,6 @@
 #define PARA_HPP
 
 #define N_PHOTON (1024 * 1024) // default number of photons
+#define DELTA_T  (1)           // default dump time
 
 #endif // PARA_HPP

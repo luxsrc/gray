@@ -21,10 +21,12 @@
 #ifndef DISABLE_GL
 static void idle(void)
 {
-  evolve(-0.05, 5);
+  const size_t n_vis = 20;
+
+  evolve((double)DELTA_T / n_vis, 100 / n_vis);
 
   static size_t i = 0;
-  if(++i == 20) {
+  if(++i == n_vis) {
     i = 0;
     dump();
   }
@@ -50,7 +52,7 @@ static void mainloop(void)
 
   dump();
   for(;;) {
-    evolve(-1, 100);
+    evolve(DELTA_T, 100);
     dump();
   }
 }

@@ -19,9 +19,11 @@
 #ifndef PARA_HPP
 #define PARA_HPP
 
+#define N_PHOTON  (1024 * 1024) // default number of photons
+#define DELTA_T   (-1)          // default dump time
+
 #define R_OBS     10            // observer radius in GM/c^2
 #define THETA_OBS 30            // observer theta in degrees
 #define A_SPIN    ((Real)0.999) // dimensionless spin J/Mc
-#define N_PHOTON  (1024 * 1024) // default number of photons
 
 #endif // PARA_HPP
