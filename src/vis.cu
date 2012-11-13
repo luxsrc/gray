@@ -29,11 +29,23 @@ typedef struct {
 
 static GLuint vbo = 0; // OpenGL Vertex Buffer Object
 static struct cudaGraphicsResource *res = NULL;
+
+static float ax = 270, az = 90;
+static float ly =-50;
+
 static double dt_stored = 0.0;
+static int last_x = 0, last_y = 0;
+static int left   = 0, right  = 0;
 
 static void display(void)
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glLoadIdentity();
+
+  glRotatef(-90, 1, 0, 0);
+  glTranslatef(0, -ly, 0);
+  glRotatef(-(az- 90), 1, 0, 0);
+  glRotatef(-(ax-270), 0, 0, 1);
 
   // Draw wire sphere, i.e., the "black hole"
   glColor3f(0.0, 1.0, 0.0);
@@ -72,10 +84,6 @@ static void reshape(int w, int h)
   gluPerspective(27.0, (double)w / h, 1.0, 2500.0);
 
   glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-  gluLookAt(0.0,-50.0,  0.0,
-            0.0,  0.0,  0.0,
-            0.0,  0.0,  1.0);
 }
 
 static void keyboard(unsigned char key, int x, int y)
@@ -105,11 +113,44 @@ static void keyboard(unsigned char key, int x, int y)
   }
 }
 
+static void mouse(int b, int s, int x, int y)
+{
+  last_x = x;
+  last_y = y;
+
+  switch(b) {
+  case GLUT_LEFT_BUTTON:
+    left  = (s == GLUT_DOWN);
+    break;
+  case GLUT_RIGHT_BUTTON:
+    right = (s == GLUT_DOWN);
+    break;
+  }
+}
+
+static void motion(int x, int y)
+{
+  int dx = x - last_x; last_x = x;
+  int dy = y - last_y; last_y = y;
+
+  if(right)
+    ly -= 0.05 * dy;
+  else if(left) {
+    az -= 0.5 * dy;
+    ax -= 0.5 * dx;
+  }
+
+  glutPostRedisplay();
+}
+
 static void setup(void)
 {
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
+
   glutKeyboardFunc(keyboard);
+  glutMouseFunc(mouse);
+  glutMotionFunc(motion);
 
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.0, 0.0, 0.0, 1.0);
