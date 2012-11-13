@@ -63,12 +63,12 @@ static inline __device__ State rhs(const State s, const Real t)
 
     ar = G222 / Dlt; // use ar as tmp, will be used in the next block
 
-    atheta = (+       G200 *   kt     *   kt
-              +       ar   * s.kr     * s.kr
-              -       G222 * s.ktheta * s.ktheta
-              +       G233 *   kphi   *   kphi
-              - 2.0 * s.r  * s.kr     * s.ktheta
-              + 2.0 * G230 *   kphi   *   kt    ) / g22;
+    atheta = (+     G200 *   kt     *   kt
+              +     ar   * s.kr     * s.kr
+              -     G222 * s.ktheta * s.ktheta
+              +     G233 *   kphi   *   kphi
+              - 2 * s.r  * s.kr     * s.ktheta
+              + 2 * G230 *   kphi   *   kt    ) / g22;
   } // 25 FLOP
 
   {
@@ -77,12 +77,12 @@ static inline __device__ State rhs(const State s, const Real t)
     const Real G130 = -A_SPIN * s2 * G100;
     const Real G133 = (s.r - A_SPIN * G130) * s2;
 
-    ar = (+       G100 *   kt     *   kt
-          -       G111 * s.kr     * s.kr
-          +       s.r  * s.ktheta * s.ktheta
-          +       G133 *   kphi   *   kphi
-          - 2.0 * ar   * s.kr     * s.ktheta // ar is from the atheta block
-          + 2.0 * G130 *   kphi   *   kt    ) / g11;
+    ar     = (+     G100 *   kt     *   kt
+              -     G111 * s.kr     * s.kr
+              +     s.r  * s.ktheta * s.ktheta
+              +     G133 *   kphi   *   kphi
+              - 2 * ar   * s.kr     * s.ktheta // ar is from the atheta block
+              + 2 * G130 *   kphi   *   kt    ) / g11;
   } // 24 FLOP
 
   return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, 0.0};
