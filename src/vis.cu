@@ -29,6 +29,7 @@ typedef struct {
 
 static GLuint vbo = 0; // OpenGL Vertex Buffer Object
 static struct cudaGraphicsResource *res = NULL;
+static double dt_stored = 0.0;
 
 static void display(void)
 {
@@ -79,11 +80,27 @@ static void reshape(int w, int h)
 
 static void keyboard(unsigned char key, int x, int y)
 {
+  using namespace global;
+
   switch(key) {
   case 27 : // ESCAPE key
   case 'q':
   case 'Q':
     exit(0);
+    break;
+  case 'r':
+  case 'R':
+    if(dt_dump == 0.0)
+      dt_stored *= -1; // fall through
+    else {
+      dt_dump *= -1;
+      break;
+    }
+  case 'p':
+  case 'P':
+    double temp = dt_stored;
+    dt_stored = dt_dump;
+    dt_dump = temp;
     break;
   }
 }
