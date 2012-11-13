@@ -25,8 +25,9 @@ def load(i):
     import struct
     f  = open(str(i).zfill(4)+'.raw', 'rb')
     t, = struct.unpack('d', f.read(8))
+    m, = struct.unpack('i', f.read(4))
     n, = struct.unpack('i', f.read(4))
-    d  = np.fromfile(f, np.dtype('f4'), 6 * n).reshape((n, 6))
+    d  = np.fromfile(f, np.dtype('f4'), m * n).reshape((n, m))
     print t
     return {'t':t, 'x':d[:,0], 'y':d[:,1], 'z':d[:,2]}
 

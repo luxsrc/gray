@@ -22,8 +22,9 @@ function load, i
 
   openr, lun, f, /get_lun
   time = 0.0d         & readu, lun, time
+  m    = 0L           & readu, lun, m
   n    = 0L           & readu, lun, n
-  data = fltarr(6, n) & readu, lun, data
+  data = fltarr(m, n) & readu, lun, data
   close, lun & free_lun, lun
 
   print, time

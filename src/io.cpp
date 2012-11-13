@@ -19,20 +19,22 @@
 #include "geode.hpp"
 #include <cstdio>
 
+static size_t frame = 0;
+
 void dump(void)
 {
   using namespace global;
 
-  static size_t frame = 0;
-
-  const size_t size = sizeof(State) * n;
-  cudaMemcpy(h, s, size, cudaMemcpyDeviceToHost);
+  size_t m = sizeof(State) * n;
+  cudaMemcpy(h, s, m, cudaMemcpyDeviceToHost);
+  m = NVAR;
 
   char name[256];
   snprintf(name, sizeof(name), "%04zu.raw", frame++);
 
   FILE *file = fopen(name, "wb");
   fwrite(&t, sizeof(double), 1, file);
+  fwrite(&m, sizeof(size_t), 1, file);
   fwrite(&n, sizeof(size_t), 1, file);
   fwrite( h, sizeof(State),  n, file);
   fclose(file);
