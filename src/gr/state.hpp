@@ -19,6 +19,9 @@
 #ifndef STATE_HPP
 #define STATE_HPP
 
+#define R_SCHW ((Real)2.0)
+#define A_SPIN ((Real)0.999)
+
 typedef struct {
   Real t, r, theta, phi;
   Real kr, ktheta;

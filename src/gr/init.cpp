@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <metric.cpp>
+#include <math.h>
 
 #define R_OBS     10 // radius in GM/c^2
 #define THETA_OBS 30 // theta in degrees
@@ -52,16 +52,35 @@ static inline State init(int i)
   // Impact parameter = L / E
   Real bimpact;
   {
-    Real g[5]; metric(g, r, theta);
+    Real s2, g00, g11, g22, g33, g30;
+    {
+      Real sum, tmp, r2, a2;
 
-    const Real gtphi_kphi = g[4] * kphi;
-    const Real Delta = gtphi_kphi * gtphi_kphi
-      - g[0] * (g[1] * kr     * kr     +
-                g[2] * ktheta * ktheta +
-                g[3] * kphi   * kphi  );
-    const Real kt = -(g[4] * kphi + sqrt(Delta)) / g[0];
+      tmp = sin(theta);
+      s2  = tmp * tmp ;
+      r2  = r * r;
+      a2  = A_SPIN * A_SPIN;
 
-    bimpact = -(g[3] * kphi + g[4] * kt) / (g[0] * kt + g[4] * kphi);
+      sum = r2 + a2;
+      g22 = sum - a2 * s2; // = r2 + a2 * [cos(theta)]^2 = Sigma
+      g11 = g22 / (sum - R_SCHW * r);
+
+      tmp = R_SCHW * r / g22;
+      g00 = tmp - 1;
+      g30 = -A_SPIN * tmp * s2;
+      g33 = (sum - A_SPIN * g30) * s2;
+    }
+
+    Real kt;
+    {
+      Real g30_kphi = g30 * kphi;
+      Real Delta    = g30_kphi * g30_kphi - g00 * (g11 * kr     * kr     +
+                                                   g22 * ktheta * ktheta +
+                                                   g33 * kphi   * kphi  );
+      kt = -(g30_kphi + sqrt(Delta)) / g00;
+    }
+
+    bimpact = -(g33 * kphi + g30 * kt) / (g00 * kt + g30 * kphi);
   }
 
   return (State){0.0, r, theta, phi, kr, ktheta, bimpact};

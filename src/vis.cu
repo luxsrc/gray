@@ -17,7 +17,6 @@
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "geode.hpp"
-#include <metric.cpp> // to get A_SPIN
 
 #ifndef DISABLE_GL
 
