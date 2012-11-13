@@ -20,8 +20,15 @@
 
 namespace global {
   cudaEvent_t c0, c1;
+
+#ifdef DT_DUMP
+  double dt_dump = DT_DUMP;
+#else
+  double dt_dump = 1.0;
+#endif
+
   double t = 0.0;
-  size_t n = 0;
+  size_t n = 65536;
   State *s = 0, *h = 0;
 }
 
@@ -57,7 +64,9 @@ int setup(int &argc, char **argv)
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 #endif
 
-  n = argc > 1 ? std::max(atoi(argv[1]), 1) : 65536;
+  if(argc > 1) n = std::max(atoi(argv[1]), 1);
+  if(argc > 2) dt_dump = atof(argv[2]);
+
   size_t size = sizeof(State) * n;
 
   atexit(cleanup);

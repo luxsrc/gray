@@ -19,6 +19,6 @@
 #ifndef PARA_HPP
 #define PARA_HPP
 
-#define DELTA_T (1) // default dump time
+// No default parameter is needed
 
 #endif // PARA_HPP
