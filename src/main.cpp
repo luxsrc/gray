@@ -26,9 +26,15 @@ int main(int argc, char **argv)
 
   setup(argc, argv);
 
+#ifndef DISABLE_GL
   std::cout
     << "Press 'ESC' or 'q' to quit"
     << std::endl;
+#else
+  std::cout
+    << "Press 'Ctrl C' to quit"
+    << std::endl;
+#endif
 
   return solve();
 }
