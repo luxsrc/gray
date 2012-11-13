@@ -33,10 +33,8 @@ static __global__ void kernel(State *state, size_t n, Real t, Real dt, size_t m)
     State s = state[i];
 
     for(int j = 0; j < m; ++j) {
+      s  = scheme(s, t, dt);
       t += dt;
-
-      // Only evolve the photon if it is outside the event horizon
-      if(s.r > 1 + sqrt(1 - A_SPIN * A_SPIN)) s = scheme(s, t, dt);
     }
 
     state[i] = s;

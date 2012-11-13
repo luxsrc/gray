@@ -20,6 +20,10 @@
 
 static inline __device__ State rhs(const State s, const Real t)
 {
+  // Stop evolving the photon if it enters the event horizon
+  if(s.r <= 1 + sqrt(1 - A_SPIN * A_SPIN))
+    return (State){0, 0, 0, 0, 0, 0, 0};
+
   const Real a2 = A_SPIN * A_SPIN;
   const Real r2 = s.r * s.r; // 1 FLOP
 

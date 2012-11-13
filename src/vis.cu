@@ -36,7 +36,11 @@ static void display(void)
 
   // Draw wire sphere, i.e., the "black hole"
   glColor3f(0.0, 1.0, 0.0);
+#ifdef A_SPIN
   glutWireSphere(1.0 + sqrt(1.0 - A_SPIN * A_SPIN), 32, 16);
+#else
+  glutWireSphere(1.0, 32, 16);
+#endif
 
   // Draw particles, i.e., photon locations
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
