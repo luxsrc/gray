@@ -18,8 +18,7 @@
 
 #include <math.h>
 
-#define R_OBS     10 // radius in GM/c^2
-#define THETA_OBS 30 // theta in degrees
+#define R_SCHW 2
 
 static inline State init(int i)
 {

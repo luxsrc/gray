@@ -16,13 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef STATE_HPP
-#define STATE_HPP
+#ifndef PARA_HPP
+#define PARA_HPP
 
-typedef struct {
-  Real t, r, theta, phi;
-  Real kr, ktheta;
-  Real bimpact; // impact parameter defined as L / E
-} State;
+#define R_OBS     10            // observer radius in GM/c^2
+#define THETA_OBS 30            // observer theta in degrees
+#define A_SPIN    ((Real)0.999) // dimensionless spin J/Mc
+#define N_PHOTON  (1024 * 1024) // default number of photons
 
-#endif // STATE_HPP
+#endif // PARA_HPP

@@ -16,6 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
+#define R_SCHW 2
+
 static inline __device__ State rhs(const State s, const Real t)
 {
   const Real a2 = A_SPIN * A_SPIN;

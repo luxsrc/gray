@@ -43,7 +43,9 @@
 
 #include <iostream>
 #include <cuda_runtime_api.h> // C-style CUDA runtime API
-#include <state.hpp>          // problem specific state structure
+
+#include <para.hpp>  // problem parameter
+#include <state.hpp> // problem specific state structure
 
 #define NVAR (sizeof(State) / sizeof(Real))
 
