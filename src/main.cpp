@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 
 #ifndef DISABLE_GL
   std::cout
-    << "Press 'ESC' or 'q' to quit"
+    << "Press 'ESC' or 'q' to quit, 'p' to pulse, and 'r' to reverse the run"
     << std::endl;
 #else
   std::cout
