@@ -26,5 +26,5 @@ static __device__ Point map(State s)
   const Real y = R   * sin(s.phi  );
   const Real z = s.r * cos(s.theta);
 
-  return (Point){x, y, z, s.kr, s.ktheta, s.bimpact};
+  return (Point){x, y, z, s.kr, fabs(s.ktheta), fabs(s.bimpact)};
 }
