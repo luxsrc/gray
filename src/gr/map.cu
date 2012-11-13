@@ -18,6 +18,9 @@
 
 static __device__ Point map(State s)
 {
+  if(s.r <= 1 + sqrt(1 - A_SPIN * A_SPIN))
+    return (Point){0, 0, 0, 0, 0, 0};
+
   const Real R = s.r * sin(s.theta);
   const Real x = R   * cos(s.phi  );
   const Real y = R   * sin(s.phi  );
