@@ -28,11 +28,26 @@ def load(i):
     m, = struct.unpack('i', f.read(4))
     n, = struct.unpack('i', f.read(4))
     d  = np.fromfile(f, np.dtype('f4'), m * n).reshape((n, m))
-    print t
-    return {'t':t, 'x':d[:,0], 'y':d[:,1], 'z':d[:,2]}
+
+    if m == 6:
+        print t
+        return {'t':t, 'x':d[:,0], 'y':d[:,1], 'z':d[:,2]}
+    else:
+        t     = d[:,0]
+        r     = d[:,1]
+        theta = d[:,2]
+        phi   = d[:,3]
+
+        r_cyl = r     * np.sin(theta)
+        x     = r_cyl * np.cos(phi  )
+        y     = r_cyl * np.sin(phi  )
+        z     = r     * np.cos(theta)
+
+        print min(t), max(t)
+        return {'t':t, 'x':x, 'y':y, 'z':z}
 
 n = 16
-m = 100
+m = 16
 
 x = np.zeros((n, m))
 y = np.zeros((n, m))
@@ -43,7 +58,13 @@ for i in range(m):
     y[:,i] = l['y'][0:n]
     z[:,i] = l['z'][0:n]
 
-plt.figure().gca(projection='3d')
+ax = plt.figure().gca(projection='3d')
+
 for i in range(n):
     plt.plot(x[i,:], y[i,:], z[i,:])
+
+ax.set_xlim(-10,10)
+ax.set_ylim(-10,10)
+ax.set_zlim(-10,10)
+
 plt.show()
