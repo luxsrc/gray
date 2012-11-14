@@ -49,6 +49,11 @@
 
 #define NVAR (sizeof(State) / sizeof(Real))
 
+typedef struct {
+  State s;
+  Real  t;
+} Var;
+
 namespace global {
   extern cudaEvent_t c0, c1;
   extern double dt_dump;

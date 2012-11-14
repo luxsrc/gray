@@ -25,19 +25,19 @@
 #include <rhs.cu>
 #include <rk4.cu>
 
-static __global__ void kernel(State *state, size_t n, Real t, Real dt, size_t m)
+static __global__ void kernel(State *s, size_t n, Real t, Real dt, size_t m)
 {
   const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
   if(i < n) {
-    State s = state[i];
+    Var v = {s[i], t};
 
     for(int j = 0; j < m; ++j) {
-      s  = scheme(s, t, dt);
-      t += dt;
+      v.s  = scheme(v, dt);
+      v.t += dt;
     }
 
-    state[i] = s;
+    s[i] = v.s;
   }
 }
 

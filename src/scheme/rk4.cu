@@ -16,30 +16,30 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-static __device__ State scheme(const State x, const Real t, const Real dt)
+static __device__ State scheme(const Var v, const Real dt)
 {
   const Real dt_2 = dt / 2;
   const Real dt_6 = dt / 6;
-  const Real tmid = t + dt_2;
-  const Real tend = t + dt;
+  const Real tmid = v.t + dt_2;
+  const Real tend = v.t + dt;
 
-  State y = x;
+  State y = v.s;
 
-  const State k1 = rhs(y, t   );
+  const State k1 = rhs(y, v.t );
   #pragma unroll
-  EACH(y) = GET(x) + dt_2 * GET(k1);
+  EACH(y) = GET(v.s) + dt_2 * GET(k1);
 
   const State k2 = rhs(y, tmid);
   #pragma unroll
-  EACH(y) = GET(x) + dt_2 * GET(k2);
+  EACH(y) = GET(v.s) + dt_2 * GET(k2);
 
   const State k3 = rhs(y, tmid);
   #pragma unroll
-  EACH(y) = GET(x) + dt   * GET(k3);
+  EACH(y) = GET(v.s) + dt   * GET(k3);
 
   const State k4 = rhs(y, tend);
   #pragma unrol
-  EACH(y) = GET(x) + dt_6 * (GET(k1) + 2 * (GET(k2) + GET(k3)) + GET(k4));
+  EACH(y) = GET(v.s) + dt_6 * (GET(k1) + 2 * (GET(k2) + GET(k3)) + GET(k4));
 
   return y;
 }
