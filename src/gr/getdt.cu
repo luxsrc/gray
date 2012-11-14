@@ -16,9 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#define DT_MIN 1.0e-2
-#define STEP_FACTOR 32
-
 static __device__ Real getdt(const Var v, const State a)
 {
   Real dt = fabs(v.s.r / a.r);
