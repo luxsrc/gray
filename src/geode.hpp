@@ -58,7 +58,7 @@ namespace global {
 }
 
 extern void dump  (void);
-extern void evolve(double, size_t);
+extern void evolve(double);
 extern int  setup (int &, char **);
 extern int  solve (void);
 extern void vis   (void);

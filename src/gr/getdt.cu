@@ -16,52 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "geode.hpp"
-
-#ifndef DISABLE_GL
-static void idle(void)
+static __device__ Real getdt(const Var v, const State a)
 {
-  using namespace global;
-
-  const size_t n_vis = 20;
-  evolve(dt_dump / n_vis);
-
-  static size_t i = 0;
-  if(++i == n_vis) {
-    i = 0;
-    dump();
-  }
-  vis();
-
-  glutPostRedisplay();
+  return 0.05;
 }
-
-int solve(void)
-{
-  dump();
-  vis();
-
-  glutIdleFunc(idle);
-  glutMainLoop();
-
-  return 0;
-}
-#else
-static void mainloop(void)
-{
-  using namespace global;
-
-  dump();
-  for(;;) {
-    evolve(dt_dump);
-    dump();
-  }
-}
-
-int solve(void)
-{
-  mainloop();
-
-  return 0;
-}
-#endif

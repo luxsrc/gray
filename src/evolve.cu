@@ -28,23 +28,29 @@ typedef struct {
 #define EACH(s) for(int index = 0; index < NVAR; ++index) GET(s)
 
 #include <rhs.cu>
+#include <getdt.cu>
 #include <rk4.cu>
 
-static __global__ void kernel(State *s, size_t n, Real t, Real dt, size_t m)
+static __global__ void kernel(State *s, size_t n, Real t, Real dt)
 {
   const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
   if(i < n) {
     Var v = {s[i], t};
+    t += dt; // make t the final time
 
-    for(int j = 0; j < m; ++j)
-      v = scheme(v, dt);
+    if(dt > 0)
+      while(v.t < t)
+        v = scheme(v, t - v.t);
+    else
+      while(v.t > t)
+        v = scheme(v, t - v.t);
 
     s[i] = v.s;
   }
 }
 
-void evolve(double dt, size_t nloop)
+void evolve(double dt)
 {
   using namespace global;
 
@@ -53,7 +59,7 @@ void evolve(double dt, size_t nloop)
     const int bsz = 256;
     const int gsz = (n - 1) / bsz + 1;
 
-    kernel<<<gsz, bsz>>>(s, n, t, dt / nloop, nloop);
+    kernel<<<gsz, bsz>>>(s, n, t, dt);
     t += dt;
   }
   cudaEventRecord(c1, 0);
@@ -61,7 +67,6 @@ void evolve(double dt, size_t nloop)
   float ms;
   cudaEventSynchronize(c1);
   cudaEventElapsedTime(&ms, c0, c1);
-  ms /= nloop;
 
   using namespace std;
 
