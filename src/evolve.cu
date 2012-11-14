@@ -50,7 +50,7 @@ static __global__ void kernel(State *s, size_t n, Real t, Real dt)
   }
 }
 
-void evolve(double dt)
+float evolve(double dt)
 {
   using namespace global;
 
@@ -69,11 +69,12 @@ void evolve(double dt)
   cudaEventElapsedTime(&ms, c0, c1);
 
   using namespace std;
-
   cout
     << fixed << setprecision(2)
     << "t = " << setw(6) << t << ", "
     << ms                     << " ms/step, "
     << 1e-6 * flop() * n / ms << " Gflops"
     << std::endl;
+
+  return ms;
 }

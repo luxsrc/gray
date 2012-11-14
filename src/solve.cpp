@@ -23,15 +23,23 @@ static void idle(void)
 {
   using namespace global;
 
-  const size_t n_vis = 20;
-  evolve(dt_dump / n_vis);
+  static size_t count = 0;
+  static size_t delta = 32;
+  const  size_t limit = 1024;
 
-  static size_t i = 0;
-  if(++i == n_vis) {
-    i = 0;
+  float ms;
+  if(count + delta < limit) {
+    ms = evolve(dt_dump * delta / limit);
+    count += delta;
+  } else {
+    ms = evolve(dt_dump * (limit - count) / limit);
+    count = 0;
     dump();
   }
   vis();
+
+  if(ms < 10 && delta < limit) delta *= 2;
+  if(ms > 40 && delta > 1    ) delta /= 2;
 
   glutPostRedisplay();
 }
@@ -47,21 +55,13 @@ int solve(void)
   return 0;
 }
 #else
-static void mainloop(void)
-{
-  using namespace global;
-
-  dump();
-  for(;;) {
-    evolve(dt_dump);
-    dump();
-  }
-}
-
 int solve(void)
 {
-  mainloop();
-
+  dump();
+  for(;;) {
+    evolve(global::dt_dump);
+    dump();
+  }
   return 0;
 }
 #endif

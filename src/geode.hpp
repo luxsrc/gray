@@ -57,10 +57,10 @@ namespace global {
   extern State *s, *h;
 }
 
-extern void dump  (void);
-extern void evolve(double);
-extern int  setup (int &, char **);
-extern int  solve (void);
-extern void vis   (void);
+extern void  dump  (void);
+extern float evolve(double);
+extern int   setup (int &, char **);
+extern int   solve (void);
+extern void  vis   (void);
 
 #endif // GEODE_HPP
