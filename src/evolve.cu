@@ -32,10 +32,8 @@ static __global__ void kernel(State *s, size_t n, Real t, Real dt, size_t m)
   if(i < n) {
     Var v = {s[i], t};
 
-    for(int j = 0; j < m; ++j) {
-      v.s  = scheme(v, dt);
-      v.t += dt;
-    }
+    for(int j = 0; j < m; ++j)
+      v = scheme(v, dt);
 
     s[i] = v.s;
   }

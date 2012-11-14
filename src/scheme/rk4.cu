@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-static __device__ State scheme(const Var v, const Real dt)
+static __device__ Var scheme(const Var v, const Real dt)
 {
   const Real dt_2 = dt / 2;
   const Real dt_6 = dt / 6;
@@ -41,7 +41,7 @@ static __device__ State scheme(const Var v, const Real dt)
   #pragma unrol
   EACH(y) = GET(v.s) + dt_6 * (GET(k1) + 2 * (GET(k2) + GET(k3)) + GET(k4));
 
-  return y;
+  return (Var){y, tend};
 }
 
 static double flop(void)
