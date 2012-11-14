@@ -16,7 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#define DT_MIN 1.0e-6
+#define DT_MIN 1.0e-2
+#define STEP_FACTOR 32
 
 static __device__ Real getdt(const Var v, const State a)
 {
@@ -25,5 +26,5 @@ static __device__ Real getdt(const Var v, const State a)
   dt = min(dt, fabs(v.s.theta / a.theta));
   dt = min(dt, fabs(v.s.phi   / a.phi  ));
 
-  return max(dt, (Real)DT_MIN);
+  return max(dt, (Real)DT_MIN) / STEP_FACTOR;
 }
