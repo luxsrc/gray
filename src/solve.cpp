@@ -27,20 +27,21 @@ static void idle(void)
   static size_t delta = 32;
   const  size_t limit = 1024;
 
-  float ms;
-  if(count + delta < limit) {
-    ms = evolve(dt_dump * delta / limit);
-    count += delta;
-  } else {
-    ms = evolve(dt_dump * (limit - count) / limit);
-    count = 0;
-    dump();
+  if(dt_dump != 0.0) {
+    float ms;
+    if(count + delta < limit) {
+      ms = evolve(dt_dump * delta / limit);
+      count += delta;
+    } else {
+      ms = evolve(dt_dump * (limit - count) / limit);
+      count = 0;
+      dump();
+    }
+    if(ms < 10 && delta < limit) delta *= 2;
+    if(ms > 40 && delta > 1    ) delta /= 2;
   }
+
   vis();
-
-  if(ms < 10 && delta < limit) delta *= 2;
-  if(ms > 40 && delta > 1    ) delta /= 2;
-
   glutPostRedisplay();
 }
 
