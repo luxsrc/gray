@@ -38,7 +38,7 @@ static __device__ Var scheme(const Var v, const Real dt)
   EACH(y) = GET(v.s) + dt   * GET(k3);
 
   const State k4 = rhs(y, tend);
-  #pragma unrol
+  #pragma unroll
   EACH(y) = GET(v.s) + dt_6 * (GET(k1) + 2 * (GET(k2) + GET(k3)) + GET(k4));
 
   return (Var){y, tend};
