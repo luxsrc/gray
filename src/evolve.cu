@@ -19,6 +19,11 @@
 #include "geode.hpp"
 #include <iomanip>
 
+typedef struct {
+  State s;
+  Real  t;
+} Var;
+
 #define GET(s)  ((Real *)&(s))[index]
 #define EACH(s) for(int index = 0; index < NVAR; ++index) GET(s)
 
