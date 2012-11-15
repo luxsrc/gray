@@ -76,15 +76,13 @@ int setup(int &argc, char **argv)
 
   atexit(cleanup);
   {
-    size_t size = sizeof(State) * n;
-
-    cudaMalloc((void **)&s, size);
+    cudaMalloc((void **)&s, sizeof(State) * n);
 
     h = new State[n];
     for(size_t i = 0; i < n; ++i) h[i] = init(i);
-    cudaMemcpy(s, h, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(s, h, sizeof(State) * n, cudaMemcpyHostToDevice);
 
-    cudaMalloc((void **)&p, sizeof(unsigned));
+    cudaMalloc((void **)&p, sizeof(unsigned) * n);
   }
 
 #ifndef DISABLE_GL

@@ -17,7 +17,7 @@
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "geode.hpp"
-#include <iomanip>
+#include <cstdio>
 
 typedef struct {
   State s;
@@ -36,21 +36,24 @@ static __global__ void kernel(State *s, size_t n, Real t, Real dt, unsigned *p)
   const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
   if(i < n) {
+    unsigned count = 0;
+
     Var v = {s[i], t};
     t += dt; // make t the final time
 
     if(dt > 0)
       while(v.t < t) {
         v = scheme(v, t - v.t);
-        atomicAdd(p, 1);
+        count++;
       }
     else
       while(v.t > t) {
         v = scheme(v, t - v.t);
-        atomicAdd(p, 1);
+        count++;
       }
 
     s[i] = v.s;
+    p[i] = count;
   }
 }
 
@@ -58,9 +61,6 @@ float evolve(double dt)
 {
   using namespace global;
 
-  unsigned profiler = 0;
-
-  cudaMemcpy(p, &profiler, sizeof(unsigned), cudaMemcpyHostToDevice);
   cudaEventRecord(c0, 0);
   {
     const int bsz = 256;
@@ -70,19 +70,20 @@ float evolve(double dt)
     t += dt;
   }
   cudaEventRecord(c1, 0);
-  cudaMemcpy(&profiler, p, sizeof(unsigned), cudaMemcpyDeviceToHost);
 
   float ms;
   cudaEventSynchronize(c1);
   cudaEventElapsedTime(&ms, c0, c1);
 
-  using namespace std;
-  cout
-    << fixed << setprecision(2)
-    << "t = " << setw(6) << t << ", "
-    << ms << " ms/" << profiler << " steps, "
-    << 1e-6 * flop() * profiler / ms << " Gflops"
-    << std::endl;
+  unsigned profiler[n];
+  cudaMemcpy(profiler, p, sizeof(unsigned) * n, cudaMemcpyDeviceToHost);
+
+  double sum = 0;
+  for(size_t i = 0; i < n; ++i)
+    sum += profiler[i];
+
+  printf("t = %6.2f, %.0f ms/%.0f steps, %6.2f Gflops\n",
+         t, ms, sum, 1e-6 * flop() * sum / ms);
 
   return ms;
 }
