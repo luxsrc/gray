@@ -31,7 +31,7 @@ typedef struct {
 #include <getdt.cu>
 #include <rk4.cu>
 
-static __global__ void kernel(State *s, size_t n, Real t, Real dt)
+static __global__ void kernel(State *s, size_t n, Real t, Real dt, unsigned *p)
 {
   const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -40,11 +40,15 @@ static __global__ void kernel(State *s, size_t n, Real t, Real dt)
     t += dt; // make t the final time
 
     if(dt > 0)
-      while(v.t < t)
+      while(v.t < t) {
         v = scheme(v, t - v.t);
+        atomicAdd(p, 1);
+      }
     else
-      while(v.t > t)
+      while(v.t > t) {
         v = scheme(v, t - v.t);
+        atomicAdd(p, 1);
+      }
 
     s[i] = v.s;
   }
@@ -54,15 +58,19 @@ float evolve(double dt)
 {
   using namespace global;
 
+  unsigned profiler = 0;
+
+  cudaMemcpy(p, &profiler, sizeof(unsigned), cudaMemcpyHostToDevice);
   cudaEventRecord(c0, 0);
   {
     const int bsz = 256;
     const int gsz = (n - 1) / bsz + 1;
 
-    kernel<<<gsz, bsz>>>(s, n, t, dt);
+    kernel<<<gsz, bsz>>>(s, n, t, dt, p);
     t += dt;
   }
   cudaEventRecord(c1, 0);
+  cudaMemcpy(&profiler, p, sizeof(unsigned), cudaMemcpyDeviceToHost);
 
   float ms;
   cudaEventSynchronize(c1);
@@ -72,8 +80,8 @@ float evolve(double dt)
   cout
     << fixed << setprecision(2)
     << "t = " << setw(6) << t << ", "
-    << ms                     << " ms/step, "
-    << 1e-6 * flop() * n / ms << " Gflops"
+    << ms << " ms/" << profiler << " steps, "
+    << 1e-6 * flop() * profiler / ms << " Gflops"
     << std::endl;
 
   return ms;

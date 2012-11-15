@@ -59,6 +59,7 @@ namespace global {
   extern double t;
   extern size_t n;
   extern State *s, *h;
+  extern unsigned  *p;
 }
 
 extern void  dump  (void);

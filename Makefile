@@ -1,6 +1,8 @@
 ifeq ($(DOUBLE),1) # use `make <prob> DOUBLE=1` to compile in double precision
 	CPPFLAGS += -DOUBLE
 	CFLAGS   += -arch sm_13
+else
+	CFLAGS   += -arch sm_11
 endif
 
 ifeq ($(GL),0) # use `make <prob> GL=0` to disable OpenGL visualization

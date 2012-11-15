@@ -29,13 +29,20 @@ namespace global {
 
   double t = 0.0;
   size_t n = 65536;
-  State *s = 0, *h = 0;
+
+  State    *s = NULL;
+  State    *h = NULL;
+  unsigned *p = NULL;
 }
 
 static void cleanup(void)
 {
   using namespace global;
 
+  if(p) {
+    cudaFree(p);
+    p = NULL;
+  }
   if(h) {
     delete[] h;
     h = NULL;
@@ -67,14 +74,18 @@ int setup(int &argc, char **argv)
   if(argc > 1) n = std::max(atoi(argv[1]), 1);
   if(argc > 2) dt_dump = atof(argv[2]);
 
-  size_t size = sizeof(State) * n;
-
   atexit(cleanup);
-  cudaMalloc((void **)&s, size);
+  {
+    size_t size = sizeof(State) * n;
 
-  h = new State[n];
-  for(size_t i = 0; i < n; ++i) h[i] = init(i);
-  cudaMemcpy(s, h, size, cudaMemcpyHostToDevice);
+    cudaMalloc((void **)&s, size);
+
+    h = new State[n];
+    for(size_t i = 0; i < n; ++i) h[i] = init(i);
+    cudaMemcpy(s, h, size, cudaMemcpyHostToDevice);
+
+    cudaMalloc((void **)&p, sizeof(unsigned));
+  }
 
 #ifndef DISABLE_GL
   return glutCreateWindow(argv[0]);
