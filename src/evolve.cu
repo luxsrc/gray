@@ -78,12 +78,15 @@ float evolve(double dt)
   unsigned profiler[n];
   cudaMemcpy(profiler, p, sizeof(unsigned) * n, cudaMemcpyDeviceToHost);
 
-  double sum = 0;
-  for(size_t i = 0; i < n; ++i)
-    sum += profiler[i];
+  double sum = 0, max = 0;
+  for(size_t i = 0; i < n; ++i) {
+    double x = profiler[i];
+    sum += x;
+    max  = max > x ? max : x;
+  }
 
-  printf("t = %6.2f, %.0f ms/%.0f steps, %6.2f Gflops\n",
-         t, ms, sum, 1e-6 * flop() * sum / ms);
+  printf("t = %6.2f, %.0f ms/%.0f steps, %6.2f Gflops, slow down by %f\n",
+         t, ms, sum, 1e-6 * flop() * sum / ms, n * max / sum);
 
   return ms;
 }
