@@ -19,11 +19,12 @@
 #include "geode.hpp"
 #include <cstdio>
 
-static size_t frame = 0;
-
 void dump(void)
 {
+#ifdef DUMP
   using namespace global;
+
+  static size_t frame = 0;
 
   size_t m = sizeof(State) * n;
   cudaMemcpy(h, s, m, cudaMemcpyDeviceToHost);
@@ -38,4 +39,5 @@ void dump(void)
   fwrite(&n, sizeof(size_t), 1, file);
   fwrite( h, sizeof(State),  n, file);
   fclose(file);
+#endif
 }

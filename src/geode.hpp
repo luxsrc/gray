@@ -41,6 +41,10 @@
   typedef float Real;
 #endif
 
+#ifdef UMP
+#  define DUMP
+#endif
+
 #include <iostream>
 #include <cuda_runtime_api.h> // C-style CUDA runtime API
 

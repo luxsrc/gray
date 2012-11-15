@@ -14,6 +14,10 @@ else
 	endif
 endif
 
+ifneq ($(IO),0)
+	CPPFLAGS += -DUMP
+endif
+
 CUDA = $(subst /bin/nvcc,,$(shell which nvcc))
 NVCC = $(CUDA)/bin/nvcc
 
@@ -37,10 +41,12 @@ help:
 	   fi                            \
 	 done
 	@echo
-	@echo 'Use `make <prob> [DOUBLE=1] [GL=0]`'            \
-	      'and `bin/<prob>` to compile and run geode.'
-	@echo 'The option DOUBLE=1 enforces double precision,' \
-	      'while GL=0 disable OpenGL.'
+	@echo \
+'Use `make <prob> [DOUBLE=1] [GL=0] [IO=0]` and `bin/<prob>` to compile and'
+	@echo \
+'run geode.  The option DOUBLE=1 enforces double precision, while GL=0 disable'
+	@echo \
+'OpenGL and IO=0 disable IO.'
 
 %:
 	@if [ $@ == 'scheme' ] || [ ! -d src/$@ ]; then          \
