@@ -38,6 +38,8 @@ static double dt_stored = 0.0;
 static int last_x = 0, last_y = 0;
 static int left   = 0, right  = 0;
 
+static int sprites = 0;
+
 #define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
 
 static const char vertex_shader[] =
@@ -108,8 +110,10 @@ static void display(void)
 #endif
 
   // Draw particles, i.e., photon locations
-  glUseProgram(shader);
-  glUniform1i(glGetUniformLocation(shader, "splatTexture"), 0);
+  if(shader && sprites) {
+    glUseProgram(shader);
+    glUniform1i(glGetUniformLocation(shader, "splatTexture"), 0);
+  }
 
   glEnable(GL_POINT_SPRITE_ARB);
   glEnable(GL_BLEND);
@@ -156,6 +160,10 @@ static void keyboard(unsigned char key, int x, int y)
   case 'q':
   case 'Q':
     exit(0);
+    break;
+  case 's':
+  case 'S':
+    sprites = !sprites;
     break;
   case 'r':
   case 'R':

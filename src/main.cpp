@@ -26,15 +26,14 @@ int main(int argc, char **argv)
 
   setup(argc, argv);
 
+  std::cout <<
 #ifndef DISABLE_GL
-  std::cout
-    << "Press 'ESC' or 'q' to quit, 'p' to pulse, and 'r' to reverse the run"
-    << std::endl;
+"Press 'ESC' or 'q' to quit, 'p' to pulse, 'r' to reverse the run, and 's'\n"
+"to turn sprites on and off"
 #else
-  std::cout
-    << "Press 'Ctrl C' to quit"
-    << std::endl;
+"Press 'Ctrl C' to quit"
 #endif
+    << std::endl;
 
   return solve();
 }
