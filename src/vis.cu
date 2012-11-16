@@ -29,6 +29,7 @@ typedef struct {
 
 static GLuint vbo = 0; // OpenGL Vertex Buffer Object
 static struct cudaGraphicsResource *res = NULL;
+static unsigned int shader = 0;
 
 static float ax = 270, az = 90;
 static float ly =-50;
@@ -36,6 +37,57 @@ static float ly =-50;
 static double dt_stored = 0.0;
 static int last_x = 0, last_y = 0;
 static int left   = 0, right  = 0;
+
+#define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
+
+static const char vertex_shader[] =
+  "void main()                                                            \n"
+  "{                                                                      \n"
+  "  vec4 vert = gl_Vertex;                                               \n"
+  "  vert.w    = 1.0;                                                     \n"
+  "  vec3 pos_eye = vec3(gl_ModelViewMatrix * vert);                      \n"
+  "  gl_PointSize = max(1.0, 500.0 * gl_Point.size / (1.0 - pos_eye.z));  \n"
+  "  gl_TexCoord[0] = gl_MultiTexCoord0;                                  \n"
+  "  gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * vert;       \n"
+  "  gl_FrontColor = gl_Color;                                            \n"
+  "  gl_FrontSecondaryColor = gl_SecondaryColor;                          \n"
+  "}                                                                      \n";
+
+static const char pixel_shader[] =
+  "uniform sampler2D splatTexture;                                        \n"
+  "void main()                                                            \n"
+  "{                                                                      \n"
+  "  vec4 color   = (0.6 + 0.4 * gl_Color)                                \n"
+  "               * texture2D(splatTexture, gl_TexCoord[0].st);           \n"
+  "  gl_FragColor = color * gl_SecondaryColor;                            \n"
+  "}                                                                      \n";
+
+static unsigned compile(const char *src, GLenum type)
+{
+  unsigned s = glCreateShader(type);
+  glShaderSource(s, 1, &src, 0);
+  glCompileShader(s);
+  return s;
+}
+
+static unsigned char *mkimg(int n)
+{
+  unsigned char *img = new unsigned char[4 * n * n];
+
+  for(int h = 0, i = 0; i < n; ++i) {
+    double x  = 2 * (i + 0.5) / n - 1;
+    double x2 = x * x;
+    for(int j = 0; j < n; ++j, h += 4) {
+      double y  = 2 * (j + 0.5) / n - 1;
+      double r2 = x2 + y * y;
+      if(r2 > 1) r2 = 1;
+      img[h] = img[h+1] = img[h+2] = img[h+3] =
+        255 * ((2 * sqrt(r2) - 3) * r2 + 1);
+    }
+  }
+
+  return img;
+}
 
 static void display(void)
 {
@@ -56,21 +108,30 @@ static void display(void)
 #endif
 
   // Draw particles, i.e., photon locations
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glUseProgram(shader);
+  glUniform1i(glGetUniformLocation(shader, "splatTexture"), 0);
 
+  glEnable(GL_POINT_SPRITE_ARB);
+  glEnable(GL_BLEND);
+  glDepthMask(GL_FALSE);
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);
   {
     const size_t full = sizeof(Point);
     const size_t half = full / 2;
 
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexPointer(3, GL_FLOAT, full, 0);
     glColorPointer (3, GL_FLOAT, full, (char *)half);
-
     glDrawArrays(GL_POINTS, 0, global::n);
   }
   glDisableClientState(GL_COLOR_ARRAY);
   glDisableClientState(GL_VERTEX_ARRAY);
+  glDepthMask(GL_TRUE);
+  glDisable(GL_BLEND);
+  glDisable(GL_POINT_SPRITE_ARB);
+
+  glUseProgram(0);
 
   glutSwapBuffers();
 }
@@ -151,6 +212,34 @@ static void setup(void)
   glutKeyboardFunc(keyboard);
   glutMouseFunc(mouse);
   glutMotionFunc(motion);
+
+  shader = glCreateProgram();
+  glAttachShader(shader, compile(vertex_shader, GL_VERTEX_SHADER));
+  glAttachShader(shader, compile(pixel_shader, GL_FRAGMENT_SHADER));
+  glLinkProgram(shader);
+
+  unsigned int texture;
+  glGenTextures(1, (GLuint *)&texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+
+  glTexParameteri(GL_TEXTURE_2D,
+                  GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+  glTexParameteri(GL_TEXTURE_2D,
+                  GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,
+                  GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  unsigned char *img = mkimg(64);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 64, 64, 0,
+               GL_RGBA, GL_UNSIGNED_BYTE, img);
+
+  glActiveTextureARB(GL_TEXTURE0_ARB);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glSecondaryColor3f(0.8f, 0.4f, 0.1f);
+
+  glTexEnvi(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
+  glEnable(GL_VERTEX_PROGRAM_POINT_SIZE_NV);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.0, 0.0, 0.0, 1.0);
