@@ -6,5 +6,69 @@ integrator that employs the "stream processing paradigm".  It is
 designed to efficiently integrate billions of photons in curved
 spacetime according to Einstein's general theory of relativity.  The
 key component of the code is an adaptive scheduler that intelligently
-rearrange the photons to reduce process idle time while maintaining
-memory locality.  The code is implemented in CUDA C/C++.
+rearrange the photons (yet to be implemented) to reduce process idle
+time while maintaining memory locality.  The code is implemented in
+CUDA C/C++.
+
+The following chart illustrates the structure and flow of geode:
+
+  main() in "main.cpp"
+  |
+  +-setup() in "setup.cpp"
+  | |
+  | +-create CUDA timers
+  | |
+  | +-initialize GLUT if OpenGL is enabled
+  | |
+  | +-parse arguments
+  | |
+  | +-register cleanup() in "setup.cpp"
+  | |
+  | +-allocate memory on host and device
+  | |
+  | +-init() in "*/init.cpp", initialize data
+  | |
+  | +-create window if OpenGL is enabled
+  |
+  +-solve() in "solve.cpp"
+  | |
+  | +-dump() in "io.cpp" output initial conditions if IO is enabled
+  | | |
+  | | +-transfer data from device to host
+  | | |
+  | | +-output data
+  | |
+  | +-vis() in "vis.cu" update particle data for visualization if
+  | | OpenGL is enabled
+  | | |
+  | | +-initialize if first called
+  | | |
+  | | +-map() in "*/map.cu" device function to map ODE variables to
+  | |   particle position and color using CUDA
+  | |
+  | +-mainloop in "solve.cu" by calling back idle() if OpenGL is---<---<---<-+
+  |   enabled, or by a while loop                                            |
+  |   |                                                                      |
+  |   +-evolve() in "evolve.cu"                                              ^
+  |   | |                                                                    |
+  |   | +-kernel() global function in "evolve.cu"                            ^
+  |   |   |                                                                  |
+  |   |   +-substep while loop--<---<---<---<---<---<---<---<---<---<---<-+  ^
+  |   |     |                                                             |  |
+  |   |     +-scheme() device function in "scheme/*.cu"                   ^  ^
+  |   |       |                                                           |  |
+  |   |       +-getdt() device function in "*/getdt.cu"                   ^  ^
+  |   |       |                                                           |  |
+  |   |       +-rhs() device function in "*/rhs.cu"->--->--->--->--->--->-+  ^
+  |   |                                                                      |
+  |   +-dump() in "io.cpp" see above                                         ^
+  |   |                                                                      |
+  |   +-vis() in "vis.cu" see above                                          ^
+  |   |                                                                      |
+  |   +-request graphics update and loop back-->--->--->--->--->--->--->--->-+
+  |
+  +-cleanup() in "setup.cpp"
+    |
+    +-free host and device memory
+    |
+    +-destroy timers
