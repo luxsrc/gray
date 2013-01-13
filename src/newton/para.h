@@ -16,12 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef STATE_HPP
-#define STATE_HPP
+#ifndef PARA_H
+#define PARA_H
 
-typedef struct {
-  Real x, y, z;
-  Real u, v, w;
-} State;
+// No default parameter is needed
 
-#endif // STATE_HPP
+#endif // PARA_H

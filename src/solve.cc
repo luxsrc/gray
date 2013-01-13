@@ -16,24 +16,53 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "geode.hpp"
+#include "geode.h"
 
-int main(int argc, char **argv)
-{
-  std::cout
-    << "Geode: a massive parallel geodesic integrator"
-    << std::endl;
-
-  setup(argc, argv);
-
-  std::cout <<
 #ifndef DISABLE_GL
-"Press 'ESC' or 'q' to quit, 'p' to pulse, 'r' to reverse the run, and 's'\n"
-"to turn sprites on and off"
-#else
-"Press 'Ctrl C' to quit"
-#endif
-    << std::endl;
+static void idle(void)
+{
+  using namespace global;
 
-  return solve();
+  static size_t count = 0;
+  static size_t delta = 32;
+  const  size_t limit = 1024;
+
+  if(dt_dump != 0.0) {
+    float ms;
+    if(count + delta < limit) {
+      ms = evolve(dt_dump * delta / limit);
+      count += delta;
+    } else {
+      ms = evolve(dt_dump * (limit - count) / limit);
+      count = 0;
+      dump();
+    }
+    if(ms < 10 && delta < limit) delta *= 2;
+    if(ms > 40 && delta > 1    ) delta /= 2;
+  }
+
+  vis();
+  glutPostRedisplay();
 }
+
+int solve(void)
+{
+  dump();
+  vis();
+
+  glutIdleFunc(idle);
+  glutMainLoop();
+
+  return 0;
+}
+#else
+int solve(void)
+{
+  dump();
+  for(;;) {
+    evolve(global::dt_dump);
+    dump();
+  }
+  return 0;
+}
+#endif

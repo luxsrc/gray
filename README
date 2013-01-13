@@ -12,9 +12,9 @@ CUDA C/C++.
 
 The following chart illustrates the structure and flow of geode:
 
-  main() in "main.cpp"
+  main() in "main.cc"
   |
-  +-setup() in "setup.cpp"
+  +-setup() in "setup.cc"
   | |
   | +-create CUDA timers
   | |
@@ -22,17 +22,17 @@ The following chart illustrates the structure and flow of geode:
   | |
   | +-parse arguments
   | |
-  | +-register cleanup() in "setup.cpp"
+  | +-register cleanup() in "setup.cc"
   | |
   | +-allocate memory on host and device
   | |
-  | +-init() in "*/init.cpp", initialize data
+  | +-init() in "*/init.cc", initialize data
   | |
   | +-create window if OpenGL is enabled
   |
-  +-solve() in "solve.cpp"
+  +-solve() in "solve.cc"
   | |
-  | +-dump() in "io.cpp" output initial conditions if IO is enabled
+  | +-dump() in "io.cc" output initial conditions if IO is enabled
   | | |
   | | +-transfer data from device to host
   | | |
@@ -61,13 +61,13 @@ The following chart illustrates the structure and flow of geode:
   |   |       |                                                           |  |
   |   |       +-rhs() device function in "*/rhs.cu"->--->--->--->--->--->-+  ^
   |   |                                                                      |
-  |   +-dump() in "io.cpp" see above                                         ^
+  |   +-dump() in "io.cc" see above                                          ^
   |   |                                                                      |
   |   +-vis() in "vis.cu" see above                                          ^
   |   |                                                                      |
   |   +-request graphics update and loop back-->--->--->--->--->--->--->--->-+
   |
-  +-cleanup() in "setup.cpp"
+  +-cleanup() in "setup.cc"
     |
     +-free host and device memory
     |

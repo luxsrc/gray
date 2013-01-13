@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "geode.hpp"
+#include "geode.h"
 
 #ifndef DISABLE_GL
 

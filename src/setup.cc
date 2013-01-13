@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "geode.hpp"
+#include "geode.h"
 
 namespace global {
   cudaEvent_t c0, c1;
@@ -56,7 +56,7 @@ static void cleanup(void)
   cudaEventDestroy(c0);
 }
 
-#include <init.cpp>
+#include <init.cc>
 
 int setup(int &argc, char **argv)
 {

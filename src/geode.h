@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef GEODE_HPP
-#define GEODE_HPP
+#ifndef GEODE_H
+#define GEODE_H
 
 #ifdef ISABLE_GL
 #  define DISABLE_GL
@@ -48,8 +48,8 @@
 #include <iostream>
 #include <cuda_runtime_api.h> // C-style CUDA runtime API
 
-#include <para.hpp>  // problem parameter
-#include <state.hpp> // problem specific state structure
+#include <para.h>  // problem parameter
+#include <state.h> // problem specific state structure
 
 #define NVAR (sizeof(State) / sizeof(Real))
 
@@ -68,4 +68,4 @@ extern int   setup (int &, char **);
 extern int   solve (void);
 extern void  vis   (void);
 
-#endif // GEODE_HPP
+#endif // GEODE_H

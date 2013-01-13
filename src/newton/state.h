@@ -16,13 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef STATE_HPP
-#define STATE_HPP
+#ifndef STATE_H
+#define STATE_H
 
 typedef struct {
-  Real t, r, theta, phi;
-  Real kr, ktheta;
-  Real bimpact; // impact parameter defined as L / E
+  Real x, y, z;
+  Real u, v, w;
 } State;
 
-#endif // STATE_HPP
+#endif // STATE_H

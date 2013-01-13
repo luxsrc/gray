@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PARA_HPP
-#define PARA_HPP
+#ifndef PARA_H
+#define PARA_H
 
 #define DT_DUMP     (-1)          // default dump time
 #define R_OBS       10            // observer radius in GM/c^2
@@ -26,4 +26,4 @@
 #define DT_MIN      1.0e-2        // minimal dt in getdt()
 #define STEP_FACTOR 32            // extra factor in getdt()
 
-#endif // PARA_HPP
+#endif // PARA_H

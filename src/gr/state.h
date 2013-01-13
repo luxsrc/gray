@@ -16,9 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PARA_HPP
-#define PARA_HPP
+#ifndef STATE_H
+#define STATE_H
 
-// No default parameter is needed
+typedef struct {
+  Real t, r, theta, phi;
+  Real kr, ktheta;
+  Real bimpact; // impact parameter defined as L / E
+} State;
 
-#endif // PARA_HPP
+#endif // STATE_H
