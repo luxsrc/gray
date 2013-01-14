@@ -20,12 +20,7 @@
 
 #ifndef DISABLE_GL
 
-#include <cuda_gl_interop.h> // OpenGL interoperability runtime API
-
-typedef struct {
-  float x, y, z;
-  float r, g, b;
-} Point;
+#include "vis.h"
 
 static GLuint vbo = 0; // OpenGL Vertex Buffer Object
 static struct cudaGraphicsResource *res = NULL;
@@ -39,8 +34,6 @@ static int last_x = 0, last_y = 0;
 static int left   = 0, right  = 0;
 
 static int sprites = 0;
-
-#define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
 
 static const char vertex_shader[] =
   "void main()                                                            \n"
@@ -259,8 +252,6 @@ static void setup(void)
 
   cudaGraphicsGLRegisterBuffer(&res, vbo, cudaGraphicsMapFlagsWriteDiscard);
 }
-
-#include <map.cu>
 
 static __global__ void kernel(Point *p, const State *s, size_t n)
 {
