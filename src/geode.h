@@ -19,10 +19,23 @@
 #ifndef GEODE_H
 #define GEODE_H
 
+// Rename macros
 #ifdef ISABLE_GL
 #  define DISABLE_GL
+#  undef   ISABLE_GL
+#endif
+#ifdef OUBLE
+#  define DOUBLE
+#  undef   OUBLE
+#endif
+#ifdef UMP
+#  define DUMP
+#  undef   UMP
 #endif
 
+// Include system headers
+#include <iostream>
+#include <cuda_runtime_api.h> // C-style CUDA runtime API
 #ifndef DISABLE_GL
 #  ifdef __APPLE__
 #    include <GLUT/glut.h>
@@ -31,28 +44,19 @@
 #  endif
 #endif
 
-#ifdef OUBLE
-#  define DOUBLE
-#endif
-
+// Typedef real to make the source code precision independent
 #ifdef DOUBLE
   typedef double real;
 #else
   typedef float real;
 #endif
 
-#ifdef UMP
-#  define DUMP
-#endif
-
-#include <iostream>
-#include <cuda_runtime_api.h> // C-style CUDA runtime API
-
+// Include problem specific headers
 #include <para.h>  // problem parameter
 #include <state.h> // problem specific state structure
-
 #define NVAR (sizeof(State) / sizeof(real))
 
+// Global variables
 namespace global {
   extern cudaEvent_t c0, c1;
   extern double dt_dump;
@@ -62,6 +66,7 @@ namespace global {
   extern unsigned  *p;
 }
 
+// Function prototypes
 extern void  dump  (void);
 extern float evolve(double);
 extern int   setup (int &, char **);
