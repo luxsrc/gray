@@ -20,20 +20,18 @@
 
 int main(int argc, char **argv)
 {
-  std::cout
-    << "Geode: a massive parallel geodesic integrator"
-    << std::endl;
+  print("Geode: a massive parallel geodesic integrator\n");
 
   setup(argc, argv);
 
-  std::cout <<
 #ifndef DISABLE_GL
-"Press 'ESC' or 'q' to quit, 'p' to pulse, 'r' to reverse the run, and 's'\n"
-"to turn sprites on and off"
+  print("\
+Press 'ESC' or 'q' to quit, 'p' to pulse, 'r' to reverse the run, and 's'\n\
+to turn sprites on and off\n\
+");
 #else
-"Press 'Ctrl C' to quit"
+  print("Press 'Ctrl C' to quit\n");
 #endif
-    << std::endl;
 
   return solve();
 }

@@ -17,6 +17,9 @@
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "geode.h"
+#include <cstdlib>
+#include <cmath>
+#include <algorithm>
 
 namespace global {
   cudaEvent_t c0, c1;

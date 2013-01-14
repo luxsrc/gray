@@ -16,8 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <math.h>
-
 static inline State init(int i)
 {
   real x, y, z, R;

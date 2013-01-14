@@ -17,7 +17,6 @@
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "geode.h"
-#include <cstdio>
 
 typedef struct {
   State s;
@@ -85,8 +84,8 @@ float evolve(double dt)
     max  = max > x ? max : x;
   }
 
-  printf("t = %6.2f, %.0f ms/%.0f steps, %6.2f Gflops, slow down by %f\n",
-         t, ms, sum, 1e-6 * flop() * sum / ms, n * max / sum);
+  print("t = %6.2f, %.0f ms/%.0f steps, %6.2f Gflops, slow down by %f\n",
+        t, ms, sum, 1e-6 * flop() * sum / ms, n * max / sum);
 
   return ms;
 }

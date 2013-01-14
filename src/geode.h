@@ -34,7 +34,6 @@
 #endif
 
 // Include system headers
-#include <iostream>
 #include <cuda_runtime_api.h> // C-style CUDA runtime API
 #ifndef DISABLE_GL
 #  ifdef __APPLE__
