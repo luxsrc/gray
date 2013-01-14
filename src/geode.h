@@ -36,9 +36,9 @@
 #endif
 
 #ifdef DOUBLE
-  typedef double Real;
+  typedef double real;
 #else
-  typedef float Real;
+  typedef float real;
 #endif
 
 #ifdef UMP
@@ -51,7 +51,7 @@
 #include <para.h>  // problem parameter
 #include <state.h> // problem specific state structure
 
-#define NVAR (sizeof(State) / sizeof(Real))
+#define NVAR (sizeof(State) / sizeof(real))
 
 namespace global {
   extern cudaEvent_t c0, c1;

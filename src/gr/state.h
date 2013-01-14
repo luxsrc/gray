@@ -20,9 +20,9 @@
 #define STATE_H
 
 typedef struct {
-  Real t, r, theta, phi;
-  Real kr, ktheta;
-  Real bimpact; // impact parameter defined as L / E
+  real t, r, theta, phi;
+  real kr, ktheta;
+  real bimpact; // impact parameter defined as L / E
 } State;
 
 #endif // STATE_H

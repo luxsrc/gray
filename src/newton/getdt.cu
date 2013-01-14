@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-static __device__ Real getdt(const Var v, const State a)
+static __device__ real getdt(const Var v, const State a)
 {
   return 1.0e-3;
 }

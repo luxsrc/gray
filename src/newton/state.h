@@ -20,8 +20,8 @@
 #define STATE_H
 
 typedef struct {
-  Real x, y, z;
-  Real u, v, w;
+  real x, y, z;
+  real u, v, w;
 } State;
 
 #endif // STATE_H

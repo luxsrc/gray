@@ -23,21 +23,21 @@
 static inline State init(int i)
 {
   // Photon position and momentum in spherical coordinates
-  Real r, theta, phi, kr, ktheta, kphi;
+  real r, theta, phi, kr, ktheta, kphi;
   {
-    const Real cos_obs = cos(M_PI / 180 * THETA_OBS);
-    const Real sin_obs = sin(M_PI / 180 * THETA_OBS);
+    const real cos_obs = cos(M_PI / 180 * THETA_OBS);
+    const real sin_obs = sin(M_PI / 180 * THETA_OBS);
 
-    Real x, y, z;
+    real x, y, z;
     {
-      const Real alpha = 20.0 * ((double)rand() / RAND_MAX - 0.5);
-      const Real beta  = 20.0 * ((double)rand() / RAND_MAX - 0.5);
+      const real alpha = 20.0 * ((double)rand() / RAND_MAX - 0.5);
+      const real beta  = 20.0 * ((double)rand() / RAND_MAX - 0.5);
 
       x  = R_OBS * sin_obs - beta * cos_obs ;
       y  = alpha;
       z  = R_OBS * cos_obs + beta * sin_obs;
     }
-    const Real R2 = x * x + y * y;
+    const real R2 = x * x + y * y;
 
     r     = sqrt(R2 + z * z);
     theta = acos(z / r);
@@ -49,11 +49,11 @@ static inline State init(int i)
   }
 
   // Impact parameter = L / E
-  Real bimpact;
+  real bimpact;
   {
-    Real s2, g00, g11, g22, g33, g30;
+    real s2, g00, g11, g22, g33, g30;
     {
-      Real sum, tmp, r2, a2;
+      real sum, tmp, r2, a2;
 
       tmp = sin(theta);
       s2  = tmp * tmp ;
@@ -70,10 +70,10 @@ static inline State init(int i)
       g33 = (sum - A_SPIN * g30) * s2;
     }
 
-    Real kt;
+    real kt;
     {
-      Real g30_kphi = g30 * kphi;
-      Real Delta    = g30_kphi * g30_kphi - g00 * (g11 * kr     * kr     +
+      real g30_kphi = g30 * kphi;
+      real Delta    = g30_kphi * g30_kphi - g00 * (g11 * kr     * kr     +
                                                    g22 * ktheta * ktheta +
                                                    g33 * kphi   * kphi  );
       kt = -(g30_kphi + sqrt(Delta)) / g00;

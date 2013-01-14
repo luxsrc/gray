@@ -16,22 +16,22 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-static __device__ Var scheme(const Var v, const Real dtmax)
+static __device__ Var scheme(const Var v, const real dtmax)
 {
   State y = v.s;
 
   const State k1 = rhs(y, v.t);
 
-  Real dt;
+  real dt;
   if(dtmax > 0)
     dt =  min(getdt(v, k1),  dtmax);
   else
     dt = -min(getdt(v, k1), -dtmax);
 
-  const Real dt_2 = dt / 2;
-  const Real dt_6 = dt / 6;
-  const Real tmid = v.t + dt_2;
-  const Real tend = v.t + dt;
+  const real dt_2 = dt / 2;
+  const real dt_6 = dt / 6;
+  const real tmid = v.t + dt_2;
+  const real tend = v.t + dt;
 
   #pragma unroll
   EACH(y) = GET(v.s) + dt_2 * GET(k1);

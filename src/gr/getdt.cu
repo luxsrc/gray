@@ -16,12 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-static __device__ Real getdt(const Var v, const State a)
+static __device__ real getdt(const Var v, const State a)
 {
-  Real dt = fabs(v.s.r / a.r);
+  real dt = fabs(v.s.r / a.r);
 
   dt = min(dt, fabs(v.s.theta / a.theta));
   dt = min(dt, fabs(v.s.phi   / a.phi  ));
 
-  return max(dt, (Real)DT_MIN) / STEP_FACTOR;
+  return max(dt, (real)DT_MIN) / STEP_FACTOR;
 }

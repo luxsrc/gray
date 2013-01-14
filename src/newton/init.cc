@@ -20,8 +20,8 @@
 
 static inline State init(int i)
 {
-  Real x, y, z, R;
-  Real u, v, w, V;
+  real x, y, z, R;
+  real u, v, w, V;
 
   do {
     x = 20.0 * ((double)rand() / RAND_MAX - 0.5);

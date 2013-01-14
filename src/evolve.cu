@@ -21,17 +21,17 @@
 
 typedef struct {
   State s;
-  Real  t;
+  real  t;
 } Var;
 
-#define GET(s)  ((Real *)&(s))[index]
+#define GET(s)  ((real *)&(s))[index]
 #define EACH(s) for(int index = 0; index < NVAR; ++index) GET(s)
 
 #include <rhs.cu>
 #include <getdt.cu>
 #include <rk4.cu>
 
-static __global__ void kernel(State *s, size_t n, Real t, Real dt, unsigned *p)
+static __global__ void kernel(State *s, size_t n, real t, real dt, unsigned *p)
 {
   const int i = blockIdx.x * blockDim.x + threadIdx.x;
 

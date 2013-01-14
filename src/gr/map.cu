@@ -21,10 +21,10 @@ static __device__ Point map(State s)
   if(s.r <= 1 + sqrt(1 - A_SPIN * A_SPIN))
     return (Point){0, 0, 0, 0, 0, 0};
 
-  const Real R = s.r * sin(s.theta);
-  const Real x = R   * cos(s.phi  );
-  const Real y = R   * sin(s.phi  );
-  const Real z = s.r * cos(s.theta);
+  const float R = s.r * sin(s.theta);
+  const float x = R   * cos(s.phi  );
+  const float y = R   * sin(s.phi  );
+  const float z = s.r * cos(s.theta);
 
   return (Point){x, y, z, s.kr, fabs(s.ktheta), fabs(s.bimpact)};
 }
