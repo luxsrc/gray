@@ -67,6 +67,9 @@ namespace global {
 }
 
 // Function prototypes
+extern void print(const char *, ...);
+extern void error(const char *, ...);
+
 extern void  dump  (void);
 extern float evolve(double);
 extern int   setup (int &, char **);
