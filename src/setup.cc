@@ -89,7 +89,9 @@ int setup(int &argc, char **argv)
   }
 
 #ifndef DISABLE_GL
-  return glutCreateWindow(argv[0]);
+  int w = glutCreateWindow(argv[0]);
+  vis();
+  return w;
 #else
   return 0;
 #endif

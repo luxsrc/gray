@@ -28,6 +28,4 @@ typedef struct {
   float r, g, b;
 } Point;
 
-#include <map.cu>
-
 #endif // VIS_H

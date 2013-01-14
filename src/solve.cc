@@ -41,14 +41,12 @@ static void idle(void)
     if(ms > 40 && delta > 1    ) delta /= 2;
   }
 
-  vis();
   glutPostRedisplay();
 }
 
 int solve(void)
 {
   dump();
-  vis();
 
   glutIdleFunc(idle);
   glutMainLoop();

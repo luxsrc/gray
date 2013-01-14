@@ -84,8 +84,34 @@ static unsigned char *mkimg(int n)
   return img;
 }
 
+#include <map.cu>
+
+static __global__ void kernel(Point *p, const State *s, size_t n)
+{
+  const int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if(i < n) p[i] = map(s[i]);
+}
+
 static void display(void)
 {
+  size_t size = 0;
+  void  *head = NULL;
+
+  cudaGraphicsMapResources(1, &res, 0);
+  cudaGraphicsResourceGetMappedPointer(&head, &size, res);
+  {
+    using namespace global;
+
+    const int bsz = 256;
+    const int gsz = (n - 1) / bsz + 1;
+
+    kernel<<<gsz, bsz>>>((Point *)head, s, n);
+  }
+  cudaGraphicsUnmapResources(1, &res, 0); // unmap resource
+
+  cudaDeviceSynchronize();
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
 
@@ -205,7 +231,7 @@ static void motion(int x, int y)
   glutPostRedisplay();
 }
 
-static void setup(void)
+void vis(void)
 {
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
@@ -251,35 +277,6 @@ static void setup(void)
   glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind all buffer
 
   cudaGraphicsGLRegisterBuffer(&res, vbo, cudaGraphicsMapFlagsWriteDiscard);
-}
-
-static __global__ void kernel(Point *p, const State *s, size_t n)
-{
-  const int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-  if(i < n) p[i] = map(s[i]);
-}
-
-void vis(void)
-{
-  if(!vbo) setup();
-
-  size_t size = 0;
-  void  *head = NULL;
-
-  cudaGraphicsMapResources(1, &res, 0);
-  cudaGraphicsResourceGetMappedPointer(&head, &size, res);
-  {
-    using namespace global;
-
-    const int bsz = 256;
-    const int gsz = (n - 1) / bsz + 1;
-
-    kernel<<<gsz, bsz>>>((Point *)head, s, n);
-  }
-  cudaGraphicsUnmapResources(1, &res, 0); // unmap resource
-
-  cudaDeviceSynchronize();
 }
 
 #endif // !DISABLE_GL
