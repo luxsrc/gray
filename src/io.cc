@@ -27,7 +27,7 @@ void dump(void)
   static size_t frame = 0;
 
   size_t m = sizeof(State) * n;
-  void *s = d->activate();
+  void *s = d->device();
   cudaMemcpy(h, s, m, cudaMemcpyDeviceToHost);
   d->deactivate();
   m = NVAR;

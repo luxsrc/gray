@@ -42,7 +42,6 @@
 #    include <GL/glut.h>
 #  endif
 #endif
-#include "data.h"
 
 // Typedef real to make the source code precision independent
 #ifdef DOUBLE
@@ -57,6 +56,9 @@
 #include <para.h>  // problem parameter
 #include <state.h> // problem specific state structure
 #define NVAR (sizeof(State) / sizeof(real))
+
+// Include the Data class, which needs the State type
+#include "data.h"
 
 // Global variables
 namespace global {

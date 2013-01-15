@@ -20,22 +20,21 @@
 #define DATA_H
 
 class Data {
+  size_t n;
 #ifndef DISABLE_GL
   GLuint vbo;
   struct cudaGraphicsResource *res;
 #else
-  void  *res;
+  State *res;
 #endif
+
  public:
-  Data(size_t = 0);
+  Data(size_t = 65536);
   ~Data();
 #ifndef DISABLE_GL
-  operator GLuint()
-  {
-    return vbo;
-  }
+  operator GLuint() { return vbo; }
 #endif
-  void *activate();
+  State *device();
   void deactivate();
 };
 

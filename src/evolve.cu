@@ -65,7 +65,7 @@ float evolve(double dt)
     const int bsz = 256;
     const int gsz = (n - 1) / bsz + 1;
 
-    State *s = (State *)d->activate();
+    State *s = d->device();
     kernel<<<gsz, bsz>>>(s, n, t, dt, p);
     d->deactivate();
 

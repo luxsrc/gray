@@ -80,11 +80,11 @@ int setup(int &argc, char **argv)
 
   atexit(cleanup);
 
-  d = new Data(sizeof(State) * n);
+  d = new Data(n);
 
   h = new State[n];
   for(size_t i = 0; i < n; ++i) h[i] = init(i);
-  void *s = d->activate();
+  void *s = d->device();
   cudaMemcpy(s, h, sizeof(State) * n, cudaMemcpyHostToDevice);
   d->deactivate();
 

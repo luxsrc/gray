@@ -19,8 +19,9 @@
 #include "geode.h"
 #include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 
-Data::Data(size_t sz)
+Data::Data(size_t n_input)
 {
+  const size_t sz = sizeof(State) * (n = n_input);
   cudaError_t err = cudaErrorMemoryAllocation; // assume we will have problem
 
 #ifndef DISABLE_GL
@@ -34,7 +35,7 @@ Data::Data(size_t sz)
     err = cudaGraphicsGLRegisterBuffer(&res, vbo,
                                        cudaGraphicsMapFlagsWriteDiscard);
 #else
-  err = cudaMalloc(&res, sz);
+  err = cudaMalloc((void **)&res, sz);
 #endif
 
   if(cudaSuccess != err)
@@ -47,18 +48,18 @@ Data::~Data()
   cudaGraphicsUnregisterResource(res);
   glDeleteBuffers(1, &vbo);
 #else
-  cudaFree(res);
+  cudaFree((void *)res);
 #endif
 }
 
-void *Data::activate()
+State *Data::device()
 {
 #ifndef DISABLE_GL
-  void  *head = NULL;
+  State *head = NULL;
   size_t size = 0;
 
   cudaGraphicsMapResources(1, &res, 0);
-  cudaGraphicsResourceGetMappedPointer(&head, &size, res);
+  cudaGraphicsResourceGetMappedPointer((void **)&head, &size, res);
 
   return head;
 #else
