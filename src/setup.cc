@@ -91,7 +91,7 @@ int setup(int &argc, char **argv)
   cudaMalloc((void **)&p, sizeof(unsigned) * n);
 
 #ifndef DISABLE_GL
-  vis(d->getvbo());
+  vis((GLuint)*d);
   return w;
 #else
   return 0;

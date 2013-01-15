@@ -30,7 +30,10 @@ class Data {
   Data(size_t = 0);
   ~Data();
 #ifndef DISABLE_GL
-  GLuint getvbo();
+  operator GLuint()
+  {
+    return vbo;
+  }
 #endif
   void *activate();
   void deactivate();

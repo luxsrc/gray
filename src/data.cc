@@ -51,13 +51,6 @@ Data::~Data()
 #endif
 }
 
-#ifndef DISABLE_GL
-GLuint Data::getvbo()
-{
-  return vbo;
-}
-#endif
-
 void *Data::activate()
 {
 #ifndef DISABLE_GL
