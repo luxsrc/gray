@@ -20,7 +20,11 @@
 
 #ifndef DISABLE_GL
 
-#include "vis.h"
+#include <cstdlib>
+#include <cmath>
+
+#include <cuda_gl_interop.h> // OpenGL interoperability runtime API
+#define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
 
 static GLuint vbo = 0; // OpenGL Vertex Buffer Object
 static struct cudaGraphicsResource *res = NULL;
@@ -33,13 +37,17 @@ static double dt_stored = 0.0;
 static int last_x = 0, last_y = 0;
 static int left   = 0, right  = 0;
 
-static int sprites = 0;
+static int sprites = 1;
 
 static const char vertex_shader[] =
   "void main()                                                            \n"
   "{                                                                      \n"
-  "  vec4 vert = gl_Vertex;                                               \n"
-  "  vert.w    = 1.0;                                                     \n"
+  "  vec4 vert;                                                           \n"
+  "  vert.w = gl_Vertex.y * sin(gl_Vertex.z);                             \n"
+  "  vert.x = vert.w      * cos(gl_Vertex.w);                             \n"
+  "  vert.y = vert.w      * sin(gl_Vertex.w);                             \n"
+  "  vert.z = gl_Vertex.y * cos(gl_Vertex.z);                             \n"
+  "  vert.w = 1.0;                                                        \n"
   "  vec3 pos_eye = vec3(gl_ModelViewMatrix * vert);                      \n"
   "  gl_PointSize = max(1.0, 500.0 * gl_Point.size / (1.0 - pos_eye.z));  \n"
   "  gl_TexCoord[0] = gl_MultiTexCoord0;                                  \n"
@@ -84,15 +92,6 @@ static unsigned char *mkimg(int n)
   return img;
 }
 
-#include <map.cu>
-
-static __global__ void kernel(Point *p, const State *s, size_t n)
-{
-  const int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-  if(i < n) p[i] = map(s[i]);
-}
-
 static void display(void)
 {
   size_t size = 0;
@@ -100,17 +99,8 @@ static void display(void)
 
   cudaGraphicsMapResources(1, &res, 0);
   cudaGraphicsResourceGetMappedPointer(&head, &size, res);
-  {
-    using namespace global;
-
-    const int bsz = 256;
-    const int gsz = (n - 1) / bsz + 1;
-
-    kernel<<<gsz, bsz>>>((Point *)head, s, n);
-  }
+  cudaMemcpy(head, global::s, size, cudaMemcpyDeviceToDevice);
   cudaGraphicsUnmapResources(1, &res, 0); // unmap resource
-
-  cudaDeviceSynchronize();
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
@@ -139,15 +129,10 @@ static void display(void)
   glDepthMask(GL_FALSE);
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);
-  {
-    const size_t full = sizeof(Point);
-    const size_t half = full / 2;
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glVertexPointer(3, GL_FLOAT, full, 0);
-    glColorPointer (3, GL_FLOAT, full, (char *)half);
-    glDrawArrays(GL_POINTS, 0, global::n);
-  }
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glVertexPointer(4, GL_FLOAT, sizeof(State), 0);
+  glColorPointer (3, GL_FLOAT, sizeof(State), (char *)(4 * sizeof(float)));
+  glDrawArrays(GL_POINTS, 0, global::n);
   glDisableClientState(GL_COLOR_ARRAY);
   glDisableClientState(GL_VERTEX_ARRAY);
   glDepthMask(GL_TRUE);
@@ -273,7 +258,7 @@ void vis(void)
 
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(Point) * global::n, 0, GL_DYNAMIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(State) * global::n, 0, GL_DYNAMIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind all buffer
 
   cudaGraphicsGLRegisterBuffer(&res, vbo, cudaGraphicsMapFlagsWriteDiscard);
