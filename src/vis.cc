@@ -24,7 +24,11 @@
 #include <cmath>
 
 #include <cuda_gl_interop.h> // OpenGL interoperability runtime API
+#include <shaders.h>
+
 #define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
+#define STR1NG1ZE(x) #x
+#define STRINGIZE(x) STR1NG1ZE(x)
 
 static GLuint vbo = 0; // OpenGL Vertex Buffer Object
 static struct cudaGraphicsResource *res = NULL;
@@ -38,32 +42,6 @@ static int last_x = 0, last_y = 0;
 static int left   = 0, right  = 0;
 
 static int sprites = 1;
-
-static const char vertex_shader[] =
-  "void main()                                                            \n"
-  "{                                                                      \n"
-  "  vec4 vert;                                                           \n"
-  "  vert.w = gl_Vertex.y * sin(gl_Vertex.z);                             \n"
-  "  vert.x = vert.w      * cos(gl_Vertex.w);                             \n"
-  "  vert.y = vert.w      * sin(gl_Vertex.w);                             \n"
-  "  vert.z = gl_Vertex.y * cos(gl_Vertex.z);                             \n"
-  "  vert.w = 1.0;                                                        \n"
-  "  vec3 pos_eye = vec3(gl_ModelViewMatrix * vert);                      \n"
-  "  gl_PointSize = max(1.0, 500.0 * gl_Point.size / (1.0 - pos_eye.z));  \n"
-  "  gl_TexCoord[0] = gl_MultiTexCoord0;                                  \n"
-  "  gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * vert;       \n"
-  "  gl_FrontColor = gl_Color;                                            \n"
-  "  gl_FrontSecondaryColor = gl_SecondaryColor;                          \n"
-  "}                                                                      \n";
-
-static const char pixel_shader[] =
-  "uniform sampler2D splatTexture;                                        \n"
-  "void main()                                                            \n"
-  "{                                                                      \n"
-  "  vec4 color   = (0.6 + 0.4 * gl_Color)                                \n"
-  "               * texture2D(splatTexture, gl_TexCoord[0].st);           \n"
-  "  gl_FragColor = color * gl_SecondaryColor;                            \n"
-  "}                                                                      \n";
 
 static unsigned compile(const char *src, GLenum type)
 {
@@ -130,8 +108,10 @@ static void display(void)
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glVertexPointer(4, GL_FLOAT, sizeof(State), 0);
-  glColorPointer (3, GL_FLOAT, sizeof(State), (char *)(4 * sizeof(float)));
+  glVertexPointer(3, GL_REAL, sizeof(State),
+                  (char *)(VERTEX_POINTER_OFFSET * sizeof(real)));
+  glColorPointer (3, GL_REAL, sizeof(State),
+                  (char *)(COLOR_POINTER_OFFSET  * sizeof(real)));
   glDrawArrays(GL_POINTS, 0, global::n);
   glDisableClientState(GL_COLOR_ARRAY);
   glDisableClientState(GL_VERTEX_ARRAY);
@@ -226,8 +206,8 @@ void vis(void)
   glutMotionFunc(motion);
 
   shader = glCreateProgram();
-  glAttachShader(shader, compile(vertex_shader, GL_VERTEX_SHADER));
-  glAttachShader(shader, compile(pixel_shader, GL_FRAGMENT_SHADER));
+  glAttachShader(shader, compile(STRINGIZE(VERTEX_SHADER), GL_VERTEX_SHADER));
+  glAttachShader(shader, compile(STRINGIZE(PIXEL_SHADER), GL_FRAGMENT_SHADER));
   glLinkProgram(shader);
 
   unsigned int texture;

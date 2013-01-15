@@ -46,8 +46,10 @@
 // Typedef real to make the source code precision independent
 #ifdef DOUBLE
   typedef double real;
+# define GL_REAL GL_DOUBLE
 #else
   typedef float real;
+# define GL_REAL GL_FLOAT
 #endif
 
 // Include problem specific headers
