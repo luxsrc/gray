@@ -33,18 +33,13 @@ namespace global {
   double t = 0.0;
   size_t n = 65536;
 
-  Data     *d = NULL;
-  unsigned *p = NULL;
+  Data *d = NULL;
 }
 
 static void cleanup(void)
 {
   using namespace global;
 
-  if(p) {
-    cudaFree(p);
-    p = NULL;
-  }
   if(d) {
     delete d;
     d = NULL;
@@ -76,7 +71,6 @@ int setup(int &argc, char **argv)
   atexit(cleanup);
 
   d = new Data(n, init);
-  cudaMalloc((void **)&p, sizeof(unsigned) * n);
 
 #ifndef DISABLE_GL
   vis((GLuint)*d);

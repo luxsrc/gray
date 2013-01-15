@@ -60,6 +60,10 @@ float evolve(double dt)
 {
   using namespace global;
 
+  static unsigned *p = NULL;
+  if(!p && (cudaSuccess != cudaMalloc((void **)&p, sizeof(unsigned) * n)))
+    error("evolve(): fail to allocate device memory\n");
+
   cudaEventRecord(c0, 0);
   {
     const int bsz = 256;

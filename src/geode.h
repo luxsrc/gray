@@ -66,8 +66,7 @@ namespace global {
   extern double dt_dump;
   extern double t;
   extern size_t n;
-  extern Data     *d;
-  extern unsigned *p;
+  extern Data  *d;
 }
 
 // Function prototypes
