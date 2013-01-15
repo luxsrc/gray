@@ -16,30 +16,24 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "geode.h"
-#include <cstdio>
+#ifndef DATA_H
+#define DATA_H
 
-void dump(void)
-{
-#ifdef DUMP
-  using namespace global;
-
-  static size_t frame = 0;
-
-  size_t m = sizeof(State) * n;
-  void *s = d->activate();
-  cudaMemcpy(h, s, m, cudaMemcpyDeviceToHost);
-  d->deactivate();
-  m = NVAR;
-
-  char name[256];
-  snprintf(name, sizeof(name), "%04zu.raw", frame++);
-
-  FILE *file = fopen(name, "wb");
-  fwrite(&t, sizeof(double), 1, file);
-  fwrite(&m, sizeof(size_t), 1, file);
-  fwrite(&n, sizeof(size_t), 1, file);
-  fwrite( h, sizeof(State),  n, file);
-  fclose(file);
+class Data {
+#ifndef DISABLE_GL
+  GLuint vbo;
+  struct cudaGraphicsResource *res;
+#else
+  void  *res;
 #endif
-}
+ public:
+  Data(size_t = 0);
+  ~Data();
+#ifndef DISABLE_GL
+  GLuint getvbo();
+#endif
+  void *activate();
+  void deactivate();
+};
+
+#endif

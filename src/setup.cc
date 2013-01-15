@@ -33,7 +33,7 @@ namespace global {
   double t = 0.0;
   size_t n = 65536;
 
-  State    *s = NULL;
+  Data     *d = NULL;
   State    *h = NULL;
   unsigned *p = NULL;
 }
@@ -50,9 +50,9 @@ static void cleanup(void)
     delete[] h;
     h = NULL;
   }
-  if(s) {
-    cudaFree(s);
-    s = NULL;
+  if(d) {
+    delete d;
+    d = NULL;
   }
 
   cudaEventDestroy(c1);
@@ -72,25 +72,26 @@ int setup(int &argc, char **argv)
   glutInit(&argc, argv);
   glutInitWindowSize(512, 512);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+  int w = glutCreateWindow(argv[0]);
 #endif
 
   if(argc > 1) n = std::max(atoi(argv[1]), 1);
   if(argc > 2) dt_dump = atof(argv[2]);
 
   atexit(cleanup);
-  {
-    cudaMalloc((void **)&s, sizeof(State) * n);
 
-    h = new State[n];
-    for(size_t i = 0; i < n; ++i) h[i] = init(i);
-    cudaMemcpy(s, h, sizeof(State) * n, cudaMemcpyHostToDevice);
+  d = new Data(sizeof(State) * n);
 
-    cudaMalloc((void **)&p, sizeof(unsigned) * n);
-  }
+  h = new State[n];
+  for(size_t i = 0; i < n; ++i) h[i] = init(i);
+  void *s = d->activate();
+  cudaMemcpy(s, h, sizeof(State) * n, cudaMemcpyHostToDevice);
+  d->deactivate();
+
+  cudaMalloc((void **)&p, sizeof(unsigned) * n);
 
 #ifndef DISABLE_GL
-  int w = glutCreateWindow(argv[0]);
-  vis();
+  vis(d->getvbo());
   return w;
 #else
   return 0;

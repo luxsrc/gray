@@ -23,7 +23,6 @@
 #include <cstdlib>
 #include <cmath>
 
-#include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 #include <shaders.h>
 
 #define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
@@ -31,8 +30,7 @@
 #define STRINGIZE(x) STR1NG1ZE(x)
 
 static GLuint vbo = 0; // OpenGL Vertex Buffer Object
-static struct cudaGraphicsResource *res = NULL;
-static unsigned int shader = 0;
+static GLuint shader = 0;
 
 static float ax = 270, az = 90;
 static float ly =-50;
@@ -43,9 +41,9 @@ static int left   = 0, right  = 0;
 
 static int sprites = 1;
 
-static unsigned compile(const char *src, GLenum type)
+static GLuint compile(const char *src, GLenum type)
 {
-  unsigned s = glCreateShader(type);
+  GLuint s = glCreateShader(type);
   glShaderSource(s, 1, &src, 0);
   glCompileShader(s);
   return s;
@@ -72,14 +70,6 @@ static unsigned char *mkimg(int n)
 
 static void display(void)
 {
-  size_t size = 0;
-  void  *head = NULL;
-
-  cudaGraphicsMapResources(1, &res, 0);
-  cudaGraphicsResourceGetMappedPointer(&head, &size, res);
-  cudaMemcpy(head, global::s, size, cudaMemcpyDeviceToDevice);
-  cudaGraphicsUnmapResources(1, &res, 0); // unmap resource
-
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
 
@@ -196,7 +186,7 @@ static void motion(int x, int y)
   glutPostRedisplay();
 }
 
-void vis(void)
+void vis(GLuint vbo_in)
 {
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
@@ -235,12 +225,7 @@ void vis(void)
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.0, 0.0, 0.0, 1.0);
 
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(State) * global::n, 0, GL_DYNAMIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind all buffer
-
-  cudaGraphicsGLRegisterBuffer(&res, vbo, cudaGraphicsMapFlagsWriteDiscard);
+  vbo = vbo_in;
 }
 
 #endif // !DISABLE_GL

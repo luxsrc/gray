@@ -65,7 +65,10 @@ float evolve(double dt)
     const int bsz = 256;
     const int gsz = (n - 1) / bsz + 1;
 
+    State *s = (State *)d->activate();
     kernel<<<gsz, bsz>>>(s, n, t, dt, p);
+    d->deactivate();
+
     t += dt;
   }
   cudaEventRecord(c1, 0);

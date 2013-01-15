@@ -42,6 +42,7 @@
 #    include <GL/glut.h>
 #  endif
 #endif
+#include "data.h"
 
 // Typedef real to make the source code precision independent
 #ifdef DOUBLE
@@ -63,7 +64,8 @@ namespace global {
   extern double dt_dump;
   extern double t;
   extern size_t n;
-  extern State *s, *h;
+  extern Data      *d;
+  extern State     *h;
   extern unsigned  *p;
 }
 
@@ -75,6 +77,9 @@ extern void  dump  (void);
 extern float evolve(double);
 extern int   setup (int &, char **);
 extern int   solve (void);
-extern void  vis   (void);
+
+#ifndef DISABLE_GL
+extern void vis(GLuint);
+#endif
 
 #endif // GEODE_H
