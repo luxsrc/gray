@@ -19,28 +19,26 @@
 #define VERTEX_POINTER_OFFSET 1
 #define COLOR_POINTER_OFFSET  4
 
-#define VERTEX_SHADER                                                   \
-  void main()                                                           \
-  {                                                                     \
-    vec4 vert;                                                          \
-    vert.w = gl_Vertex.x * sin(gl_Vertex.y);                            \
-    vert.x = vert.w      * cos(gl_Vertex.z);                            \
-    vert.y = vert.w      * sin(gl_Vertex.z);                            \
-    vert.z = gl_Vertex.x * cos(gl_Vertex.y);                            \
-    vert.w = 1.0;                                                       \
-    vec3 pos_eye = vec3(gl_ModelViewMatrix * vert);                     \
-    gl_PointSize = max(1.0, 500.0 * gl_Point.size / (1.0 - pos_eye.z)); \
-    gl_TexCoord[0] = gl_MultiTexCoord0;                                 \
-    gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * vert;      \
-    gl_FrontColor = gl_Color;                                           \
-    gl_FrontSecondaryColor = gl_SecondaryColor;                         \
+#define VERTEX_SHADER                                               \
+  void main()                                                       \
+  {                                                                 \
+    vec4 r;                                                         \
+    r.w = gl_Vertex.x * sin(gl_Vertex.y);                           \
+    r.x = r.w         * cos(gl_Vertex.z);                           \
+    r.y = r.w         * sin(gl_Vertex.z);                           \
+    r.z = gl_Vertex.x * cos(gl_Vertex.y);                           \
+    r.w = 1.0;                                                      \
+    vec3 q = vec3(gl_ModelViewMatrix * r);                          \
+    gl_PointSize   = max(1.0, 200.0 * gl_Point.size / (1.0 - q.z)); \
+    gl_TexCoord[0] = gl_MultiTexCoord0;                             \
+    gl_Position    = gl_ProjectionMatrix * gl_ModelViewMatrix * r;  \
+    gl_FrontColor  = abs(gl_Color);                                 \
   }
 
 #define PIXEL_SHADER                                           \
   uniform sampler2D splatTexture;                              \
   void main()                                                  \
   {                                                            \
-    vec4 color   = (0.6 + 0.4 * gl_Color)                      \
-      * texture2D(splatTexture, gl_TexCoord[0].st);            \
-    gl_FragColor = color * gl_SecondaryColor;                  \
+    gl_FragColor = gl_Color                                    \
+                 * texture2D(splatTexture, gl_TexCoord[0].st); \
   }

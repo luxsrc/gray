@@ -227,7 +227,6 @@ void vis(void)
 
   glActiveTextureARB(GL_TEXTURE0_ARB);
   glBindTexture(GL_TEXTURE_2D, texture);
-  glSecondaryColor3f(0.8f, 0.4f, 0.1f);
 
   glTexEnvi(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
   glEnable(GL_VERTEX_PROGRAM_POINT_SIZE_NV);
