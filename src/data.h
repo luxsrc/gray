@@ -29,6 +29,10 @@ class Data {
 #endif
   State *buf; // host buffer
 
+  cudaError_t init(State (*)(int));
+  cudaError_t d2h();
+  cudaError_t h2d();
+
  public:
   Data(size_t = 65536, State (*)(int) = NULL);
   ~Data();

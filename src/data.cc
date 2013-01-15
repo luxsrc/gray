@@ -20,7 +20,36 @@
 #include <cstdlib>
 #include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 
-Data::Data(size_t n_input, State (*init)(int))
+cudaError_t Data::init(State (*ic)(int))
+{
+  if(ic)
+    for(size_t i = 0; i < n; ++i)
+      buf[i] = ic(i);
+  else {
+    real *h = (real *)buf;
+    for(size_t i = 0; i < NVAR * n; ++i)
+      h[i] = 0;
+  }
+  return h2d();
+}
+
+cudaError_t Data::d2h()
+{
+  cudaError_t err =
+    cudaMemcpy(buf, device(), sizeof(State) * n, cudaMemcpyDeviceToHost);
+  deactivate();
+  return err;
+}
+
+cudaError_t Data::h2d()
+{
+  cudaError_t err =
+    cudaMemcpy(device(), buf, sizeof(State) * n, cudaMemcpyHostToDevice);
+  deactivate();
+  return err;
+}
+
+Data::Data(size_t n_input, State (*ic)(int))
 {
   const size_t sz = sizeof(State) * (n = n_input);
   cudaError_t err = cudaErrorMemoryAllocation; // assume we will have problem
@@ -41,25 +70,11 @@ Data::Data(size_t n_input, State (*init)(int))
   if(cudaSuccess != err)
     error("Data::Data(): fail to allocate device memory\n");
 
-  buf = (State *)malloc(sizeof(State) * n);
-  if(!buf)
+  if(!(buf = (State *)malloc(sz)))
     error("Data::Data(): fail to allocate host memory\n");
 
-  if(init)
-    for(size_t i = 0; i < n; ++i)
-      buf[i] = init(i);
-  else {
-    real *h = (real *)buf;
-    for(size_t i = 0; i < NVAR * n; ++i)
-      h[i] = 0;
-  }
-
-  void *s = device();
-  err = cudaMemcpy(s, buf, sizeof(State) * n, cudaMemcpyHostToDevice);
-  deactivate();
-
-  if(cudaSuccess != err)
-    error("Data::Data(): fail to initialize device memory\n");
+  if(cudaSuccess != init(ic))
+    error("Data::Data(): fail to initialize device and host memory\n");
 }
 
 Data::~Data()
@@ -91,13 +106,7 @@ State *Data::device()
 
 State *Data::host()
 {
-  cudaError_t err;
-
-  const void *s = device();
-  err = cudaMemcpy(buf, s, sizeof(State) * n, cudaMemcpyDeviceToHost);
-  deactivate();
-
-  return (cudaSuccess == err) ? buf : NULL;
+  return cudaSuccess == d2h() ? buf : NULL;
 }
 
 void Data::deactivate()
