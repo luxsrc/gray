@@ -26,12 +26,8 @@ void dump(void)
 
   static size_t frame = 0;
 
-  size_t m = sizeof(State) * n;
-  void *s = d->device();
-  void *h = d->host();
-  cudaMemcpy(h, s, m, cudaMemcpyDeviceToHost);
-  d->deactivate();
-  m = NVAR;
+  const size_t m = NVAR;
+  const void  *h = d->host();
 
   char name[256];
   snprintf(name, sizeof(name), "%04zu.raw", frame++);

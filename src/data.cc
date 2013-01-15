@@ -73,12 +73,19 @@ State *Data::device()
 
 State *Data::host()
 {
+  cudaError_t err;
+
   if(!buf) {
     buf = (State *)malloc(sizeof(State) * n);
     if(!buf)
       error("Data::host(): fail to allocate host memory\n");
   }
-  return buf;
+
+  const void *s = device();
+  err = cudaMemcpy(buf, s, sizeof(State) * n, cudaMemcpyDeviceToHost);
+  deactivate();
+
+  return (cudaSuccess == err) ? buf : NULL;
 }
 
 void Data::deactivate()
