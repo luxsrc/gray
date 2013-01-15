@@ -20,7 +20,7 @@
 #include <cstdlib>
 #include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 
-Data::Data(size_t n_input)
+Data::Data(size_t n_input, State (*init)(int))
 {
   const size_t sz = sizeof(State) * (n = n_input);
   cudaError_t err = cudaErrorMemoryAllocation; // assume we will have problem
@@ -38,10 +38,28 @@ Data::Data(size_t n_input)
 #else
   err = cudaMalloc((void **)&res, sz);
 #endif
-  buf = NULL;
-
   if(cudaSuccess != err)
     error("Data::Data(): fail to allocate device memory\n");
+
+  buf = (State *)malloc(sizeof(State) * n);
+  if(!buf)
+    error("Data::Data(): fail to allocate host memory\n");
+
+  if(init)
+    for(size_t i = 0; i < n; ++i)
+      buf[i] = init(i);
+  else {
+    real *h = (real *)buf;
+    for(size_t i = 0; i < NVAR * n; ++i)
+      h[i] = 0;
+  }
+
+  void *s = device();
+  err = cudaMemcpy(s, buf, sizeof(State) * n, cudaMemcpyHostToDevice);
+  deactivate();
+
+  if(cudaSuccess != err)
+    error("Data::Data(): fail to initialize device memory\n");
 }
 
 Data::~Data()
@@ -74,12 +92,6 @@ State *Data::device()
 State *Data::host()
 {
   cudaError_t err;
-
-  if(!buf) {
-    buf = (State *)malloc(sizeof(State) * n);
-    if(!buf)
-      error("Data::host(): fail to allocate host memory\n");
-  }
 
   const void *s = device();
   err = cudaMemcpy(buf, s, sizeof(State) * n, cudaMemcpyDeviceToHost);

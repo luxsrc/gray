@@ -30,7 +30,7 @@ class Data {
   State *buf; // host buffer
 
  public:
-  Data(size_t = 65536);
+  Data(size_t = 65536, State (*)(int) = NULL);
   ~Data();
 #ifndef DISABLE_GL
   operator GLuint() { return vbo; }

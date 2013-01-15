@@ -75,13 +75,7 @@ int setup(int &argc, char **argv)
 
   atexit(cleanup);
 
-  d = new Data(n);
-  State *s = d->device();
-  State *h = d->host();
-  for(size_t i = 0; i < n; ++i) h[i] = init(i);
-  cudaMemcpy(s, h, sizeof(State) * n, cudaMemcpyHostToDevice);
-  d->deactivate();
-
+  d = new Data(n, init);
   cudaMalloc((void **)&p, sizeof(unsigned) * n);
 
 #ifndef DISABLE_GL
