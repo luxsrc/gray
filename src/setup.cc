@@ -34,7 +34,6 @@ namespace global {
   size_t n = 65536;
 
   Data     *d = NULL;
-  State    *h = NULL;
   unsigned *p = NULL;
 }
 
@@ -45,10 +44,6 @@ static void cleanup(void)
   if(p) {
     cudaFree(p);
     p = NULL;
-  }
-  if(h) {
-    delete[] h;
-    h = NULL;
   }
   if(d) {
     delete d;
@@ -81,10 +76,9 @@ int setup(int &argc, char **argv)
   atexit(cleanup);
 
   d = new Data(n);
-
-  h = new State[n];
+  State *s = d->device();
+  State *h = d->host();
   for(size_t i = 0; i < n; ++i) h[i] = init(i);
-  void *s = d->device();
   cudaMemcpy(s, h, sizeof(State) * n, cudaMemcpyHostToDevice);
   d->deactivate();
 

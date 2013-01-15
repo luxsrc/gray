@@ -17,6 +17,7 @@
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "geode.h"
+#include <cstdlib>
 #include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 
 Data::Data(size_t n_input)
@@ -37,9 +38,10 @@ Data::Data(size_t n_input)
 #else
   err = cudaMalloc((void **)&res, sz);
 #endif
+  buf = NULL;
 
   if(cudaSuccess != err)
-    error("Data::Data(): fail to allocate memory\n");
+    error("Data::Data(): fail to allocate device memory\n");
 }
 
 Data::~Data()
@@ -50,6 +52,8 @@ Data::~Data()
 #else
   cudaFree((void *)res);
 #endif
+  if(buf)
+    free(buf);
 }
 
 State *Data::device()
@@ -65,6 +69,16 @@ State *Data::device()
 #else
   return res;
 #endif
+}
+
+State *Data::host()
+{
+  if(!buf) {
+    buf = (State *)malloc(sizeof(State) * n);
+    if(!buf)
+      error("Data::host(): fail to allocate host memory\n");
+  }
+  return buf;
 }
 
 void Data::deactivate()

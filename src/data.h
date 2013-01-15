@@ -25,8 +25,9 @@ class Data {
   GLuint vbo;
   struct cudaGraphicsResource *res;
 #else
-  State *res;
+  State *res; // device resource
 #endif
+  State *buf; // host buffer
 
  public:
   Data(size_t = 65536);
@@ -35,6 +36,7 @@ class Data {
   operator GLuint() { return vbo; }
 #endif
   State *device();
+  State *host();
   void deactivate();
 };
 
