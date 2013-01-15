@@ -26,11 +26,11 @@
 #include <shaders.h>
 
 #define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
-#define STR1NG1ZE(x) #x
-#define STRINGIZE(x) STR1NG1ZE(x)
+#define STR1NG(x) #x
+#define STRING(x) STR1NG(x)
 
 static GLuint vbo = 0; // OpenGL Vertex Buffer Object
-static GLuint shader = 0;
+static GLuint shader[2];
 
 static float ax = 270, az = 90;
 static float ly =-50;
@@ -39,7 +39,7 @@ static double dt_stored = 0.0;
 static int last_x = 0, last_y = 0;
 static int left   = 0, right  = 0;
 
-static int sprites = 1;
+static unsigned which = 1;
 
 static GLuint compile(const char *src, GLenum type)
 {
@@ -87,10 +87,7 @@ static void display(void)
 #endif
 
   // Draw particles, i.e., photon locations
-  if(shader && sprites) {
-    glUseProgram(shader);
-    glUniform1i(glGetUniformLocation(shader, "splatTexture"), 0);
-  }
+  glUseProgram(shader[which]);
 
   glEnable(GL_POINT_SPRITE_ARB);
   glEnable(GL_BLEND);
@@ -137,7 +134,7 @@ static void keyboard(unsigned char key, int x, int y)
     break;
   case 's':
   case 'S':
-    sprites = !sprites;
+    if(++which >= sizeof(shader) / sizeof(GLuint)) which = 0;
     break;
   case 'r':
   case 'R':
@@ -195,11 +192,6 @@ void vis(GLuint vbo_in)
   glutMouseFunc(mouse);
   glutMotionFunc(motion);
 
-  shader = glCreateProgram();
-  glAttachShader(shader, compile(STRINGIZE(VERTEX_SHADER), GL_VERTEX_SHADER));
-  glAttachShader(shader, compile(STRINGIZE(PIXEL_SHADER), GL_FRAGMENT_SHADER));
-  glLinkProgram(shader);
-
   unsigned int texture;
   glGenTextures(1, (GLuint *)&texture);
   glBindTexture(GL_TEXTURE_2D, texture);
@@ -221,6 +213,15 @@ void vis(GLuint vbo_in)
   glTexEnvi(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
   glEnable(GL_VERTEX_PROGRAM_POINT_SIZE_NV);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+  shader[0] = glCreateProgram();
+  glAttachShader(shader[0], compile(STRING(VERTEX_SHADER), GL_VERTEX_SHADER));
+  glLinkProgram(shader[0]);
+
+  shader[1] = glCreateProgram();
+  glAttachShader(shader[1], compile(STRING(VERTEX_SHADER), GL_VERTEX_SHADER));
+  glAttachShader(shader[1], compile(STRING(PIXEL_SHADER), GL_FRAGMENT_SHADER));
+  glLinkProgram(shader[1]);
 
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.0, 0.0, 0.0, 1.0);
