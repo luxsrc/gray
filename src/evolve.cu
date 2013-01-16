@@ -31,37 +31,58 @@ typedef struct {
 #include "scheme.hu"
 #include "driver.hu"
 
-float evolve(double dt)
-{
-  using namespace global;
+static size_t *count = NULL;
+static cudaEvent_t time0, time1;
 
-  static unsigned *p = NULL;
-  if(!p && (cudaSuccess != cudaMalloc((void **)&p, sizeof(unsigned) * n)))
+static void setup(void)
+{
+  if(cudaSuccess != cudaMalloc((void **)&count, sizeof(size_t) * global::n))
     error("evolve(): fail to allocate device memory\n");
 
-  cudaEventRecord(c0, 0);
+  cudaEventCreate(&time0);
+  cudaEventCreate(&time1);
+}
+
+static void cleanup(void)
+{
+  if(count) {
+    cudaFree(count);
+    count = NULL;
+  }
+
+  cudaEventDestroy(time1);
+  cudaEventDestroy(time0);
+}
+
+float evolve(double dt)
+{
+  if(!count && !atexit(cleanup)) setup();
+
+  using namespace global;
+
+  cudaEventRecord(time0, 0);
   {
     const int bsz = 256;
     const int gsz = (n - 1) / bsz + 1;
 
     State *s = d->device();
-    driver<<<gsz, bsz>>>(s, n, t, dt, p);
+    driver<<<gsz, bsz>>>(s, n, t, dt, count);
     d->deactivate();
 
     t += dt;
   }
-  cudaEventRecord(c1, 0);
+  cudaEventRecord(time1, 0);
 
   float ms;
-  cudaEventSynchronize(c1);
-  cudaEventElapsedTime(&ms, c0, c1);
+  cudaEventSynchronize(time1);
+  cudaEventElapsedTime(&ms, time0, time1);
 
-  unsigned profiler[n];
-  cudaMemcpy(profiler, p, sizeof(unsigned) * n, cudaMemcpyDeviceToHost);
+  size_t temp[n];
+  cudaMemcpy(temp, count, sizeof(size_t) * n, cudaMemcpyDeviceToHost);
 
   double sum = 0, max = 0;
   for(size_t i = 0; i < n; ++i) {
-    double x = profiler[i];
+    double x = temp[i];
     sum += x;
     max  = max > x ? max : x;
   }

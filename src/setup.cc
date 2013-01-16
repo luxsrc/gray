@@ -28,8 +28,6 @@ static void cleanup(void)
     delete d;
     d = NULL;
   }
-  cudaEventDestroy(c1);
-  cudaEventDestroy(c0);
 }
 
 #include <init.h>
@@ -37,9 +35,6 @@ static void cleanup(void)
 int setup(int &argc, char **argv)
 {
   using namespace global;
-
-  cudaEventCreate(&c0);
-  cudaEventCreate(&c1);
 
 #ifndef DISABLE_GL
   glutInit(&argc, argv);

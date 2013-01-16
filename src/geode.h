@@ -62,7 +62,6 @@
 
 // Global variables
 namespace global {
-  extern cudaEvent_t c0, c1;
   extern double dt_dump;
   extern double t;
   extern size_t n;

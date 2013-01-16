@@ -19,8 +19,6 @@
 #include "geode.h"
 
 namespace global {
-  cudaEvent_t c0, c1;
-
 #ifdef DT_DUMP
   double dt_dump = DT_DUMP;
 #else
