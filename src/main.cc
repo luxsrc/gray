@@ -18,6 +18,21 @@
 
 #include "geode.h"
 
+namespace global {
+  cudaEvent_t c0, c1;
+
+#ifdef DT_DUMP
+  double dt_dump = DT_DUMP;
+#else
+  double dt_dump = 1.0;
+#endif
+
+  double t = 0.0;
+  size_t n = 65536;
+
+  Data *d = NULL;
+}
+
 int main(int argc, char **argv)
 {
   print("Geode: a massive parallel geodesic integrator\n");

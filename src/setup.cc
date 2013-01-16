@@ -21,21 +21,6 @@
 #include <cmath>
 #include <algorithm>
 
-namespace global {
-  cudaEvent_t c0, c1;
-
-#ifdef DT_DUMP
-  double dt_dump = DT_DUMP;
-#else
-  double dt_dump = 1.0;
-#endif
-
-  double t = 0.0;
-  size_t n = 65536;
-
-  Data *d = NULL;
-}
-
 static void cleanup(void)
 {
   using namespace global;
