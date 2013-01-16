@@ -25,8 +25,7 @@ double dt_dump = 1.0;
 #endif
 
 namespace global {
-  size_t n = 65536;
-  Data  *d = NULL;
+  Data *d = NULL;
 }
 
 int main(int argc, char **argv)

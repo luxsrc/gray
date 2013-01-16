@@ -34,9 +34,9 @@ typedef struct {
 static size_t *count = NULL;
 static cudaEvent_t time0, time1;
 
-static void setup(void)
+static void setup(size_t n)
 {
-  if(cudaSuccess != cudaMalloc((void **)&count, sizeof(size_t) * global::n))
+  if(cudaSuccess != cudaMalloc((void **)&count, sizeof(size_t) * n))
     error("evolve(): fail to allocate device memory\n");
 
   cudaEventCreate(&time0);
@@ -56,9 +56,11 @@ static void cleanup(void)
 
 float evolve(double dt)
 {
-  if(!count && !atexit(cleanup)) setup();
-
   using namespace global;
+
+  size_t n = (size_t)*d;
+
+  if(!count && !atexit(cleanup)) setup(n);
 
   cudaEventRecord(time0, 0);
   {

@@ -64,8 +64,7 @@
 extern double dt_dump;
 
 namespace global {
-  extern size_t n;
-  extern Data  *d;
+  extern Data *d;
 }
 
 // Function prototypes

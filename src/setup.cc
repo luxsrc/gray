@@ -43,11 +43,10 @@ int setup(int &argc, char **argv)
   int w = glutCreateWindow(argv[0]);
 #endif
 
-  if(argc > 1) n = std::max(atoi(argv[1]), 1);
   if(argc > 2) dt_dump = atof(argv[2]);
 
   atexit(cleanup);
-  d = new Data(n);
+  d = new Data(argc > 1 ? atoi(argv[1]) : 65536);
   d->init(init);
 
 #ifndef DISABLE_GL

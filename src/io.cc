@@ -27,6 +27,7 @@ void dump(void)
   static size_t frame = 0;
 
   const double t = d->t;
+  const size_t n = (size_t)*d;
   const size_t m = NVAR;
   const void  *h = d->host();
 
