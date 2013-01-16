@@ -27,18 +27,16 @@ else
 	LDFLAGS += $(addprefix -Xlinker ,-rpath $(CUDA)/lib64)
 endif
 
-CPPFLAGS += -Isrc/scheme -Isrc/$@
+CPPFLAGS += -Isrc/$@
 CFLAGS   += $(addprefix --compiler-options ,-Wall) -O3
 
 help:
 	@echo 'The follow problems are avilable:'
 	@echo
-	@c=0; for F in src/*/; do        \
-	   f=$${F##src/};                \
-	   if [ $$f != 'scheme/' ]; then \
-	     c=`expr $$c + 1`;           \
-	     echo "  $$c. $${f%%/}";     \
-	   fi                            \
+	@c=0; for F in src/*/; do  \
+	   f=$${F##src/};          \
+	   c=`expr $$c + 1`;       \
+	   echo "  $$c. $${f%%/}"; \
 	 done
 	@echo
 	@echo \
@@ -49,7 +47,7 @@ help:
 'OpenGL and IO=0 disable IO.'
 
 %:
-	@if [ $@ == 'scheme' ] || [ ! -d src/$@ ]; then          \
+	@if [ ! -d src/$@ ]; then                                \
 	   echo 'The problem "$@" is not available.';            \
 	   echo 'Use `make help` to obtain a list of problems.'; \
 	   false;                                                \

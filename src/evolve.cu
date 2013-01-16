@@ -26,9 +26,9 @@ typedef struct {
 #define GET(s)  ((real *)&(s))[index]
 #define EACH(s) for(int index = 0; index < NVAR; ++index) GET(s)
 
-#include <rhs.cu>
-#include <getdt.cu>
-#include <rk4.cu>
+#include <rhs.hu>
+#include <getdt.hu>
+#include "rk4.hu"
 
 static __global__ void kernel(State *s, size_t n, real t, real dt, unsigned *p)
 {

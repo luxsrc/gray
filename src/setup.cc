@@ -32,7 +32,7 @@ static void cleanup(void)
   cudaEventDestroy(c0);
 }
 
-#include <init.cc>
+#include <init.h>
 
 int setup(int &argc, char **argv)
 {
