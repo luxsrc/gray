@@ -61,8 +61,9 @@
 #include "data.h"
 
 // Global variables
+extern double dt_dump;
+
 namespace global {
-  extern double dt_dump;
   extern size_t n;
   extern Data  *d;
 }
@@ -77,7 +78,7 @@ extern int   setup (int &, char **);
 extern int   solve (void);
 
 #ifndef DISABLE_GL
-extern void vis(GLuint);
+extern void vis(GLuint, size_t);
 #endif
 
 #endif // GEODE_H

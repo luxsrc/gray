@@ -58,7 +58,7 @@ int solve(void)
 {
   dump();
   for(;;) {
-    evolve(global::dt_dump);
+    evolve(dt_dump);
     dump();
   }
   return 0;

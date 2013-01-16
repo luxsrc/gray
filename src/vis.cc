@@ -36,6 +36,7 @@
 #define STR1NG(x) #x
 #define STRING(x) STR1NG(x)
 
+static size_t n = 0;
 static GLuint vbo = 0; // OpenGL Vertex Buffer Object
 static GLuint shader[2];
 
@@ -106,7 +107,7 @@ static void display(void)
                   (char *)(VERTEX_POINTER_OFFSET * sizeof(real)));
   glColorPointer (3, GL_REAL, sizeof(State),
                   (char *)(COLOR_POINTER_OFFSET  * sizeof(real)));
-  glDrawArrays(GL_POINTS, 0, global::n);
+  glDrawArrays(GL_POINTS, 0, n);
   glDisableClientState(GL_COLOR_ARRAY);
   glDisableClientState(GL_VERTEX_ARRAY);
   glDepthMask(GL_TRUE);
@@ -131,8 +132,6 @@ static void reshape(int w, int h)
 
 static void keyboard(unsigned char key, int x, int y)
 {
-  using namespace global;
-
   switch(key) {
   case 27 : // ESCAPE key
   case 'q':
@@ -190,14 +189,13 @@ static void motion(int x, int y)
   glutPostRedisplay();
 }
 
-void vis(GLuint vbo_in)
+void vis(GLuint vbo_in, size_t n_in)
 {
-  glutDisplayFunc(display);
-  glutReshapeFunc(reshape);
+  vbo = vbo_in;
+  n   = n_in;
 
-  glutKeyboardFunc(keyboard);
-  glutMouseFunc(mouse);
-  glutMotionFunc(motion);
+  glEnable(GL_DEPTH_TEST);
+  glClearColor(0.0, 0.0, 0.0, 1.0);
 
   unsigned int texture;
   glGenTextures(1, (GLuint *)&texture);
@@ -254,10 +252,12 @@ void vis(GLuint vbo_in)
   ), GL_FRAGMENT_SHADER));
   glLinkProgram(shader[1]);
 
-  glEnable(GL_DEPTH_TEST);
-  glClearColor(0.0, 0.0, 0.0, 1.0);
+  glutDisplayFunc(display);
+  glutReshapeFunc(reshape);
 
-  vbo = vbo_in;
+  glutKeyboardFunc(keyboard);
+  glutMouseFunc(mouse);
+  glutMotionFunc(motion);
 }
 
 #endif // !DISABLE_GL

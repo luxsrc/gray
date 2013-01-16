@@ -51,7 +51,7 @@ int setup(int &argc, char **argv)
   d->init(init);
 
 #ifndef DISABLE_GL
-  vis((GLuint)*d);
+  vis((GLuint)*d, (size_t)*d);
   return w;
 #else
   return 0;

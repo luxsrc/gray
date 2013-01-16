@@ -18,12 +18,13 @@
 
 #include "geode.h"
 
-namespace global {
 #ifdef DT_DUMP
-  double dt_dump = DT_DUMP;
+double dt_dump = DT_DUMP;
 #else
-  double dt_dump = 1.0;
+double dt_dump = 1.0;
 #endif
+
+namespace global {
   size_t n = 65536;
   Data  *d = NULL;
 }
