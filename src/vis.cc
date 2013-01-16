@@ -22,8 +22,15 @@
 
 #include <cstdlib>
 #include <cmath>
+#include <shader.h>
 
-#include <shaders.h>
+#ifndef VERTEX_POINTER_OFFSET
+#define VERTEX_POINTER_OFFSET 0
+#endif
+
+#ifndef COLOR_POINTER_OFFSET
+#define COLOR_POINTER_OFFSET  3
+#endif
 
 #define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
 #define STR1NG(x) #x
@@ -215,12 +222,36 @@ void vis(GLuint vbo_in)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
   shader[0] = glCreateProgram();
-  glAttachShader(shader[0], compile(STRING(VERTEX_SHADER), GL_VERTEX_SHADER));
+  glAttachShader(shader[0], compile(STRING(
+    void main()
+    {
+      vec4 r;
+  ) STRING(R_MAP) STRING(C_MAP) STRING(
+      gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * r;
+    }
+  ), GL_VERTEX_SHADER));
   glLinkProgram(shader[0]);
 
   shader[1] = glCreateProgram();
-  glAttachShader(shader[1], compile(STRING(VERTEX_SHADER), GL_VERTEX_SHADER));
-  glAttachShader(shader[1], compile(STRING(PIXEL_SHADER), GL_FRAGMENT_SHADER));
+  glAttachShader(shader[1], compile(STRING(
+    void main()
+    {
+      vec4 r;
+  ) STRING(R_MAP) STRING(C_MAP) STRING(
+      vec4 q = gl_ModelViewMatrix * r;
+      gl_Position    = gl_ProjectionMatrix * q;
+      gl_PointSize   = max(1.0, 200.0 * gl_Point.size / (1.0 - q.z));
+      gl_TexCoord[0] = gl_MultiTexCoord0;
+    }
+  ), GL_VERTEX_SHADER));
+  glAttachShader(shader[1], compile(STRING(
+    uniform sampler2D splatTexture;
+    void main()
+    {
+      gl_FragColor = gl_Color
+                   * texture2D(splatTexture, gl_TexCoord[0].st);
+    }
+  ), GL_FRAGMENT_SHADER));
   glLinkProgram(shader[1]);
 
   glEnable(GL_DEPTH_TEST);
