@@ -28,33 +28,8 @@ typedef struct {
 
 #include <rhs.hu>
 #include <getdt.hu>
-#include "rk4.hu"
-
-static __global__ void kernel(State *s, size_t n, real t, real dt, unsigned *p)
-{
-  const int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-  if(i < n) {
-    unsigned count = 0;
-
-    Var v = {s[i], t};
-    t += dt; // make t the final time
-
-    if(dt > 0)
-      while(v.t < t) {
-        v = scheme(v, t - v.t);
-        count++;
-      }
-    else
-      while(v.t > t) {
-        v = scheme(v, t - v.t);
-        count++;
-      }
-
-    s[i] = v.s;
-    p[i] = count;
-  }
-}
+#include "scheme.hu"
+#include "driver.hu"
 
 float evolve(double dt)
 {
@@ -70,7 +45,7 @@ float evolve(double dt)
     const int gsz = (n - 1) / bsz + 1;
 
     State *s = d->device();
-    kernel<<<gsz, bsz>>>(s, n, t, dt, p);
+    driver<<<gsz, bsz>>>(s, n, t, dt, p);
     d->deactivate();
 
     t += dt;
