@@ -16,35 +16,20 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef DATA_H
-#define DATA_H
+#include "geode.h"
 
-class Data {
-  size_t n;
-#ifndef DISABLE_GL
-  GLuint vbo;
-  struct cudaGraphicsResource *res;
-#else
-  State *res; // device resource
-#endif
-  State *buf; // host buffer
+cudaError_t Data::d2h()
+{
+  cudaError_t err =
+    cudaMemcpy(buf, device(), sizeof(State) * n, cudaMemcpyDeviceToHost);
+  deactivate();
+  return err;
+}
 
-  cudaError_t d2h();
-  cudaError_t h2d();
-
- public:
-  Data(size_t = 65536);
-  ~Data();
-
-#ifndef DISABLE_GL
-  operator GLuint() { return vbo; }
-#endif
-  operator size_t() { return n; }
-
-  void   init(State (*)(int) = NULL);
-  State *device();
-  State *host();
-  void   deactivate();
-};
-
-#endif // DATA_H
+cudaError_t Data::h2d()
+{
+  cudaError_t err =
+    cudaMemcpy(device(), buf, sizeof(State) * n, cudaMemcpyHostToDevice);
+  deactivate();
+  return err;
+}

@@ -16,35 +16,19 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef DATA_H
-#define DATA_H
+#include "geode.h"
 
-class Data {
-  size_t n;
-#ifndef DISABLE_GL
-  GLuint vbo;
-  struct cudaGraphicsResource *res;
-#else
-  State *res; // device resource
-#endif
-  State *buf; // host buffer
+void Data::init(State (*ic)(int))
+{
+  if(ic)
+    for(size_t i = 0; i < n; ++i)
+      buf[i] = ic(i);
+  else {
+    real *h = (real *)buf;
+    for(size_t i = 0; i < NVAR * n; ++i)
+      h[i] = 0;
+  }
 
-  cudaError_t d2h();
-  cudaError_t h2d();
-
- public:
-  Data(size_t = 65536);
-  ~Data();
-
-#ifndef DISABLE_GL
-  operator GLuint() { return vbo; }
-#endif
-  operator size_t() { return n; }
-
-  void   init(State (*)(int) = NULL);
-  State *device();
-  State *host();
-  void   deactivate();
-};
-
-#endif // DATA_H
+  if(cudaSuccess != h2d())
+    error("Data::init(): fail to copy host data to device\n");
+}

@@ -39,12 +39,10 @@ namespace global {
 static void cleanup(void)
 {
   using namespace global;
-
   if(d) {
     delete d;
     d = NULL;
   }
-
   cudaEventDestroy(c1);
   cudaEventDestroy(c0);
 }
@@ -69,8 +67,8 @@ int setup(int &argc, char **argv)
   if(argc > 2) dt_dump = atof(argv[2]);
 
   atexit(cleanup);
-
-  d = new Data(n, init);
+  d = new Data(n);
+  d->init(init);
 
 #ifndef DISABLE_GL
   vis((GLuint)*d);
