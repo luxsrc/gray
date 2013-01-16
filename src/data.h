@@ -33,6 +33,8 @@ class Data {
   cudaError_t h2d();
 
  public:
+  double t;
+
   Data(size_t = 65536);
   ~Data();
 

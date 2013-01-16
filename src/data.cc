@@ -43,6 +43,8 @@ Data::Data(size_t n_input)
 
   if(!(buf = (State *)malloc(sz)))
     error("Data::Data(): fail to allocate host memory\n");
+
+  t = 0.0;
 }
 
 Data::~Data()

@@ -66,10 +66,10 @@ float evolve(double dt)
     const int gsz = (n - 1) / bsz + 1;
 
     State *s = d->device();
-    driver<<<gsz, bsz>>>(s, n, t, dt, count);
+    driver<<<gsz, bsz>>>(s, n, d->t, dt, count);
     d->deactivate();
 
-    t += dt;
+    d->t += dt;
   }
   cudaEventRecord(time1, 0);
 
@@ -88,7 +88,7 @@ float evolve(double dt)
   }
 
   print("t = %6.2f, %.0f ms/%.0f steps, %6.2f Gflops, slow down by %f\n",
-        t, ms, sum, 1e-6 * flop() * sum / ms, n * max / sum);
+        d->t, ms, sum, 1e-6 * flop() * sum / ms, n * max / sum);
 
   return ms;
 }

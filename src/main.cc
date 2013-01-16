@@ -24,11 +24,8 @@ namespace global {
 #else
   double dt_dump = 1.0;
 #endif
-
-  double t = 0.0;
   size_t n = 65536;
-
-  Data *d = NULL;
+  Data  *d = NULL;
 }
 
 int main(int argc, char **argv)
