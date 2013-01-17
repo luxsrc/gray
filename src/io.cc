@@ -19,17 +19,15 @@
 #include "geode.h"
 #include <cstdio>
 
-void dump(void)
+void dump(Data &data)
 {
 #ifdef DUMP
-  using namespace global;
-
   static size_t frame = 0;
 
-  const double t = d->t;
-  const size_t n = (size_t)*d;
+  const double t = data.t;
+  const size_t n = (size_t)data;
   const size_t m = NVAR;
-  const void  *h = d->host();
+  const void  *h = data.host();
 
   char name[256];
   snprintf(name, sizeof(name), "%04zu.raw", frame++);

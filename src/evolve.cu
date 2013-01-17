@@ -54,11 +54,10 @@ static void cleanup(void)
   cudaEventDestroy(time0);
 }
 
-float evolve(double dt)
+float evolve(Data &data, double dt)
 {
-  using namespace global;
-
-  size_t n = (size_t)*d;
+  size_t  n = (size_t)data;
+  double &t = data.t;
 
   if(!count && !atexit(cleanup)) setup(n);
 
@@ -67,11 +66,11 @@ float evolve(double dt)
     const int bsz = 256;
     const int gsz = (n - 1) / bsz + 1;
 
-    State *s = d->device();
-    driver<<<gsz, bsz>>>(s, n, d->t, dt, count);
-    d->deactivate();
+    State *s = data.device();
+    driver<<<gsz, bsz>>>(s, n, t, dt, count);
+    data.deactivate();
 
-    d->t += dt;
+    t += dt;
   }
   cudaEventRecord(time1, 0);
 
@@ -90,7 +89,7 @@ float evolve(double dt)
   }
 
   print("t = %6.2f, %.0f ms/%.0f steps, %6.2f Gflops, slow down by %f\n",
-        d->t, ms, sum, 1e-6 * flop() * sum / ms, n * max / sum);
+        t, ms, sum, 1e-6 * flop() * sum / ms, n * max / sum);
 
   return ms;
 }

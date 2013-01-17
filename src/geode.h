@@ -60,21 +60,16 @@
 // Include the Data class, which needs the State type
 #include "data.h"
 
-// Global variables
+// Global variable
 extern double dt_dump;
-
-namespace global {
-  extern Data *d;
-}
 
 // Function prototypes
 extern void print(const char *, ...);
 extern void error(const char *, ...);
 
-extern void  dump  (void);
-extern float evolve(double);
-extern int   setup (int &, char **);
-extern int   solve (void);
+extern void  dump  (Data &);
+extern float evolve(Data &, double);
+extern int   solve (Data &);
 
 #ifndef DISABLE_GL
 extern void vis(GLuint, size_t);

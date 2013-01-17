@@ -17,24 +17,38 @@
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "geode.h"
+#include <cstdlib>
+#include <cmath>
 
-#ifdef DT_DUMP
-double dt_dump = DT_DUMP;
-#else
-double dt_dump = 1.0;
+#ifndef N_DEFAULT
+#define N_DEFAULT 65536
 #endif
 
-namespace global {
-  Data *d = NULL;
-}
+#ifndef DT_DUMP
+#define DT_DUMP 1.0
+#endif
+
+#include <init.h>
+
+double dt_dump;
 
 int main(int argc, char **argv)
 {
   print("Geode: a massive parallel geodesic integrator\n");
 
-  setup(argc, argv);
+#ifndef DISABLE_GL
+  glutInit(&argc, argv);
+  glutInitWindowSize(512, 512);
+  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+  glutCreateWindow(argv[0]);
+#endif
+
+  Data data(argc > 1 ? atoi(argv[1]) : N_DEFAULT);
+  dt_dump = argc > 2 ? atof(argv[2]) : DT_DUMP;
+  data.init(init);
 
 #ifndef DISABLE_GL
+  vis((GLuint)data, (size_t)data);
   print("\
 Press 'ESC' or 'q' to quit, 'p' to pulse, 'r' to reverse the run, and 's'\n\
 to turn sprites on and off\n\
@@ -43,5 +57,5 @@ to turn sprites on and off\n\
   print("Press 'Ctrl C' to quit\n");
 #endif
 
-  return solve();
+  return solve(data);
 }

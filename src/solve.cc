@@ -19,10 +19,10 @@
 #include "geode.h"
 
 #ifndef DISABLE_GL
+static Data *d = NULL;
+
 static void idle(void)
 {
-  using namespace global;
-
   static size_t count = 0;
   static size_t delta = 32;
   const  size_t limit = 1024;
@@ -30,12 +30,12 @@ static void idle(void)
   if(dt_dump != 0.0) {
     float ms;
     if(count + delta < limit) {
-      ms = evolve(dt_dump * delta / limit);
+      ms = evolve(*d, dt_dump * delta / limit);
       count += delta;
     } else {
-      ms = evolve(dt_dump * (limit - count) / limit);
+      ms = evolve(*d, dt_dump * (limit - count) / limit);
       count = 0;
-      dump();
+      dump(*d);
     }
     if(ms < 10 && delta < limit) delta *= 2;
     if(ms > 40 && delta > 1    ) delta /= 2;
@@ -44,22 +44,23 @@ static void idle(void)
   glutPostRedisplay();
 }
 
-int solve(void)
+int solve(Data &data)
 {
-  dump();
-
+  d = &data;
   glutIdleFunc(idle);
+
+  dump(data);
   glutMainLoop();
 
   return 0;
 }
 #else
-int solve(void)
+int solve(Data &data)
 {
-  dump();
+  dump(data);
   for(;;) {
-    evolve(dt_dump);
-    dump();
+    evolve(data, dt_dump);
+    dump(data);
   }
   return 0;
 }
