@@ -20,9 +20,8 @@
 
 #ifndef DISABLE_GL
 
-#include <cstdlib>
 #include <cmath>
-#include <shader.h>
+#include <shader.h> // to get vertex and color pointer offsets
 
 #ifndef VERTEX_POINTER_OFFSET
 #define VERTEX_POINTER_OFFSET 0
@@ -34,29 +33,14 @@
 
 #define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
 
-static size_t n = 0;
-static GLuint vbo = 0; // OpenGL Vertex Buffer Object
-
+static size_t n;
+static GLuint vbo; // OpenGL Vertex Buffer Object
 static GLuint shader[2];
 static GLuint texture;
 
-static float ax = 270, az = 90;
-static float ly =-50;
-
-static int last_x = 0, last_y = 0;
-static int left   = 0, right  = 0;
-
-static unsigned which = 1;
-
 static void display(void)
 {
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glLoadIdentity();
-
-  glRotatef(-90, 1, 0, 0);
-  glTranslatef(0, -ly, 0);
-  glRotatef(-(az- 90), 1, 0, 0);
-  glRotatef(-(ax-270), 0, 0, 1);
+  int i = getctrl();
 
   // Draw wire sphere, i.e., the "black hole"
   glColor3f(0.0, 1.0, 0.0);
@@ -67,19 +51,21 @@ static void display(void)
 #endif
 
   // Draw particles, i.e., photon locations
-  glUseProgram(shader[which]);
+  glUseProgram(shader[i]);
 
   glEnable(GL_POINT_SPRITE_ARB);
   glEnable(GL_BLEND);
   glDepthMask(GL_FALSE);
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);
+
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glVertexPointer(3, GL_REAL, sizeof(State),
                   (char *)(VERTEX_POINTER_OFFSET * sizeof(real)));
   glColorPointer (3, GL_REAL, sizeof(State),
                   (char *)(COLOR_POINTER_OFFSET  * sizeof(real)));
   glDrawArrays(GL_POINTS, 0, n);
+
   glDisableClientState(GL_COLOR_ARRAY);
   glDisableClientState(GL_VERTEX_ARRAY);
   glDepthMask(GL_TRUE);
@@ -94,82 +80,18 @@ static void display(void)
 static void reshape(int w, int h)
 {
   glViewport(0, 0, w, h);
-
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(27.0, (double)w / h, 1.0, 2500.0);
-
   glMatrixMode(GL_MODELVIEW);
-}
-
-static void keyboard(unsigned char key, int x, int y)
-{
-  static double dt_stored = 0.0;
-
-  switch(key) {
-  case 27 : // ESCAPE key
-  case 'q':
-  case 'Q':
-    exit(0);
-    break;
-  case 's':
-  case 'S':
-    if(++which >= sizeof(shader) / sizeof(GLuint)) which = 0;
-    break;
-  case 'r':
-  case 'R':
-    if(dt_dump == 0.0)
-      dt_stored *= -1; // fall through
-    else {
-      dt_dump *= -1;
-      break;
-    }
-  case 'p':
-  case 'P':
-    double temp = dt_stored;
-    dt_stored = dt_dump;
-    dt_dump = temp;
-    break;
-  }
-}
-
-static void mouse(int b, int s, int x, int y)
-{
-  last_x = x;
-  last_y = y;
-
-  switch(b) {
-  case GLUT_LEFT_BUTTON:
-    left  = (s == GLUT_DOWN);
-    break;
-  case GLUT_RIGHT_BUTTON:
-    right = (s == GLUT_DOWN);
-    break;
-  }
-}
-
-static void motion(int x, int y)
-{
-  int dx = x - last_x; last_x = x;
-  int dy = y - last_y; last_y = y;
-
-  if(right)
-    ly -= 0.05 * dy;
-  else if(left) {
-    az -= 0.5 * dy;
-    ax -= 0.5 * dx;
-  }
-
-  glutPostRedisplay();
 }
 
 void vis(GLuint vbo_in, size_t n_in)
 {
-  vbo = vbo_in;
   n   = n_in;
-
-  mktexture(&texture);
+  vbo = vbo_in;
   mkshaders(shader);
+  mktexture(&texture);
 
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -179,9 +101,7 @@ void vis(GLuint vbo_in, size_t n_in)
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
 
-  glutKeyboardFunc(keyboard);
-  glutMouseFunc(mouse);
-  glutMotionFunc(motion);
+  regctrl();
 }
 
 #endif // !DISABLE_GL
