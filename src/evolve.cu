@@ -56,8 +56,8 @@ static void cleanup(void)
 
 float evolve(Data &data, double dt)
 {
-  size_t  n = (size_t)data;
-  double &t = data.t;
+  const double t = (double)data;
+  const size_t n = (size_t)data;
 
   if(!count && !atexit(cleanup)) setup(n);
 
@@ -70,7 +70,7 @@ float evolve(Data &data, double dt)
     driver<<<gsz, bsz>>>(s, n, t, dt, count);
     data.deactivate();
 
-    t += dt;
+    data += dt;
   }
   cudaEventRecord(time1, 0);
 
@@ -89,7 +89,7 @@ float evolve(Data &data, double dt)
   }
 
   print("t = %6.2f, %.0f ms/%.0f steps, %6.2f Gflops, slow down by %f\n",
-        t, ms, sum, 1e-6 * flop() * sum / ms, n * max / sum);
+        (double)data, ms, sum, 1e-6 * flop() * sum / ms, n * max / sum);
 
   return ms;
 }

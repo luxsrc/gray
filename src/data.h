@@ -20,6 +20,7 @@
 #define DATA_H
 
 class Data {
+  double t;
   size_t n;
 #ifndef DISABLE_GL
   GLuint vbo;
@@ -33,15 +34,15 @@ class Data {
   cudaError_t h2d();
 
  public:
-  double t;
-
   Data(size_t = 65536);
   ~Data();
 
+  operator double() { return t; }
+  operator size_t() { return n; }
 #ifndef DISABLE_GL
   operator GLuint() { return vbo; }
 #endif
-  operator size_t() { return n; }
+  double operator+=(double dt) { return t += dt; }
 
   void   init(State (*)(int) = NULL);
   State *device();
