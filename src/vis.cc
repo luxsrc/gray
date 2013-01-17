@@ -98,10 +98,9 @@ void vis(GLuint vbo_in, size_t n_in)
   glEnable(GL_VERTEX_PROGRAM_POINT_SIZE_NV);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
+  regctrl();
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
-
-  regctrl();
 }
 
 #endif // !DISABLE_GL
