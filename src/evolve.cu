@@ -56,8 +56,8 @@ static void cleanup(void)
 
 float evolve(Data &data, double dt)
 {
-  const double t = (double)data;
-  const size_t n = (size_t)data;
+  const double t = data;
+  const size_t n = data;
 
   if(!count && !atexit(cleanup)) setup(n);
 
