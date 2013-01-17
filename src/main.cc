@@ -50,8 +50,8 @@ int main(int argc, char **argv)
 #ifndef DISABLE_GL
   vis((GLuint)data, (size_t)data);
   print("\
-Press 'ESC' or 'q' to quit, 'p' to pulse, 'r' to reverse the run, and 's'\n\
-to turn sprites on and off\n\
+Press 'ESC' or 'q' to quit, 'p' to pulse, 'r' to reverse the run, 's' to\n\
+to turn sprites on and off, and 'f' to enter and exit full screen\n\
 ");
 #else
   print("Press 'Ctrl C' to quit\n");

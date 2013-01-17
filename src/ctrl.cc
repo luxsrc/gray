@@ -27,7 +27,8 @@ static float ax = 270, az = 90, ly =-50; // view angles
 static int last_x = 0, last_y = 0;
 static int left   = 0, right  = 0;
 
-static int shader = 1;
+static int fullscreen = 0;
+static int shader     = 1;
 
 static void keyboard(unsigned char key, int x, int y)
 {
@@ -38,6 +39,13 @@ static void keyboard(unsigned char key, int x, int y)
   case 'q':
   case 'Q':
     exit(0);
+    break;
+  case 'f':
+  case 'F':
+    if((fullscreen = !fullscreen))
+      glutFullScreen();
+    else
+      glutReshapeWindow(512, 512);
     break;
   case 's':
   case 'S':
