@@ -33,48 +33,20 @@
 #endif
 
 #define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
-#define STR1NG(x) #x
-#define STRING(x) STR1NG(x)
 
 static size_t n = 0;
 static GLuint vbo = 0; // OpenGL Vertex Buffer Object
+
 static GLuint shader[2];
+static GLuint texture;
 
 static float ax = 270, az = 90;
 static float ly =-50;
 
-static double dt_stored = 0.0;
 static int last_x = 0, last_y = 0;
 static int left   = 0, right  = 0;
 
 static unsigned which = 1;
-
-static GLuint compile(const char *src, GLenum type)
-{
-  GLuint s = glCreateShader(type);
-  glShaderSource(s, 1, &src, 0);
-  glCompileShader(s);
-  return s;
-}
-
-static unsigned char *mkimg(int n)
-{
-  unsigned char *img = new unsigned char[4 * n * n];
-
-  for(int h = 0, i = 0; i < n; ++i) {
-    double x  = 2 * (i + 0.5) / n - 1;
-    double x2 = x * x;
-    for(int j = 0; j < n; ++j, h += 4) {
-      double y  = 2 * (j + 0.5) / n - 1;
-      double r2 = x2 + y * y;
-      if(r2 > 1) r2 = 1;
-      img[h] = img[h+1] = img[h+2] = img[h+3] =
-        255 * ((2 * sqrt(r2) - 3) * r2 + 1);
-    }
-  }
-
-  return img;
-}
 
 static void display(void)
 {
@@ -132,6 +104,8 @@ static void reshape(int w, int h)
 
 static void keyboard(unsigned char key, int x, int y)
 {
+  static double dt_stored = 0.0;
+
   switch(key) {
   case 27 : // ESCAPE key
   case 'q':
@@ -194,63 +168,13 @@ void vis(GLuint vbo_in, size_t n_in)
   vbo = vbo_in;
   n   = n_in;
 
+  mktexture(&texture);
+  mkshaders(shader);
+
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.0, 0.0, 0.0, 1.0);
-
-  unsigned int texture;
-  glGenTextures(1, (GLuint *)&texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
-
-  glTexParameteri(GL_TEXTURE_2D,
-                  GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
-  glTexParameteri(GL_TEXTURE_2D,
-                  GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D,
-                  GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  unsigned char *img = mkimg(64);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 64, 64, 0,
-               GL_RGBA, GL_UNSIGNED_BYTE, img);
-
-  glActiveTextureARB(GL_TEXTURE0_ARB);
-  glBindTexture(GL_TEXTURE_2D, texture);
-
-  glTexEnvi(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
   glEnable(GL_VERTEX_PROGRAM_POINT_SIZE_NV);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-  shader[0] = glCreateProgram();
-  glAttachShader(shader[0], compile(STRING(
-    void main()
-    {
-      vec4 r;
-  ) STRING(R_MAP) STRING(C_MAP) STRING(
-      gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * r;
-    }
-  ), GL_VERTEX_SHADER));
-  glLinkProgram(shader[0]);
-
-  shader[1] = glCreateProgram();
-  glAttachShader(shader[1], compile(STRING(
-    void main()
-    {
-      vec4 r;
-  ) STRING(R_MAP) STRING(C_MAP) STRING(
-      vec4 q = gl_ModelViewMatrix * r;
-      gl_Position    = gl_ProjectionMatrix * q;
-      gl_PointSize   = max(1.0, 200.0 * gl_Point.size / (1.0 - q.z));
-      gl_TexCoord[0] = gl_MultiTexCoord0;
-    }
-  ), GL_VERTEX_SHADER));
-  glAttachShader(shader[1], compile(STRING(
-    uniform sampler2D splatTexture;
-    void main()
-    {
-      gl_FragColor = gl_Color
-                   * texture2D(splatTexture, gl_TexCoord[0].st);
-    }
-  ), GL_FRAGMENT_SHADER));
-  glLinkProgram(shader[1]);
 
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);

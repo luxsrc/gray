@@ -72,6 +72,8 @@ extern float evolve(Data &, double);
 extern int   solve (Data &);
 
 #ifndef DISABLE_GL
+extern void mktexture(GLuint[1]);
+extern void mkshaders(GLuint[2]);
 extern void vis(GLuint, size_t);
 #endif
 
