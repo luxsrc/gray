@@ -24,9 +24,9 @@ static __device__ Var scheme(const Var v, const real dtmax)
 
   real dt;
   if(dtmax > 0)
-    dt =  min(getdt(v, k1),  dtmax);
+    dt =  getdt(v, k1,  dtmax);
   else
-    dt = -min(getdt(v, k1), -dtmax);
+    dt = -getdt(v, k1, -dtmax);
 
   const real dt_2 = dt / 2;
   const real dt_6 = dt / 6;
