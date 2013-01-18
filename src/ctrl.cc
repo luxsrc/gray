@@ -53,17 +53,17 @@ static void keyboard(unsigned char key, int x, int y)
     break;
   case 'r':
   case 'R':
-    if(dt_dump == 0.0)
+    if(global::dt_dump == 0.0)
       dt_stored *= -1; // fall through
     else {
-      dt_dump *= -1;
+      global::dt_dump *= -1;
       break;
     }
   case 'p':
   case 'P':
     double temp = dt_stored;
-    dt_stored = dt_dump;
-    dt_dump = temp;
+    dt_stored = global::dt_dump;
+    global::dt_dump = temp;
     break;
   }
 }

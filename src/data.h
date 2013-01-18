@@ -20,7 +20,6 @@
 #define DATA_H
 
 class Data {
-  double t;
   size_t n;
 #ifndef DISABLE_GL
   GLuint vbo;
@@ -37,12 +36,10 @@ class Data {
   Data(size_t = 65536);
   ~Data();
 
-  operator double() { return t; }
   operator size_t() { return n; }
 #ifndef DISABLE_GL
   operator GLuint() { return vbo; }
 #endif
-  double operator+=(double dt) { return t += dt; }
 
   void   init(State (*)(int) = NULL);
   State *device();

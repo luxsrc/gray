@@ -24,7 +24,7 @@ void dump(Data &data)
 #ifdef DUMP
   static size_t frame = 0;
 
-  const double t = data;
+  const double t = global::t;
   const size_t n = data;
   const size_t m = NVAR;
   const void  *h = data.host();

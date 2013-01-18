@@ -60,17 +60,16 @@
 // Include the Data class, which needs the State type
 #include "data.h"
 
-// Global variable
-extern double dt_dump;
+// Global variables
+namespace global {
+  extern double t, dt_dump;
+}
 
-// Function prototypes
+// Basic function prototypes
 extern void print(const char *, ...);
 extern void error(const char *, ...);
 
-extern void  dump  (Data &);
-extern float evolve(Data &, double);
-extern int   solve (Data &);
-
+// OpenGL/GLUT functions
 #ifndef DISABLE_GL
 extern void mktexture(GLuint[1]);
 extern void mkshaders(GLuint[2]);
@@ -78,5 +77,10 @@ extern int  getctrl();
 extern void regctrl();
 extern void vis(GLuint, size_t);
 #endif
+
+// Geode specific functions
+extern void  dump  (Data &);
+extern float evolve(Data &, double);
+extern int   solve (Data &);
 
 #endif // GEODE_H

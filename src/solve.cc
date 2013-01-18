@@ -27,13 +27,13 @@ static void idle(void)
   static size_t delta = 32;
   const  size_t limit = 1024;
 
-  if(dt_dump != 0.0) {
+  if(global::dt_dump != 0.0) {
     float ms;
     if(count + delta < limit) {
-      ms = evolve(*d, dt_dump * delta / limit);
+      ms = evolve(*d, global::dt_dump * delta / limit);
       count += delta;
     } else {
-      ms = evolve(*d, dt_dump * (limit - count) / limit);
+      ms = evolve(*d, global::dt_dump * (limit - count) / limit);
       count = 0;
       dump(*d);
     }
@@ -59,7 +59,7 @@ int solve(Data &data)
 {
   dump(data);
   for(;;) {
-    evolve(data, dt_dump);
+    evolve(data, global::dt_dump);
     dump(data);
   }
   return 0;

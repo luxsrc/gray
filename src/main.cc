@@ -30,7 +30,10 @@
 
 #include <init.h>
 
-double dt_dump;
+namespace global {
+  double t       = 0.0;
+  double dt_dump = 0.0;
+}
 
 int main(int argc, char **argv)
 {
@@ -44,7 +47,7 @@ int main(int argc, char **argv)
 #endif
 
   Data data(argc > 1 ? atoi(argv[1]) : N_DEFAULT);
-  dt_dump = argc > 2 ? atof(argv[2]) : DT_DUMP;
+  global::dt_dump = argc > 2 ? atof(argv[2]) : DT_DUMP;
   data.init(init);
 
 #ifndef DISABLE_GL
