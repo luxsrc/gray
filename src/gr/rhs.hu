@@ -62,7 +62,7 @@ static inline __device__ State rhs(const State s, const real t)
 
     const real G222 = -a2 * cs;
     const real G200 =  a2 * ar;
-    const real G230 = -A_SPIN * (ar * g22 + s2);
+    const real G230 = -A_SPIN * ar * (g22 + a2 * s2);
     const real G233 = -A_SPIN * G230 * s2 + g33_s2 * cs;
 
     ar = G222 / Dlt; // use ar as tmp, will be used in the next block
