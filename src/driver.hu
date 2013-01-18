@@ -16,28 +16,29 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-static __global__ void driver(State *s, size_t n, real t, real dt, size_t *c)
+static __global__ void driver(State *state, size_t *count, const size_t n,
+                              real t, real dt)
 {
   const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
   if(i < n) {
-    size_t count = 0;
-
-    Var v = {s[i], t};
+    State  s = state[i]; // create a local copy;
+    size_t c = 0;
+    real now = t;
     t += dt; // make t the final time
 
     if(dt > 0)
-      while(v.t < t) {
-        v = scheme(v, t - v.t);
-        count++;
+      while(now < t) {
+        scheme(s, now, t - now);
+        c++;
       }
     else
-      while(v.t > t) {
-        v = scheme(v, t - v.t);
-        count++;
+      while(now > t) {
+        scheme(s, now, t - now);
+        c++;
       }
 
-    s[i] = v.s;
-    c[i] = count;
+    state[i] = s;
+    count[i] = c;
   }
 }

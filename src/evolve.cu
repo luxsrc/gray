@@ -18,11 +18,6 @@
 
 #include "geode.h"
 
-typedef struct {
-  State s;
-  real  t;
-} Var;
-
 #define GET(s)  ((real *)&(s))[index]
 #define EACH(s) for(int index = 0; index < NVAR; ++index) GET(s)
 
@@ -67,7 +62,7 @@ float evolve(Data &data, double dt)
     const int gsz = (n - 1) / bsz + 1;
 
     State *s = data.device();
-    driver<<<gsz, bsz>>>(s, n, t, dt, count);
+    driver<<<gsz, bsz>>>(s, count, n, t, dt);
     data.deactivate();
 
     data += dt;

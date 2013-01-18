@@ -16,39 +16,26 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-static __device__ Var scheme(const Var v, const real dtmax)
+static __device__ void scheme(State &y, real &t, real dt)
 {
-  State y = v.s;
+  const State s = y; // create a constant copy
 
-  const State k1 = rhs(y, v.t);
-
-  real dt;
-  if(dtmax > 0)
-    dt =  getdt(v.s, v.t, k1,  dtmax);
-  else
-    dt = -getdt(v.s, v.t, k1, -dtmax);
-
-  const real dt_2 = dt / 2;
-  const real dt_6 = dt / 6;
-  const real tmid = v.t + dt_2;
-  const real tend = v.t + dt;
-
+  const State k1 = rhs(y, t);
+  dt = (dt > 0) ? getdt(y, t, k1, dt) : -getdt(y, t, k1, -dt);
   #pragma unroll
-  EACH(y) = GET(v.s) + dt_2 * GET(k1);
+  EACH(y) = GET(s) + dt/2 * GET(k1);
 
-  const State k2 = rhs(y, tmid);
+  const State k2 = rhs(y, t += dt/2);
   #pragma unroll
-  EACH(y) = GET(v.s) + dt_2 * GET(k2);
+  EACH(y) = GET(s) + dt/2 * GET(k2);
 
-  const State k3 = rhs(y, tmid);
+  const State k3 = rhs(y, t);
   #pragma unroll
-  EACH(y) = GET(v.s) + dt   * GET(k3);
+  EACH(y) = GET(s) + dt   * GET(k3);
 
-  const State k4 = rhs(y, tend);
+  const State k4 = rhs(y, t += dt/2);
   #pragma unroll
-  EACH(y) = GET(v.s) + dt_6 * (GET(k1) + 2 * (GET(k2) + GET(k3)) + GET(k4));
-
-  return (Var){y, tend};
+  EACH(y) = GET(s) + dt/6 * (GET(k1) + 2 * (GET(k2) + GET(k3)) + GET(k4));
 }
 
 static double flop(void)
