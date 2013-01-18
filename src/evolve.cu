@@ -62,10 +62,8 @@ float evolve(Data &data, double dt)
     const int gsz = (n - 1) / bsz + 1;
 
     State *s = data.device();
-    driver<<<gsz, bsz>>>(s, count, n, t, dt);
+    driver<<<gsz, bsz>>>(s, count, n, t, data += dt);
     data.deactivate();
-
-    data += dt;
   }
   cudaEventRecord(time1, 0);
 

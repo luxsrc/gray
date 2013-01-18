@@ -17,26 +17,24 @@
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
 static __global__ void driver(State *state, size_t *count, const size_t n,
-                              real t, real dt)
+                              real t, real target)
 {
   const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
   if(i < n) {
     State  s = state[i]; // create a local copy;
     size_t c = 0;
-    real now = t;
-    t += dt; // make t the final time
 
-    if(dt > 0)
-      while(now < t) {
-        scheme(s, now, t - now);
+    if(t < target)
+      do {
+        scheme(s, t, target - t);
         c++;
-      }
+      } while(t < target);
     else
-      while(now > t) {
-        scheme(s, now, t - now);
+      do {
+        scheme(s, t, target - t);
         c++;
-      }
+      } while(t > target);
 
     state[i] = s;
     count[i] = c;
