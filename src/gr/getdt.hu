@@ -16,6 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
+#define USE_PARTICLE_TIME
+
 static __device__ real getdt(const State &s, real t,
                              const State &a, real dt_max)
 {
@@ -24,5 +26,5 @@ static __device__ real getdt(const State &s, real t,
   dt = min(dt, fabs(s.theta / a.theta));
   dt = min(dt, fabs(s.phi   / a.phi  ));
 
-  return min(max(dt, (real)DT_MIN) / STEP_FACTOR, dt_max);
+  return max(dt, (real)DT_MIN) / STEP_FACTOR;
 }

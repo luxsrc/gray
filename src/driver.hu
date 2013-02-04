@@ -26,15 +26,23 @@ static __global__ void driver(State *state, size_t *count, const size_t n,
     size_t c = 0;
 
     if(t < target)
-      do {
+#ifdef USE_PARTICLE_TIME
+      while((t = s.t) < target) {
+#else
+      while(t < target) {
+#endif
         scheme(s, t, target - t);
-        c++;
-      } while(t < target);
+        ++c;
+      }
     else
-      do {
+#ifdef USE_PARTICLE_TIME
+      while((t = s.t) > target) {
+#else
+      while(t > target) {
+#endif
         scheme(s, t, target - t);
-        c++;
-      } while(t > target);
+        ++c;
+      }
 
     state[i] = s;
     count[i] = c;
