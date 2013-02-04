@@ -63,13 +63,16 @@ float evolve(Data &data, double dt)
 
   if(cudaSuccess != cudaEventRecord(time0, 0))
     error("evolve(): fail to record event\n");
-  {
-    State *s = data.device();
-    driver<<<gsz, bsz>>>(s, count, n, t, global::t += dt);
-    data.deactivate();
-  }
+
+  State *s = data.device();
+  driver<<<gsz, bsz>>>(s, count, n, t, global::t += dt);
+  cudaError_t err = cudaGetLastError();
+  data.deactivate();
+
   if(cudaSuccess != cudaEventRecord(time1, 0))
     error("evolve(): fail to record event\n");
+  if(cudaSuccess != err)
+    error("evolve(): fail to launch kernel; %s\n", cudaGetErrorString(err));
 
   float ms;
   if(cudaSuccess != cudaEventSynchronize(time1) ||
