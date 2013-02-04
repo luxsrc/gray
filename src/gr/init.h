@@ -28,12 +28,16 @@ static inline State init(int i)
 
     real x, y, z;
     {
-      const real alpha = 20.0 * ((double)rand() / RAND_MAX - 0.5);
-      const real beta  = 20.0 * ((double)rand() / RAND_MAX - 0.5);
-
-      x  = R_OBS * sin_obs - beta * cos_obs ;
-      y  = alpha;
-      z  = R_OBS * cos_obs + beta * sin_obs;
+#if defined(N_ALPHA) && defined (N_BETA)
+      real a = 20.0 * ((i % N_ALPHA + 0.5) / N_ALPHA - 0.5);
+      real b = 20.0 * ((i / N_ALPHA + 0.5) / N_BETA  - 0.5) * N_BETA / N_ALPHA;
+#else
+      real a = 20.0 * ((double)rand() / RAND_MAX - 0.5);
+      real b = 20.0 * ((double)rand() / RAND_MAX - 0.5);
+#endif
+      x  = R_OBS * sin_obs - b * cos_obs ;
+      y  = a;
+      z  = R_OBS * cos_obs + b * sin_obs;
     }
     const real R2 = x * x + y * y;
 

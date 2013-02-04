@@ -21,7 +21,11 @@
 #include <cmath>
 
 #ifndef N_DEFAULT
-#define N_DEFAULT 65536
+#  if defined(N_ALPHA) && defined (N_BETA)
+#    define N_DEFAULT (N_ALPHA * N_BETA)
+#  else
+#    define N_DEFAULT 1048576 // 2^20
+#  endif
 #endif
 
 #ifndef DT_DUMP

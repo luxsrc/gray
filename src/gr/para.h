@@ -19,6 +19,8 @@
 #ifndef PARA_H
 #define PARA_H
 
+#define N_ALPHA     1024
+#define N_BETA      768
 #define DT_DUMP     (-1)          // default dump time
 #define R_OBS       10            // observer radius in GM/c^2
 #define THETA_OBS   30            // observer theta in degrees
