@@ -67,6 +67,9 @@ void mkshaders(GLuint shader[2])
     }
   ), GL_FRAGMENT_SHADER));
   glLinkProgram(shader[1]);
+
+  if(GL_NO_ERROR != glGetError())
+    error("mkshaders(): fail to compile shader\n");
 }
 
 #endif // !DISABLE_GL

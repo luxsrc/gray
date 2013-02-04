@@ -74,6 +74,9 @@ static void display(void)
 
   glUseProgram(0);
 
+  if(GL_NO_ERROR != glGetError())
+    error("callback: display(): fail to visualize simulation\n");
+
   glutSwapBuffers();
 }
 
@@ -101,6 +104,9 @@ void vis(GLuint vbo_in, size_t n_in)
   regctrl();
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
+
+  if(GL_NO_ERROR != glGetError())
+    error("vis(): fail to setup visualization\n");
 }
 
 #endif // !DISABLE_GL

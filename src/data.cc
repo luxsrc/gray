@@ -58,6 +58,10 @@ Data::~Data()
   if(buf)
     free(buf);
 
+#ifndef DISABLE_GL
+  if(cudaSuccess != err || GL_NO_ERROR != glGetError())
+#else
   if(cudaSuccess != err)
+#endif
     error("Data::~Data(): fail to free device memory\n");
 }

@@ -58,6 +58,9 @@ void mktexture(GLuint texture[1])
   glActiveTextureARB(GL_TEXTURE0_ARB);
 
   glTexEnvi(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
+
+  if(GL_NO_ERROR != glGetError())
+    error("mktexture(): fail to make texture\n");
 }
 
 #endif // !DISABLE_GL
