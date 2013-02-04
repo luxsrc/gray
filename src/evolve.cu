@@ -58,12 +58,12 @@ float evolve(Data &data, double dt)
 
   if(!count && !atexit(cleanup)) setup(n);
 
+  const size_t bsz = 256;
+  const size_t gsz = (n - 1) / bsz + 1;
+
   if(cudaSuccess != cudaEventRecord(time0, 0))
     error("evolve(): fail to record event\n");
   {
-    const int bsz = 256;
-    const int gsz = (n - 1) / bsz + 1;
-
     State *s = data.device();
     driver<<<gsz, bsz>>>(s, count, n, t, global::t += dt);
     data.deactivate();
@@ -81,15 +81,20 @@ float evolve(Data &data, double dt)
      cudaMemcpy(temp, count, sizeof(size_t) * n, cudaMemcpyDeviceToHost))
     error("evolve(): fail to copy memory from device to host\n");
 
-  double sum = 0, max = 0;
-  for(size_t i = 0; i < n; ++i) {
-    double x = temp[i];
-    sum += x;
-    max  = max > x ? max : x;
+  double actual = 0, peak = 0;
+  for(size_t j = 0, h = 0; j < gsz; ++j) {
+    size_t sum = 0, max = 0;
+    for(size_t i = 0; i < bsz; ++i, ++h) {
+      const size_t x = (h < n) ? temp[h] : 0;
+      sum += x;
+      if(max < x) max = x;
+    }
+    actual += sum;
+    peak   += max * bsz;
   }
-
-  print("t = %6.2f, %.0f ms/%.0f steps, %6.2f Gflops, slow down by %f\n",
-        global::t, ms, sum, 1e-6 * flop() * sum / ms, n * max / sum);
+  print("\
+t = %6.2f; %3.0f ms/%.0f steps ~ %6.2f Gflops; occupation = %5.2f%%\n\
+", global::t, ms, actual, 1e-6 * flop() * actual / ms, 100 * actual / peak);
 
   return ms;
 }
