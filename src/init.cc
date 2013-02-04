@@ -30,5 +30,5 @@ void Data::init(State (*ic)(int))
   }
 
   if(cudaSuccess != h2d())
-    error("Data::init(): fail to copy host data to device\n");
+    error("Data::init(): fail to copy memory from host to device\n");
 }

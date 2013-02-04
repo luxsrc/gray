@@ -25,8 +25,12 @@ State *Data::device()
   State *head = NULL;
   size_t size = 0;
 
-  cudaGraphicsMapResources(1, &res, 0);
-  cudaGraphicsResourceGetMappedPointer((void **)&head, &size, res);
+  if(cudaSuccess != cudaGraphicsMapResources(1, &res, 0))
+    error("Data::device(): fail to map OpenGL resource\n");
+
+  if(cudaSuccess !=
+     cudaGraphicsResourceGetMappedPointer((void **)&head, &size, res))
+    error("Data::device(): fail to get pointer for mapped resource\n");
 
   return head;
 #else
@@ -42,7 +46,8 @@ State *Data::host()
 void Data::deactivate()
 {
 #ifndef DISABLE_GL
-  cudaGraphicsUnmapResources(1, &res, 0);
+  if(cudaSuccess != cudaGraphicsUnmapResources(1, &res, 0))
+    error("Data::device(): fail to unmap OpenGL resource\n");
 #else
   // do nothing
 #endif

@@ -34,8 +34,9 @@ static void setup(size_t n)
   if(cudaSuccess != cudaMalloc((void **)&count, sizeof(size_t) * n))
     error("evolve(): fail to allocate device memory\n");
 
-  cudaEventCreate(&time0);
-  cudaEventCreate(&time1);
+  if(cudaSuccess != cudaEventCreate(&time0) ||
+     cudaSuccess != cudaEventCreate(&time1))
+    error("evolve(): fail to create timer\n");
 }
 
 static void cleanup(void)
@@ -45,8 +46,9 @@ static void cleanup(void)
     count = NULL;
   }
 
-  cudaEventDestroy(time1);
-  cudaEventDestroy(time0);
+  if(cudaSuccess != cudaEventDestroy(time1) ||
+     cudaSuccess != cudaEventDestroy(time0))
+    error("evolve(): fail to destroy timer\n");
 }
 
 float evolve(Data &data, double dt)
@@ -56,7 +58,8 @@ float evolve(Data &data, double dt)
 
   if(!count && !atexit(cleanup)) setup(n);
 
-  cudaEventRecord(time0, 0);
+  if(cudaSuccess != cudaEventRecord(time0, 0))
+    error("evolve(): fail to record event\n");
   {
     const int bsz = 256;
     const int gsz = (n - 1) / bsz + 1;
@@ -64,17 +67,19 @@ float evolve(Data &data, double dt)
     State *s = data.device();
     driver<<<gsz, bsz>>>(s, count, n, t, global::t += dt);
     data.deactivate();
-
-
   }
-  cudaEventRecord(time1, 0);
+  if(cudaSuccess != cudaEventRecord(time1, 0))
+    error("evolve(): fail to record event\n");
 
   float ms;
-  cudaEventSynchronize(time1);
-  cudaEventElapsedTime(&ms, time0, time1);
+  if(cudaSuccess != cudaEventSynchronize(time1) ||
+     cudaSuccess != cudaEventElapsedTime(&ms, time0, time1))
+    error("evolve(): fail to obtain elapsed time\n");
 
   size_t temp[n];
-  cudaMemcpy(temp, count, sizeof(size_t) * n, cudaMemcpyDeviceToHost);
+  if(cudaSuccess !=
+     cudaMemcpy(temp, count, sizeof(size_t) * n, cudaMemcpyDeviceToHost))
+    error("evolve(): fail to copy memory from device to host\n");
 
   double sum = 0, max = 0;
   for(size_t i = 0; i < n; ++i) {

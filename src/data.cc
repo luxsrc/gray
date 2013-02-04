@@ -47,12 +47,17 @@ Data::Data(size_t n_input)
 
 Data::~Data()
 {
+  cudaError_t err;
+
 #ifndef DISABLE_GL
-  cudaGraphicsUnregisterResource(res);
+  err = cudaGraphicsUnregisterResource(res);
   glDeleteBuffers(1, &vbo);
 #else
-  cudaFree((void *)res);
+  err = cudaFree((void *)res);
 #endif
   if(buf)
     free(buf);
+
+  if(cudaSuccess != err)
+    error("Data::~Data(): fail to free device memory\n");
 }
