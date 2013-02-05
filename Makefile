@@ -1,3 +1,7 @@
+ifeq ($(DETAILS),1) # show the ptxas info
+	CFLAGS += --ptxas-options=-v
+endif
+
 ifeq ($(DOUBLE),1) # use `make <prob> DOUBLE=1` to compile in double precision
 	CPPFLAGS += -DOUBLE
 	CFLAGS   += -arch sm_13
@@ -39,12 +43,11 @@ help:
 	   echo "  $$c. $${f%%/}"; \
 	 done
 	@echo
-	@echo \
-'Use `make <prob> [DOUBLE=1] [GL=0] [IO=0]` and `bin/<prob>` to compile and'
-	@echo \
-'run geode.  The option DOUBLE=1 enforces double precision, while GL=0 disable'
-	@echo \
-'OpenGL and IO=0 disable IO.'
+	@echo "\
+Use \`make <prob> [DETAILS=1] [DOUBLE=1] [GL=0] [IO=0]\` and \`bin/<prob>\`\n\
+to compile and run geode.  The option DETAILS=1 prints ptxas information,\n\
+DOUBLE=1 enforces double-precision, while GL=0 disables OpenGL and IO=0\n\
+disables IO."
 
 %:
 	@if [ ! -d src/$@ ]; then                                \
