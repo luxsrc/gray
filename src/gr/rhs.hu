@@ -16,14 +16,15 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
+#define FLOP 74
 #define R_SCHW 2
+#define EXCEPTION                                \
+  const real R0 = 1 + sqrt(1 - A_SPIN * A_SPIN); \
+  if(s.r < R0 - (real)1e-6) s.r = R0;            \
+  if(s.r < R0 + (real)1e-6) break;
 
 static inline __device__ State rhs(const State &s, real t)
 {
-  // Stop evolving the photon if it enters the event horizon
-  if(s.r <= 1 + sqrt(1 - A_SPIN * A_SPIN))
-    return (State){0, 0, 0, 0, 0, 0, 0};
-
   const real a2 = A_SPIN * A_SPIN;
   const real r2 = s.r * s.r; // 1 FLOP
 
@@ -91,5 +92,3 @@ static inline __device__ State rhs(const State &s, real t)
 
   return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, 0.0};
 }
-
-#define FLOP 74

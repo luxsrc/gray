@@ -31,6 +31,9 @@ static __global__ void driver(State *state, size_t *count, const size_t n,
 #else
       while(t < target) {
 #endif
+#ifdef  EXCEPTION
+        EXCEPTION
+#endif
         scheme(s, t, target - t);
         ++c;
       }
@@ -39,6 +42,9 @@ static __global__ void driver(State *state, size_t *count, const size_t n,
       while((t = s.t) > target) {
 #else
       while(t > target) {
+#endif
+#ifdef  EXCEPTION
+        EXCEPTION
 #endif
         scheme(s, t, target - t);
         ++c;
