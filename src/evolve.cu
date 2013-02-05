@@ -58,7 +58,7 @@ float evolve(Data &data, double dt)
 
   if(!count && !atexit(cleanup)) setup(n);
 
-  const size_t bsz = 256;
+  const size_t bsz = 64;
   const size_t gsz = (n - 1) / bsz + 1;
 
   if(cudaSuccess != cudaEventRecord(time0, 0))
