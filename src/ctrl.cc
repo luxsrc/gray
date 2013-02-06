@@ -22,7 +22,7 @@
 
 #include <cstdlib>
 
-static float ax = 270, az = 90, ly =-50; // view angles
+static float ax = 330, az = 90, ly =-70; // view angles
 
 static int last_x = 0, last_y = 0;
 static int left   = 0, right  = 0;
@@ -92,7 +92,7 @@ static void motion(int x, int y)
   last_y = y;
 
   if(right)
-    ly -= 0.05 * dy;
+    ly -= 0.1 * dy;
   else if(left) {
     az -= 0.5 * dy;
     ax -= 0.5 * dx;

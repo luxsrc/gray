@@ -26,5 +26,5 @@
   r.z = gl_Vertex.x * cos(gl_Vertex.y); \
   r.w = 1.0;
 
-#define C_MAP gl_FrontColor = abs(gl_Color);
+#define C_MAP gl_FrontColor = 0.5 * abs(gl_Color);
 

@@ -37,8 +37,8 @@ static void idle(void)
       count = 0;
       dump(*d);
     }
-    if(ms < 10 && delta < limit) delta *= 2;
-    if(ms > 40 && delta > 1    ) delta /= 2;
+    if(ms < 20 && delta < limit) delta *= 2;
+    if(ms > 80 && delta > 1    ) delta /= 2;
   }
 
   glutPostRedisplay();
