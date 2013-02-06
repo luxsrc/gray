@@ -26,8 +26,8 @@ Data::Data(size_t n_input)
   cudaError_t err = cudaErrorMemoryAllocation; // assume we will have problem
 
 #ifndef DISABLE_GL
-  glGenBuffers(1, &vbo);
-
+  glGenBuffers(1, &vbo); // when OpenGL is enabled, we use
+                         // glBufferData() to allocate device memory
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sz, 0, GL_DYNAMIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -35,8 +35,11 @@ Data::Data(size_t n_input)
   if(GL_NO_ERROR == glGetError())
     err = cudaGraphicsGLRegisterBuffer(&res, vbo,
                                        cudaGraphicsMapFlagsWriteDiscard);
+  mapped = 0; // hence, we will need to map the device memory before using it
 #else
-  err = cudaMalloc((void **)&res, sz);
+  err = cudaMalloc((void **)&res, sz); // when OpenGL is disabled, we use
+                                       // cudaMalloc() to get device memory
+  mapped = 1; // hence, there's no need to map between OpenGL and CUDA
 #endif
   if(cudaSuccess != err)
     error("Data::Data(): fail to allocate device memory\n");

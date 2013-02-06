@@ -28,6 +28,7 @@ class Data {
   State *res; // device resource
 #endif
   State *buf; // host buffer
+  int mapped;
 
   cudaError_t d2h();
   cudaError_t h2d();
