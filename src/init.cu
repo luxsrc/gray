@@ -38,7 +38,6 @@ void init(Data &data)
   State *s = data.device();
   kernel<<<gsz, bsz>>>(s, n);
   cudaError_t err = cudaGetLastError();
-  cudaMemcpy(data.host(), s, sizeof(State) * n, cudaMemcpyDeviceToHost);
   data.deactivate();
 
   if(cudaSuccess != err)
