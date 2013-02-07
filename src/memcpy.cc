@@ -20,6 +20,8 @@
 
 cudaError_t Data::d2h()
 {
+  debug("Data::d2h()\n");
+
   bool need_unmap = !mapped; // save the mapped state because device()
                              // will change it
   cudaError_t err =
@@ -33,6 +35,8 @@ cudaError_t Data::d2h()
 
 cudaError_t Data::h2d()
 {
+  debug("Data::h2d()\n");
+
   bool need_unmap = !mapped; // save the mapped state because device()
                              // will change it
   cudaError_t err =

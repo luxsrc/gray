@@ -22,6 +22,8 @@
 
 Data::Data(size_t n_input)
 {
+  debug("Data::Data(%zu)\n", n_input);
+
   const size_t sz = sizeof(State) * (n = n_input);
   cudaError_t err = cudaErrorMemoryAllocation; // assume we will have problem
 
@@ -50,6 +52,8 @@ Data::Data(size_t n_input)
 
 Data::~Data()
 {
+  debug("Data::~Data()\n");
+
   cudaError_t err;
 
 #ifndef DISABLE_GL

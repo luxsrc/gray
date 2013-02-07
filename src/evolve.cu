@@ -53,6 +53,8 @@ static void cleanup(void)
 
 float evolve(Data &data, double dt)
 {
+  debug("evolve(*%p, %g)\n", &data, dt);
+
   const double t = global::t;
   const size_t n = data;
 

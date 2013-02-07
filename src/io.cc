@@ -21,6 +21,8 @@
 
 void dump(Data &data)
 {
+  debug("dump(*%p)\n", &data);
+
 #ifdef DUMP
   static size_t frame = 0;
 

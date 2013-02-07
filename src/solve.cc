@@ -46,6 +46,8 @@ static void idle(void)
 
 int solve(Data &data)
 {
+  debug("solve(*%p)\n", &data);
+
   d = &data;
   glutIdleFunc(idle);
 
@@ -57,6 +59,8 @@ int solve(Data &data)
 #else
 int solve(Data &data)
 {
+  debug("solve(*%p)\n", &data);
+
   dump(data);
   for(;;) {
     evolve(data, global::dt_dump);

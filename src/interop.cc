@@ -21,6 +21,8 @@
 
 State *Data::device()
 {
+  debug("Data::device()\n");
+
 #ifndef DISABLE_GL
   State *head = NULL;
   size_t size = 0;
@@ -42,11 +44,15 @@ State *Data::device()
 
 State *Data::host()
 {
+  debug("Data::host()\n");
+
   return cudaSuccess == d2h() ? buf : NULL;
 }
 
 void Data::deactivate()
 {
+  debug("Data::deactivate()\n");
+
 #ifndef DISABLE_GL
   if(mapped) {
     if(cudaSuccess != cudaGraphicsUnmapResources(1, &res, 0))

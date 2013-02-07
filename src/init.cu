@@ -29,6 +29,8 @@ static __global__ void kernel(State *s, const size_t n)
 
 void init(Data &data)
 {
+  debug("init(*%p)\n", &data);
+
   const size_t n   = data;
   const size_t bsz = 64;
   const size_t gsz = (n - 1) / bsz + 1;
