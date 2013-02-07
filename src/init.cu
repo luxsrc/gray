@@ -37,7 +37,7 @@ void init(Data &data)
 
   State *s = data.device();
   kernel<<<gsz, bsz>>>(s, n);
-  cudaError_t err = cudaGetLastError();
+  cudaError_t err = cudaDeviceSynchronize();
   data.deactivate();
 
   if(cudaSuccess != err)

@@ -16,31 +16,36 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <curand_kernel.h>
+
 static __device__ State ic(int i)
 {
-  real x, y, z, R;
+  curandStateXORWOW_t s;
+  curand_init(0, i, 0, &s);
+
+  real x, y, z, r;
   real u, v, w, V;
 
   do {
-    x = 20.0 * ((double)rand() / RAND_MAX - 0.5);
-    y = 20.0 * ((double)rand() / RAND_MAX - 0.5);
-    z = 20.0 * ((double)rand() / RAND_MAX - 0.5);
-    R = sqrt(x * x + y * y + z * z);
-  } while(R < 2.0 || 10.0 < R);
+    x = 20.0 * (curand_uniform(&s) - 0.5);
+    y = 20.0 * (curand_uniform(&s) - 0.5);
+    z = 20.0 * (curand_uniform(&s) - 0.5);
+    r = sqrt(x * x + y * y + z * z);
+  } while(r < 2.0 || 10.0 < r);
 
   do {
-    u = 2.0 * ((double)rand() / RAND_MAX - 0.5);
-    v = 2.0 * ((double)rand() / RAND_MAX - 0.5);
-    w = 2.0 * ((double)rand() / RAND_MAX - 0.5);
+    u = 2.0 * (curand_uniform(&s) - 0.5);
+    v = 2.0 * (curand_uniform(&s) - 0.5);
+    w = 2.0 * (curand_uniform(&s) - 0.5);
     V = sqrt(u * u + v * v + w * w);
   } while(1.0 < V);
 
-  V  = (x * u + y * v + z * w) / (R * R);
+  V  = (x * u + y * v + z * w) / (r * r);
   u -= x * V;
   v -= y * V;
   w -= z * V;
 
-  V  = (1.5 * rand() / RAND_MAX + 0.5) / sqrt((u * u + v * v + w * w) * R);
+  V  = (1.5 * curand_uniform(&s) + 0.5) / sqrt((u * u + v * v + w * w) * r);
   u *= V;
   v *= V;
   w *= V;

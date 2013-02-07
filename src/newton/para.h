@@ -19,6 +19,6 @@
 #ifndef PARA_H
 #define PARA_H
 
-// No default parameter is needed
+#define N_DEFAULT 65536
 
 #endif // PARA_H
