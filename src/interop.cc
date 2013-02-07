@@ -56,7 +56,7 @@ void Data::deactivate()
 #ifndef DISABLE_GL
   if(mapped) {
     if(cudaSuccess != cudaGraphicsUnmapResources(1, &res, 0))
-      error("Data::device(): fail to unmap OpenGL resource\n");
+      error("Data::deactivate(): fail to unmap OpenGL resource\n");
     mapped = false;
   }
 #else
