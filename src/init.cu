@@ -16,34 +16,29 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-static inline State init(int i)
+#include "geode.h"
+#include <ic.hu>
+
+static __global__ void kernel(State *s, const size_t n)
 {
-  real x, y, z, R;
-  real u, v, w, V;
+  const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-  do {
-    x = 20.0 * ((double)rand() / RAND_MAX - 0.5);
-    y = 20.0 * ((double)rand() / RAND_MAX - 0.5);
-    z = 20.0 * ((double)rand() / RAND_MAX - 0.5);
-    R = sqrt(x * x + y * y + z * z);
-  } while(R < 2.0 || 10.0 < R);
+  if(i < n)
+    s[i] = ic(i);
+}
 
-  do {
-    u = 2.0 * ((double)rand() / RAND_MAX - 0.5);
-    v = 2.0 * ((double)rand() / RAND_MAX - 0.5);
-    w = 2.0 * ((double)rand() / RAND_MAX - 0.5);
-    V = sqrt(u * u + v * v + w * w);
-  } while(1.0 < V);
+void init(Data &data)
+{
+  const size_t n   = data;
+  const size_t bsz = 64;
+  const size_t gsz = (n - 1) / bsz + 1;
 
-  V  = (x * u + y * v + z * w) / (R * R);
-  u -= x * V;
-  v -= y * V;
-  w -= z * V;
+  State *s = data.device();
+  kernel<<<gsz, bsz>>>(s, n);
+  cudaError_t err = cudaGetLastError();
+  cudaMemcpy(data.host(), s, sizeof(State) * n, cudaMemcpyDeviceToHost);
+  data.deactivate();
 
-  V  = (1.5 * rand() / RAND_MAX + 0.5) / sqrt((u * u + v * v + w * w) * R);
-  u *= V;
-  v *= V;
-  w *= V;
-
-  return (State){x, y, z, u, v, w};
+  if(cudaSuccess != err)
+    error("init(): fail to launch kernel; %s\n", cudaGetErrorString(err));
 }

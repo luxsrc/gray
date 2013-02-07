@@ -16,19 +16,34 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "geode.h"
-
-void Data::init(State (*ic)(int))
+static __device__ State ic(int i)
 {
-  if(ic)
-    for(size_t i = 0; i < n; ++i)
-      buf[i] = ic(i);
-  else {
-    real *h = (real *)buf;
-    for(size_t i = 0; i < NVAR * n; ++i)
-      h[i] = 0;
-  }
+  real x, y, z, R;
+  real u, v, w, V;
 
-  if(cudaSuccess != h2d())
-    error("Data::init(): fail to copy memory from host to device\n");
+  do {
+    x = 20.0 * ((double)rand() / RAND_MAX - 0.5);
+    y = 20.0 * ((double)rand() / RAND_MAX - 0.5);
+    z = 20.0 * ((double)rand() / RAND_MAX - 0.5);
+    R = sqrt(x * x + y * y + z * z);
+  } while(R < 2.0 || 10.0 < R);
+
+  do {
+    u = 2.0 * ((double)rand() / RAND_MAX - 0.5);
+    v = 2.0 * ((double)rand() / RAND_MAX - 0.5);
+    w = 2.0 * ((double)rand() / RAND_MAX - 0.5);
+    V = sqrt(u * u + v * v + w * w);
+  } while(1.0 < V);
+
+  V  = (x * u + y * v + z * w) / (R * R);
+  u -= x * V;
+  v -= y * V;
+  w -= z * V;
+
+  V  = (1.5 * rand() / RAND_MAX + 0.5) / sqrt((u * u + v * v + w * w) * R);
+  u *= V;
+  v *= V;
+  w *= V;
+
+  return (State){x, y, z, u, v, w};
 }

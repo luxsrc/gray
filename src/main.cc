@@ -32,8 +32,6 @@
 #define DT_DUMP 1.0
 #endif
 
-#include <init.h>
-
 namespace global {
   double t       = 0.0;
   double dt_dump = 0.0;
@@ -54,7 +52,7 @@ int main(int argc, char **argv)
 
   Data data(argc > 1 ? atoi(argv[1]) : N_DEFAULT);
   global::dt_dump = argc > 2 ? atof(argv[2]) : DT_DUMP;
-  data.init(init);
+  init(data);
 
 #ifndef DISABLE_GL
   vis((GLuint)data, (size_t)data);

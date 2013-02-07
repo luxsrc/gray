@@ -81,6 +81,7 @@ extern void vis(GLuint, size_t);
 // Geode specific functions
 extern void  dump  (Data &);
 extern float evolve(Data &, double);
+extern void  init  (Data &);
 extern int   solve (Data &);
 
 #endif // GEODE_H

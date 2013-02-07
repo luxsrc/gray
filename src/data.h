@@ -42,7 +42,6 @@ class Data {
   operator GLuint() { return vbo; }
 #endif
 
-  void   init(State (*)(int) = NULL);
   State *device();
   State *host();
   void   deactivate();
