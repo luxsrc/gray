@@ -20,6 +20,10 @@
 #define GEODE_H
 
 // Rename macros
+#ifdef EBUG
+#  define DEBUG
+#  undef   EBUG
+#endif
 #ifdef ISABLE_GL
 #  define DISABLE_GL
 #  undef   ISABLE_GL
@@ -68,6 +72,11 @@ namespace global {
 // Basic function prototypes
 extern void print(const char *, ...);
 extern void error(const char *, ...);
+#ifdef DEBUG
+#  define debug(...) print("[DEBUG] " __VA_ARGS__)
+#else
+#  define debug(...) // do nothing
+#endif
 
 // OpenGL/GLUT functions
 #ifndef DISABLE_GL

@@ -1,3 +1,7 @@
+ifeq ($(DEBUG),1)
+	CPPFLAGS += -DEBUG
+endif
+
 ifeq ($(DETAILS),1) # show the ptxas info
 	CFLAGS += --ptxas-options=-v
 endif
@@ -44,10 +48,11 @@ help:
 	 done
 	@echo
 	@echo "\
-Use \`make <prob> [DETAILS=1] [DOUBLE=1] [GL=0] [IO=0]\` and \`bin/<prob>\`\n\
-to compile and run geode.  The option DETAILS=1 prints ptxas information,\n\
-DOUBLE=1 enforces double-precision, while GL=0 disables OpenGL and IO=0\n\
-disables IO."
+Use \`make <prob> [DEBUG=1] [DETAILS=1] [DOUBLE=1] [GL=0] [IO=0]\`\n\
+and \`bin/<prob>\` to compile and run geode.  The option DEBUG=1\n\
+turns on debugging messages, DETAILS=1 prints ptxas information,\n\
+DOUBLE=1 enforces double-precision, while GL=0 disables OpenGL\n\
+and IO=0 disables IO."
 
 %:
 	@if [ ! -d src/$@ ]; then                                \

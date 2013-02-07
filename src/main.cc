@@ -40,6 +40,7 @@ namespace global {
 int main(int argc, char **argv)
 {
   print("Geode: a massive parallel geodesic integrator\n");
+  debug("Debugging is turned on\n");
 
 #ifndef DISABLE_GL
   glutInit(&argc, argv);
