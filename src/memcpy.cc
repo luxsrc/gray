@@ -20,26 +20,26 @@
 
 cudaError_t Data::d2h()
 {
-  int need_unmap = !mapped;
-
+  bool need_unmap = !mapped; // save the mapped state because device()
+                             // will change it
   cudaError_t err =
     cudaMemcpy(buf, device(), sizeof(State) * n, cudaMemcpyDeviceToHost);
 
   if(need_unmap)
-    deactivate();
-
+    deactivate(); // deactivate only if resource was not mapped before
+                  // calling d2h()
   return err;
 }
 
 cudaError_t Data::h2d()
 {
-  int need_unmap = !mapped;
-
+  bool need_unmap = !mapped; // save the mapped state because device()
+                             // will change it
   cudaError_t err =
     cudaMemcpy(device(), buf, sizeof(State) * n, cudaMemcpyHostToDevice);
 
   if(need_unmap)
-    deactivate();
-
+    deactivate(); // deactivate only if resource was not mapped before
+                  // calling d2h()
   return err;
 }

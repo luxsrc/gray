@@ -28,7 +28,7 @@ State *Data::device()
   if(!mapped) {
     if(cudaSuccess != cudaGraphicsMapResources(1, &res, 0))
       error("Data::device(): fail to map OpenGL resource\n");
-    mapped = 1;
+    mapped = true;
   }
   if(cudaSuccess !=
      cudaGraphicsResourceGetMappedPointer((void **)&head, &size, res))
@@ -51,7 +51,7 @@ void Data::deactivate()
   if(mapped) {
     if(cudaSuccess != cudaGraphicsUnmapResources(1, &res, 0))
       error("Data::device(): fail to unmap OpenGL resource\n");
-    mapped = 0;
+    mapped = false;
   }
 #else
   // do nothing
