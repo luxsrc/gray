@@ -16,41 +16,55 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-static __global__ void driver(State *state, size_t *count, const size_t n,
+static __global__ void driver(State *state, size_t *count, size_t n,
                               real t, real target)
 {
-  const int i = blockIdx.x * blockDim.x + threadIdx.x;
+  extern __shared__ State shared[]; // dynamic shared variable
 
-  if(i < n) {
-    State  s = state[i]; // create a local copy;
+  n     -= blockIdx.x * blockDim.x;
+  state += blockIdx.x * blockDim.x;
+  count += blockIdx.x * blockDim.x;
+
+  for(int i = 0, j = threadIdx.x; i < NVAR; ++i, j += blockDim.x)
+    if(j < NVAR * n)
+      ((real *)shared)[j] = ((real *)state)[j];
+
+  __syncthreads();
+
+  if(threadIdx.x < n) {
     size_t c = 0;
 
     if(t < target)
 #ifdef USE_PARTICLE_TIME
-      while((t = s.t) < target) {
+      while((t = shared[threadIdx.x].t) < target) {
 #else
       while(t < target) {
 #endif
 #ifdef  EXCEPTION
         EXCEPTION
 #endif
-        scheme(s, t, target - t);
+        scheme(shared[threadIdx.x], t, target - t);
         ++c;
       }
     else
 #ifdef USE_PARTICLE_TIME
-      while((t = s.t) > target) {
+      while((t = shared[threadIdx.x].t) > target) {
 #else
       while(t > target) {
 #endif
 #ifdef  EXCEPTION
         EXCEPTION
 #endif
-        scheme(s, t, target - t);
+        scheme(shared[threadIdx.x], t, target - t);
         ++c;
       }
 
-    state[i] = s;
-    count[i] = c;
+    count[threadIdx.x] = c;
   }
+
+  __syncthreads();
+
+  for(int i = 0, j = threadIdx.x; i < NVAR; ++i, j += blockDim.x)
+    if(j < NVAR * n)
+      ((real *)state)[j] = ((real *)shared)[j];
 }

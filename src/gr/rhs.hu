@@ -18,10 +18,10 @@
 
 #define FLOP 74
 #define R_SCHW 2
-#define EXCEPTION                                \
-  const real R0 = 1 + sqrt(1 - A_SPIN * A_SPIN); \
-  if(s.r < R0 - (real)1e-6) s.r = R0;            \
-  if(s.r < R0 + (real)1e-6) break;
+#define EXCEPTION                                                         \
+  const real R0 = 1 + sqrt(1 - A_SPIN * A_SPIN);                          \
+  if(shared[threadIdx.x].r < R0 - (real)1e-6) shared[threadIdx.x].r = R0; \
+  if(shared[threadIdx.x].r < R0 + (real)1e-6) break;
 
 static inline __device__ State rhs(const State &s, real t)
 {
