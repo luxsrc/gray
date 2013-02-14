@@ -16,6 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
+#ifdef USE_PARTICLE_TIME
+#  define GET_TIME (t = shared[threadIdx.x].t)
+#else
+#  define GET_TIME t
+#endif
+
 static __global__ void driver(State *state, size_t *count, size_t n,
                               real t, real target)
 {
@@ -35,26 +41,12 @@ static __global__ void driver(State *state, size_t *count, size_t n,
     size_t c = 0;
 
     if(t < target)
-#ifdef USE_PARTICLE_TIME
-      while((t = shared[threadIdx.x].t) < target) {
-#else
-      while(t < target) {
-#endif
-#ifdef  EXCEPTION
-        EXCEPTION
-#endif
+      while(GET_TIME < target && !done(shared[threadIdx.x], t)) {
         scheme(shared[threadIdx.x], t, target - t);
         ++c;
       }
     else
-#ifdef USE_PARTICLE_TIME
-      while((t = shared[threadIdx.x].t) > target) {
-#else
-      while(t > target) {
-#endif
-#ifdef  EXCEPTION
-        EXCEPTION
-#endif
+      while(GET_TIME > target &&  !done(shared[threadIdx.x], t)) {
         scheme(shared[threadIdx.x], t, target - t);
         ++c;
       }
@@ -68,3 +60,5 @@ static __global__ void driver(State *state, size_t *count, size_t n,
     if(j < NVAR * n)
       ((real *)state)[j] = ((real *)shared)[j];
 }
+
+#undef GET_TIME
