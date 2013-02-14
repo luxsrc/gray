@@ -40,5 +40,5 @@ static __device__ void scheme(State &y, real &t, real dt)
 
 static double flop(void)
 {
-  return 4 + 12 * NVAR + 4 * FLOP;
+  return 4 + 12 * NVAR + 4 * FLOP_RHS + FLOP_GETDT + FLOP_DONE;
 }

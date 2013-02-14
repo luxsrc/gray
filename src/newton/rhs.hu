@@ -16,10 +16,14 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
+#define FLOP_DONE 0
+
 static inline __device__ bool done(const State &s, real t)
 {
   return false;
 }
+
+#define FLOP_RHS 12
 
 static inline __device__ State rhs(const State &s, real t)
 {
@@ -29,5 +33,3 @@ static inline __device__ State rhs(const State &s, real t)
   return (State){    s.u,     s.v,     s.w,
                  f * s.x, f * s.y, f * s.z}; // 3 FLOP
 }
-
-#define FLOP 12

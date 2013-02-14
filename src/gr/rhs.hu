@@ -16,8 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#define FLOP 74
-#define R_SCHW 2
+#define FLOP_DONE 0
 
 static inline __device__ bool done(State &s, real t)
 {
@@ -25,6 +24,9 @@ static inline __device__ bool done(State &s, real t)
   if(s.r < r0 - (real)1e-6) s.r = r0;
   return s.r < r0 + (real)1e-6;
 }
+
+#define FLOP_RHS 74
+#define R_SCHW   2
 
 static inline __device__ State rhs(const State &s, real t)
 {
