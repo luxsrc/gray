@@ -17,7 +17,6 @@
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
 #define FLOP_GETDT 4
-#define USE_PARTICLE_TIME
 
 static __device__ real getdt(const State &s, real t,
                              const State &a, real dt_max)

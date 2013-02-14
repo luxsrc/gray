@@ -19,6 +19,8 @@
 #ifndef STATE_H
 #define STATE_H
 
+#define PARTICLE_TIME t
+
 typedef struct {
   real t, r, theta, phi;
   real kr, ktheta;
