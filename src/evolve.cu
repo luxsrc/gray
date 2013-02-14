@@ -68,7 +68,7 @@ float evolve(Data &data, double dt)
 
   State *s = data.device();
   driver<<<gsz, bsz, sizeof(State) * bsz>>>(s, count, n, t, global::t += dt);
-  cudaError_t err = cudaGetLastError();
+  cudaError_t err = cudaDeviceSynchronize();
   data.deactivate();
 
   if(cudaSuccess != cudaEventRecord(time1, 0))
@@ -97,9 +97,10 @@ float evolve(Data &data, double dt)
     actual += sum;
     peak   += max * bsz;
   }
-  print("\
-t = %6.2f; %3.0f ms/%.0f steps ~ %6.2f Gflops; occupation = %5.2f%%\n\
-", global::t, ms, actual, 1e-6 * flop() * actual / ms, 100 * actual / peak);
+  print("t =%7.2f; %.0f ms/%.0f steps ~%7.2f Gflops (%.2f%%),%7.2fGB/s\n",
+        global::t, ms, actual,
+        1e-6 * flop() * actual / ms, 100 * actual / peak,
+        1e-6 * (2 * sizeof(State) + sizeof(size_t)) * n / ms); // read + write
 
   return ms;
 }
