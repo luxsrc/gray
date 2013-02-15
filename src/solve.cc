@@ -28,12 +28,14 @@ static void idle(void)
   const  size_t limit = 1024;
 
   if(global::dt_dump != 0.0) {
-    float ms;
+    double ms;
     if(count + delta < limit) {
       ms = evolve(*d, global::dt_dump * delta / limit);
+      if(0 == ms) return;
       count += delta;
     } else {
       ms = evolve(*d, global::dt_dump * (limit - count) / limit);
+      if(0 == ms) return;
       count = 0;
       dump(*d);
     }
@@ -61,11 +63,10 @@ int solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
 
-  dump(data);
-  for(;;) {
-    evolve(data, global::dt_dump);
+  do {
     dump(data);
-  }
+  } while(0 < evolve(data, global::dt_dump));
+
   return 0;
 }
 #endif

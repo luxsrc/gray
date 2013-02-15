@@ -51,7 +51,7 @@ static void cleanup(void)
     error("evolve(): fail to destroy timer\n");
 }
 
-float evolve(Data &data, double dt)
+double evolve(Data &data, double dt)
 {
   debug("evolve(*%p, %g)\n", &data, dt);
 
@@ -97,9 +97,12 @@ float evolve(Data &data, double dt)
     actual += sum;
     peak   += max * bsz;
   }
-  print("t =%7.2f; %.0f ms/%.0f steps ~%7.2f Gflops (%.2f%%),%7.2fGB/s\n",
-        global::t, ms, actual, 1e-6 * flop() * actual / ms,
-        100 * actual / peak,   1e-6 * rwsz() * n      / ms); // read + write
 
-  return ms;
+  if(actual) {
+    print("t =%7.2f; %.0f ms/%.0f steps ~%7.2f Gflops (%.2f%%),%7.2fGB/s\n",
+          global::t, ms, actual, 1e-6 * flop() * actual / ms,
+          100 * actual / peak,   1e-6 * rwsz() * n      / ms); // read + write
+    return ms;
+  } else
+    return 0;
 }
