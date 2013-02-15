@@ -22,6 +22,12 @@
 #  define GET_TIME t
 #endif
 
+static __device__ void copy(real *dst, real *src, const size_t n)
+{
+  for(int i = 0, j = threadIdx.x; i < NVAR; ++i, j += blockDim.x)
+    if(j < n) dst[j] = src[j];
+}
+
 static __global__ void driver(State *state, size_t *count, size_t n,
                               real t, real target)
 {
@@ -31,23 +37,21 @@ static __global__ void driver(State *state, size_t *count, size_t n,
   state += blockIdx.x * blockDim.x;
   count += blockIdx.x * blockDim.x;
 
-  for(int i = 0, j = threadIdx.x; i < NVAR; ++i, j += blockDim.x)
-    if(j < NVAR * n)
-      ((real *)shared)[j] = ((real *)state)[j];
-
+  copy((real *)shared, (real *)state, NVAR * n);
   __syncthreads();
 
   if(threadIdx.x < n) {
+    State &s = shared[threadIdx.x];
     size_t c = 0;
 
     if(t < target)
-      while(GET_TIME < target && !done(shared[threadIdx.x], t)) {
-        scheme(shared[threadIdx.x], t, target - t);
+      while(GET_TIME < target && !done(s, t)) {
+        scheme(s, t, target - t);
         ++c;
       }
     else
-      while(GET_TIME > target &&  !done(shared[threadIdx.x], t)) {
-        scheme(shared[threadIdx.x], t, target - t);
+      while(GET_TIME > target &&  !done(s, t)) {
+        scheme(s, t, target - t);
         ++c;
       }
 
@@ -55,10 +59,12 @@ static __global__ void driver(State *state, size_t *count, size_t n,
   }
 
   __syncthreads();
-
-  for(int i = 0, j = threadIdx.x; i < NVAR; ++i, j += blockDim.x)
-    if(j < NVAR * n)
-      ((real *)state)[j] = ((real *)shared)[j];
+  copy((real *)state, (real *)shared, NVAR * n);
 }
 
 #undef GET_TIME
+
+static double rwsz(void)
+{
+  return 2 * sizeof(State) + sizeof(size_t);
+}
