@@ -21,11 +21,12 @@
 
 #define N_ALPHA     1024
 #define N_BETA      768
-#define DT_DUMP     (-1)          // default dump time
-#define R_OBS       10            // observer radius in GM/c^2
-#define THETA_OBS   30            // observer theta in degrees
-#define A_SPIN      ((real)0.999) // dimensionless spin J/Mc
-#define DT_MIN      1.0e-3        // minimal dt in getdt()
-#define STEP_FACTOR 32            // extra factor in getdt()
+#define DT_DUMP     (-1)              // default dump time
+#define R_OBS       20                // observer radius in GM/c^2
+#define THETA_OBS   30                // observer theta in degrees
+#define A_SPIN      ((real)0.999)     // dimensionless spin J/Mc
+#define STEP_FACTOR ((real)1.0 / 256) // extra factor in getdt()
+#define DELTA       ((real)1e-3)
+#define EPSILON     ((real)1e-9)
 
 #endif // PARA_H

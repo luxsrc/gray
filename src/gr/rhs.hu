@@ -21,8 +21,8 @@
 static inline __device__ bool done(State &s, real t)
 {
   const real r0 = 1 + sqrt(1 - A_SPIN * A_SPIN);
-  if(s.r < r0 - (real)1e-6) s.r = r0;
-  return s.r < r0 + (real)1e-6;
+  if(s.r < r0 - DELTA) s.r = r0;
+  return s.r < r0 + DELTA;
 }
 
 #define FLOP_RHS 74

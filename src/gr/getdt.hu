@@ -21,10 +21,6 @@
 static __device__ real getdt(const State &s, real t,
                              const State &a, real dt_max)
 {
-  real dt = fabs(s.r / a.r);
-
-  dt = min(dt, fabs(s.theta / a.theta));
-  dt = min(dt, fabs(s.phi   / a.phi  ));
-
-  return max(dt, (real)DT_MIN) / STEP_FACTOR;
+  return STEP_FACTOR /
+    (fabs(a.r / s.r) + fabs(a.theta) + fabs(a.phi) + EPSILON);
 }
