@@ -16,11 +16,14 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#define FLOP_GETDT 4
+#define FLOP_GETDT 5
 
 static __device__ real getdt(const State &s, real t,
                              const State &a, real dt_max)
 {
-  return STEP_FACTOR /
-    (fabs(a.r / s.r) + fabs(a.theta) + fabs(a.phi) + EPSILON);
+  if(s.r < 1 + sqrt(1 - A_SPIN * A_SPIN) + DELTA)
+    return 0; // 0 stops the integration
+  else
+    return STEP_FACTOR /
+      (fabs(a.r / s.r) + fabs(a.theta) + fabs(a.phi) + EPSILON);
 }
