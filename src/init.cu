@@ -20,12 +20,12 @@
 #include <para.h>
 #include <ic.h>
 
-static __global__ void kernel(State *s, const size_t n)
+static __global__ void kernel(State *s, const size_t n, const real t)
 {
-  const int i = blockIdx.x * blockDim.x + threadIdx.x;
+  const size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 
   if(i < n)
-    s[i] = ic(i);
+    s[i] = ic(i, n, t);
 }
 
 void init(Data &data)
@@ -37,7 +37,7 @@ void init(Data &data)
   const size_t gsz = (n - 1) / bsz + 1;
 
   State *s = data.device();
-  kernel<<<gsz, bsz>>>(s, n);
+  kernel<<<gsz, bsz>>>(s, n, global::t);
   cudaError_t err = cudaDeviceSynchronize();
   data.deactivate();
 

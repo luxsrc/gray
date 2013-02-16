@@ -19,7 +19,6 @@
 #ifndef PARA_H
 #define PARA_H
 
-#define N_DEFAULT 65536
-#define DT_DUMP   1
+// No need to define default parameters, see src/main.cc
 
 #endif // PARA_H

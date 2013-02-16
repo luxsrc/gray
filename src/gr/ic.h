@@ -18,8 +18,12 @@
 
 #define R_SCHW 2
 
-static __device__ State ic(int i)
+static __device__ State ic(const size_t i, size_t n, const real t)
 {
+  size_t m = (size_t)sqrt((real)n); // round down
+  while(n % m) --m;
+  n /= m;
+
   // Photon position and momentum in spherical coordinates
   real r, theta, phi, kr, ktheta, kphi;
   {
@@ -30,8 +34,8 @@ static __device__ State ic(int i)
 
     real x, y, z;
     {
-      real alpha =  (i % N_ALPHA + half) / N_ALPHA - half;
-      real beta  = ((i / N_ALPHA + half) / N_BETA  - half) * N_BETA / N_ALPHA;
+      real alpha =  (i % n + half) / n - half;
+      real beta  = ((i / n + half) / m  - half) * m / n;
 
       x  = r_obs * sin_obs - scale * beta * cos_obs;
       y  =                   scale * alpha         ;
@@ -82,5 +86,5 @@ static __device__ State ic(int i)
     bimpact = -(g33 * kphi + g30 * kt) / (g00 * kt + g30 * kphi);
   }
 
-  return (State){0.0, r, theta, phi, kr, ktheta, bimpact};
+  return (State){t, r, theta, phi, kr, ktheta, bimpact};
 }

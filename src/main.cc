@@ -20,8 +20,20 @@
 #include <cstdlib>
 #include <para.h>
 
+#ifndef T_START
+#define T_START 0
+#endif
+
+#ifndef DT_DUMP
+#define DT_DUMP 1
+#endif
+
+#ifndef N_DEFAULT
+#define N_DEFAULT 65536
+#endif
+
 namespace global {
-  double t       = 0.0;
+  double t       = T_START;
   double dt_dump = DT_DUMP;
 }
 
@@ -39,7 +51,23 @@ int main(int argc, char **argv)
     error("main(): fail to initialize GLUT/OpenGL\n");
 #endif
 
-  Data data(N_DEFAULT);
+  size_t n = 0;
+  for(size_t i = 1; i < argc; ++i) {
+    const char *arg = argv[i];
+    if(arg[1] != '=')
+      error("Unknown flag %s\n", arg);
+    else {
+      switch(arg[0]) {
+      case 'n': n               = atoi(arg + 2); break;
+      case 't': global::t       = atof(arg + 2); break;
+      case 'd': global::dt_dump = atof(arg + 2); break;
+      default : error("Unknown parameter %s\n", arg); break;
+      }
+      print("Set parameter %s\n", arg);
+    }
+  }
+
+  Data data(n ? n : N_DEFAULT);
   init(data);
 
 #ifndef DISABLE_GL

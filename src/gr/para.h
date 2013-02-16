@@ -19,10 +19,7 @@
 #ifndef PARA_H
 #define PARA_H
 
-#define N_ALPHA   1024
-#define N_BETA    768
-#define N_DEFAULT (N_ALPHA * N_BETA)
-#define DT_DUMP   (-1)              // default dump time
+#define DT_DUMP (-1) // default dump time
 
 __device__ __constant__ real r_obs    = 20;        // observer radius in GM/c^2
 __device__ __constant__ real i_obs    = 30;        // observer theta in degrees

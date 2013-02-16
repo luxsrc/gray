@@ -18,7 +18,7 @@
 
 #include <curand_kernel.h>
 
-static __device__ State ic(int i)
+static __device__ State ic(const size_t i, const size_t n, const real t)
 {
   curandStateXORWOW_t s;
   curand_init(0, i, 0, &s);
