@@ -21,10 +21,10 @@
 #define GET(s)  ((real *)&(s))[index]
 #define EACH(s) for(int index = 0; index < NVAR; ++index) GET(s)
 
-#include <rhs.hu>
-#include <getdt.hu>
-#include "scheme.hu"
-#include "driver.hu"
+#include <rhs.h>
+#include <getdt.h>
+#include "scheme.h"
+#include "driver.h"
 
 static size_t *count = NULL;
 static cudaEvent_t time0, time1;

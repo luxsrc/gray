@@ -17,7 +17,7 @@
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "geode.h"
-#include <ic.hu>
+#include <ic.h>
 
 static __global__ void kernel(State *s, const size_t n)
 {
