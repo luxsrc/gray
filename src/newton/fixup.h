@@ -16,31 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-static __device__ int scheme(State &y, real &t, real dt)
+static inline __device__ int fixup(State &s)
 {
-  const State s = y; // create a constant copy
-
-  const State k1 = rhs(y, t);
-  if(0 == (dt = dt>0 ? getdt(y,t,k1,dt) : -getdt(y,t,k1,-dt))) return -1;
-  #pragma unroll
-  EACH(y) = GET(s) + dt/2 * GET(k1);
-
-  const State k2 = rhs(y, t += dt/2);
-  #pragma unroll
-  EACH(y) = GET(s) + dt/2 * GET(k2);
-
-  const State k3 = rhs(y, t);
-  #pragma unroll
-  EACH(y) = GET(s) + dt   * GET(k3);
-
-  const State k4 = rhs(y, t += dt/2);
-  #pragma unroll
-  EACH(y) = GET(s) + dt/6 * (GET(k1) + 2 * (GET(k2) + GET(k3)) + GET(k4));
-
-  return fixup(y); // return non-negative number to continue
-}
-
-static double flop(void)
-{
-  return 4 + 12 * NVAR + 4 * FLOP_RHS + FLOP_GETDT;
+  return 0;
 }

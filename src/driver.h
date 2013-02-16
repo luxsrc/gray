@@ -39,9 +39,9 @@ static __global__ void driver(State *state, size_t *count, size_t n,
     size_t c = 0;
 
     if(t < target)
-      while(GET_TIME < target && scheme(s, t, target - t)) ++c;
+      while(GET_TIME < target && 0 <= scheme(s, t, target - t)) ++c;
     else
-      while(GET_TIME > target && scheme(s, t, target - t)) ++c;
+      while(GET_TIME > target && 0 <= scheme(s, t, target - t)) ++c;
 
     count[threadIdx.x] = c;
   }

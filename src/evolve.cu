@@ -20,6 +20,7 @@
 #include <para.h>
 #include <rhs.h>
 #include <getdt.h>
+#include <fixup.h>
 
 #define GET(s)  ((real *)&(s))[index]
 #define EACH(s) for(int index = 0; index < NVAR; ++index) GET(s)
