@@ -21,9 +21,8 @@
 static __device__ real getdt(const State &s, real t,
                              const State &a, real dt_max)
 {
-  if(s.r < 1 + sqrt(1 - A_SPIN * A_SPIN) + DELTA)
+  if(s.r < 1 + sqrt(1 - a_spin * a_spin) + delta)
     return 0; // 0 stops the integration
   else
-    return STEP_FACTOR /
-      (fabs(a.r / s.r) + fabs(a.theta) + fabs(a.phi) + EPSILON);
+    return dt_scale / (fabs(a.r / s.r) + fabs(a.theta) + fabs(a.phi));
 }

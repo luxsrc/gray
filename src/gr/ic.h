@@ -23,8 +23,8 @@ static __device__ State ic(int i)
   // Photon position and momentum in spherical coordinates
   real r, theta, phi, kr, ktheta, kphi;
   {
-    const real cos_obs = cos(M_PI / 180 * THETA_OBS);
-    const real sin_obs = sin(M_PI / 180 * THETA_OBS);
+    const real cos_obs = cos(M_PI / 180 * i_obs);
+    const real sin_obs = sin(M_PI / 180 * i_obs);
     const real scale   = 20.0;
     const real half    = 0.5;
 
@@ -33,9 +33,9 @@ static __device__ State ic(int i)
       real alpha =  (i % N_ALPHA + half) / N_ALPHA - half;
       real beta  = ((i / N_ALPHA + half) / N_BETA  - half) * N_BETA / N_ALPHA;
 
-      x  = R_OBS * sin_obs - scale * beta * cos_obs;
+      x  = r_obs * sin_obs - scale * beta * cos_obs;
       y  =                   scale * alpha         ;
-      z  = R_OBS * cos_obs + scale * beta * sin_obs;
+      z  = r_obs * cos_obs + scale * beta * sin_obs;
     }
     const real R2 = x * x + y * y;
 
@@ -43,7 +43,7 @@ static __device__ State ic(int i)
     theta = acos(z / r);
     phi   = atan2(y, x);
 
-    kr     = R_OBS / r;
+    kr     = r_obs / r;
     ktheta = (kr * z / r - cos_obs) / sqrt(R2);
     kphi   = -sin_obs * y / R2;
   }
@@ -58,7 +58,7 @@ static __device__ State ic(int i)
       tmp = sin(theta);
       s2  = tmp * tmp ;
       r2  = r * r;
-      a2  = A_SPIN * A_SPIN;
+      a2  = a_spin * a_spin;
 
       sum = r2 + a2;
       g22 = sum - a2 * s2; // = r2 + a2 * [cos(theta)]^2 = Sigma
@@ -66,8 +66,8 @@ static __device__ State ic(int i)
 
       tmp = R_SCHW * r / g22;
       g00 = tmp - 1;
-      g30 = -A_SPIN * tmp * s2;
-      g33 = (sum - A_SPIN * g30) * s2;
+      g30 = -a_spin * tmp * s2;
+      g33 = (sum - a_spin * g30) * s2;
     }
 
     real kt;

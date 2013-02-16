@@ -21,7 +21,7 @@
 
 static inline __device__ State rhs(const State &s, real t)
 {
-  const real a2 = A_SPIN * A_SPIN;
+  const real a2 = a_spin * a_spin;
   const real r2 = s.r * s.r; // 1 FLOP
 
   real c2, cs, s2;
@@ -44,8 +44,8 @@ static inline __device__ State rhs(const State &s, real t)
 
     tmp    = R_SCHW * s.r / g22;
     g00    = tmp - 1;
-    g30    = -A_SPIN * tmp * s2;
-    g33_s2 = sum - A_SPIN * g30;
+    g30    = -a_spin * tmp * s2;
+    g33_s2 = sum - a_spin * g30;
     g33    = g33_s2 * s2;
 
     tmp    = 1 / (g33 * g00 - g30 * g30);
@@ -59,8 +59,8 @@ static inline __device__ State rhs(const State &s, real t)
 
     const real G222 = -a2 * cs;
     const real G200 =  a2 * ar;
-    const real G230 = -A_SPIN * ar * (g22 + a2 * s2);
-    const real G233 = -A_SPIN * G230 * s2 + g33_s2 * cs;
+    const real G230 = -a_spin * ar * (g22 + a2 * s2);
+    const real G233 = -a_spin * G230 * s2 + g33_s2 * cs;
 
     ar = G222 / Dlt; // use ar as tmp, will be used in the next block
 
@@ -75,8 +75,8 @@ static inline __device__ State rhs(const State &s, real t)
   {
     const real G111 = (s.r + (R_SCHW / 2 - s.r) * g11) / Dlt;
     const real G100 = -(R_SCHW / 2) * (r2 - a2 * c2) / (g22 * g22);
-    const real G130 = -A_SPIN * s2 * G100;
-    const real G133 = (s.r - A_SPIN * G130) * s2;
+    const real G130 = -a_spin * s2 * G100;
+    const real G133 = (s.r - a_spin * G130) * s2;
 
     ar     = (+     G100 *   kt     *   kt
               -     G111 * s.kr     * s.kr

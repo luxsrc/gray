@@ -22,7 +22,7 @@
 
 namespace global {
   double t       = 0.0;
-  double dt_dump = 0.0;
+  double dt_dump = DT_DUMP;
 }
 
 int main(int argc, char **argv)
@@ -39,8 +39,7 @@ int main(int argc, char **argv)
     error("main(): fail to initialize GLUT/OpenGL\n");
 #endif
 
-  Data data(argc > 1 ? atoi(argv[1]) : N_DEFAULT);
-  global::dt_dump = argc > 2 ? atof(argv[2]) : DT_DUMP;
+  Data data(N_DEFAULT);
   init(data);
 
 #ifndef DISABLE_GL
