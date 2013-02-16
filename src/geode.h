@@ -57,7 +57,6 @@
 #endif
 
 // Include problem specific headers
-#include <para.h>  // problem parameter
 #include <state.h> // problem specific state structure
 #define NVAR (sizeof(State) / sizeof(real))
 

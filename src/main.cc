@@ -18,19 +18,7 @@
 
 #include "geode.h"
 #include <cstdlib>
-#include <cmath>
-
-#ifndef N_DEFAULT
-#  if defined(N_ALPHA) && defined (N_BETA)
-#    define N_DEFAULT (N_ALPHA * N_BETA)
-#  else
-#    define N_DEFAULT 1048576 // 2^20
-#  endif
-#endif
-
-#ifndef DT_DUMP
-#define DT_DUMP 1.0
-#endif
+#include <para.h>
 
 namespace global {
   double t       = 0.0;

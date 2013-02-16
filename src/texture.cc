@@ -19,7 +19,6 @@
 #include "geode.h"
 
 #ifndef DISABLE_GL
-
 #include <cmath>
 
 static unsigned char *mkimg(int n)

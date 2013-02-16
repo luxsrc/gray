@@ -16,12 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifdef PARTICLE_TIME
-#  define GET_TIME (t = shared[threadIdx.x].PARTICLE_TIME)
-#else
-#  define GET_TIME t
-#endif
-
 static __device__ void copy(real *dst, real *src, const size_t n)
 {
   for(int i = 0, j = threadIdx.x; i < NVAR; ++i, j += blockDim.x)
@@ -55,8 +49,6 @@ static __global__ void driver(State *state, size_t *count, size_t n,
   __syncthreads();
   copy((real *)state, (real *)shared, NVAR * n);
 }
-
-#undef GET_TIME
 
 static double rwsz(void)
 {

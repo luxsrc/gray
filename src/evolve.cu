@@ -17,14 +17,23 @@
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "geode.h"
+#include <para.h>
+#include <rhs.h>
+#include <getdt.h>
 
 #define GET(s)  ((real *)&(s))[index]
 #define EACH(s) for(int index = 0; index < NVAR; ++index) GET(s)
+#  include "scheme.h" // scheme.h needs GET(s) and EACH(s)
+#undef GET(s)
+#undef EACH(s)
 
-#include <rhs.h>
-#include <getdt.h>
-#include "scheme.h"
-#include "driver.h"
+#ifdef PARTICLE_TIME
+#  define GET_TIME (t = shared[threadIdx.x].PARTICLE_TIME)
+#else
+#  define GET_TIME t
+#endif
+#  include "driver.h"
+#undef GET_TIME
 
 static size_t *count = NULL;
 static cudaEvent_t time0, time1;

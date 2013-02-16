@@ -20,5 +20,6 @@
 #define PARA_H
 
 #define N_DEFAULT 65536
+#define DT_DUMP   1
 
 #endif // PARA_H

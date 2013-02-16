@@ -19,7 +19,6 @@
 #include "geode.h"
 
 #ifndef DISABLE_GL
-
 #include <cmath>
 #include <shader.h> // to get vertex and color pointer offsets
 

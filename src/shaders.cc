@@ -19,7 +19,6 @@
 #include "geode.h"
 
 #ifndef DISABLE_GL
-
 #include <shader.h>
 
 #define STR1NG(x) #x
