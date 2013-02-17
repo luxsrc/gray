@@ -48,5 +48,7 @@ void init(Data &data)
 
 bool init_config(const char *arg)
 {
+  debug("init_config(""%s"")\n", arg);
+
   return config(arg[0], atof(arg + 2));
 }

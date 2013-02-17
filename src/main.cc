@@ -55,7 +55,7 @@ int main(int argc, char **argv)
   for(int i = 1; i < argc; ++i) {
     const char *arg = argv[i];
     if(arg[1] != '=')
-      error("Unknown flag %s\n", arg);
+      error("Unknown flag ""%s""\n", arg);
     else {
       switch(arg[0]) {
       case 'n': n               = atoi(arg + 2); break;
@@ -63,10 +63,10 @@ int main(int argc, char **argv)
       case 'd': global::dt_dump = atof(arg + 2); break;
       default :
         if(!init_config(arg) || !prob_config(arg))
-          error("Unknown parameter %s\n", arg);
+          error("Unknown parameter ""%s""\n", arg);
         break;
       }
-      print("Set parameter %s\n", arg);
+      print("Set parameter ""%s""\n", arg);
     }
   }
 

@@ -120,5 +120,7 @@ double evolve(Data &data, double dt)
 
 bool prob_config(const char *arg)
 {
+  debug("prob_config(""%s"")\n", arg);
+
   return config(arg[0], atof(arg + 2));
 }
