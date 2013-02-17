@@ -6,7 +6,7 @@ ifeq ($(DETAILS),1) # show the ptxas info
 	CFLAGS += --ptxas-options=-v
 endif
 
-ifeq ($(DOUBLE),1) # use `make <prob> DOUBLE=1` to compile in double precision
+ifneq ($(DOUBLE),0) # use `make <prob> DOUBLE=1` to compile in double precision
 	CPPFLAGS += -DOUBLE
 	CFLAGS   += -arch sm_13
 endif
