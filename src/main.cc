@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 #endif
 
   size_t n = 0;
-  for(size_t i = 1; i < argc; ++i) {
+  for(int i = 1; i < argc; ++i) {
     const char *arg = argv[i];
     if(arg[1] != '=')
       error("Unknown flag %s\n", arg);
