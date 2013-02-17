@@ -27,28 +27,28 @@ static __device__ State ic(const size_t i, const size_t n, const real t)
   real u, v, w, V;
 
   do {
-    x = 20.0 * (curand_uniform(&s) - 0.5);
-    y = 20.0 * (curand_uniform(&s) - 0.5);
-    z = 20.0 * (curand_uniform(&s) - 0.5);
+    x = 20 * (curand_uniform(&s) - (real)0.5);
+    y = 20 * (curand_uniform(&s) - (real)0.5);
+    z = 20 * (curand_uniform(&s) - (real)0.5);
     r = sqrt(x * x + y * y + z * z);
-  } while(r < 2.0 || 10.0 < r);
+  } while(r < 2 || 10 < r);
 
   do {
-    u = 2.0 * (curand_uniform(&s) - 0.5);
-    v = 2.0 * (curand_uniform(&s) - 0.5);
-    w = 2.0 * (curand_uniform(&s) - 0.5);
+    u = 2 * (curand_uniform(&s) - (real)0.5);
+    v = 2 * (curand_uniform(&s) - (real)0.5);
+    w = 2 * (curand_uniform(&s) - (real)0.5);
     V = sqrt(u * u + v * v + w * w);
-  } while(1.0 < V);
+  } while(1 < V);
+
+  V  = ((real)1.5 * curand_uniform(&s) + (real)0.5) / (V * sqrt(r));
+  u *= V;
+  v *= V;
+  w *= V;
 
   V  = (x * u + y * v + z * w) / (r * r);
   u -= x * V;
   v -= y * V;
   w -= z * V;
-
-  V  = (1.5 * curand_uniform(&s) + 0.5) / sqrt((u * u + v * v + w * w) * r);
-  u *= V;
-  v *= V;
-  w *= V;
 
   return (State){x, y, z, u, v, w};
 }
