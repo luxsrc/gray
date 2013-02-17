@@ -20,8 +20,8 @@
 #define PARA_H
 
 #ifndef __CUDACC__ // for src/main.cc
-#  define N_DEFAULT (18000)
-#  define DT_DUMP   (-10)
+#  define N_DEFAULT (108000)
+#  define DT_DUMP   (-100)
 #else // for src/init.cu and src/evolve.cu
 static __constant__ real r_obs    = 1000;      // observer radius in GM/c^2
 static __constant__ real i_obs    = 30;        // observer theta in degrees
