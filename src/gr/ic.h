@@ -27,10 +27,11 @@ static __device__ State ic(const size_t i, size_t n, const real t)
   // Photon position and momentum in spherical coordinates
   real r, theta, phi, kr, ktheta, kphi;
   {
-    const real cos_obs = cos(M_PI / 180 * i_obs);
-    const real sin_obs = sin(M_PI / 180 * i_obs);
-    const real scale   = 20.0;
-    const real half    = 0.5;
+    const real deg2rad = M_PI / 180;
+    const real cos_obs = cos(deg2rad * i_obs);
+    const real sin_obs = sin(deg2rad * i_obs);
+    const real scale   = 20;
+    const real half    = .5;
 
     real x, y, z;
     {

@@ -18,15 +18,17 @@
 
 static inline __device__ int fixup(State &s)
 {
-  if(s.theta > M_PI) {
-    s.phi   += M_PI;
-    s.theta  = -s.theta + 2 * M_PI;
+  const real pi = M_PI;
+
+  if(s.theta > pi) {
+    s.phi   += pi;
+    s.theta  = -s.theta + 2 * pi;
     s.ktheta = -s.ktheta;
     return 1;
   }
 
   if(s.theta < 0) {
-    s.phi   -= M_PI;
+    s.phi   -= pi;
     s.theta  = -s.theta;
     s.ktheta = -s.ktheta;
     return 1;

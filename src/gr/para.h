@@ -23,8 +23,8 @@
 
 __device__ __constant__ real r_obs    = 20;        // observer radius in GM/c^2
 __device__ __constant__ real i_obs    = 30;        // observer theta in degrees
-__device__ __constant__ real a_spin   = 0.999;     // dimensionless spin j/mc
-__device__ __constant__ real dt_scale = 1.0 / 256; // typical step size
-__device__ __constant__ real epsilon  = 1e-3;      // stop photon
+__device__ __constant__ real a_spin   = (real)0.999;     // dimensionless spin j/mc
+__device__ __constant__ real dt_scale = (real)1.0 / 256; // typical step size
+__device__ __constant__ real epsilon  = (real)1e-3;      // stop photon
 
 #endif // PARA_H
