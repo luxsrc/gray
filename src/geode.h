@@ -92,4 +92,8 @@ extern double evolve(Data &, double);
 extern void   init  (Data &);
 extern int    solve (Data &);
 
+// Dirty wrapper functions that allow us to configure the CUDA kernels
+extern bool init_config(const char *);
+extern bool prob_config(const char *);
+
 #endif // GEODE_H

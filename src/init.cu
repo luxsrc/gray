@@ -17,6 +17,7 @@
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "geode.h"
+#include <cstdlib>
 #include <para.h>
 #include <ic.h>
 
@@ -43,4 +44,9 @@ void init(Data &data)
 
   if(cudaSuccess != err)
     error("init(): fail to launch kernel; %s\n", cudaGetErrorString(err));
+}
+
+bool init_config(const char *arg)
+{
+  return config(arg[0], atof(arg + 2));
 }

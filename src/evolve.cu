@@ -17,6 +17,7 @@
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "geode.h"
+#include <cstdlib>
 #include <para.h>
 #include <rhs.h>
 #include <getdt.h>
@@ -115,4 +116,9 @@ double evolve(Data &data, double dt)
     return ms;
   } else
     return 0;
+}
+
+bool prob_config(const char *arg)
+{
+  return config(arg[0], atof(arg + 2));
 }

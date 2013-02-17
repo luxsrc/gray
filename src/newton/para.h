@@ -19,6 +19,11 @@
 #ifndef PARA_H
 #define PARA_H
 
-// No need to define default parameters, see src/main.cc
+#ifdef __CUDACC__ // so main.cc don't see config()
+static inline bool config(const char c, const real v)
+{
+  return false;
+}
+#endif
 
 #endif // PARA_H
