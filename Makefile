@@ -1,28 +1,28 @@
-ifeq ($(DEBUG),1)
+ifeq ($(DEBUG),1) # use `make <prob> DEBUG=1` to enable debug messages
 	CPPFLAGS += -DEBUG
 endif
 
-ifeq ($(DETAILS),1) # show the ptxas info
+ifeq ($(DETAILS),1) # use `make <prob> DETAILS=1` to show the ptxas info
 	CFLAGS += --ptxas-options=-v
 endif
 
-ifneq ($(DOUBLE),0) # use `make <prob> DOUBLE=1` to compile in double precision
+ifneq ($(DOUBLE),0) # use `make <prob> DOUBLE=0` to compile in single precision
 	CPPFLAGS += -DOUBLE
 	CFLAGS   += -arch sm_13
 endif
 
-ifeq ($(GL),0) # use `make <prob> GL=0` to disable OpenGL visualization
-	CPPFLAGS += -DISABLE_GL
-else
+ifeq ($(GL),1) # use `make <prob> GL=1` to enable OpenGL visualization
 	ifeq ($(shell uname),Darwin)
 		LDFLAGS += $(addprefix -Xlinker ,\
 		             -framework Glut -framework OpenGL)
 	else
 		LDFLAGS += -lglut -lglu -lgl
 	endif
+else
+	CPPFLAGS += -DISABLE_GL
 endif
 
-ifneq ($(IO),0)
+ifneq ($(IO),0) # use `make <prob> IO=0` to disable IO
 	CPPFLAGS += -DUMP
 endif
 
