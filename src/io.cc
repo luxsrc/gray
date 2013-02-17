@@ -26,19 +26,25 @@ void dump(Data &data)
 #ifdef DUMP
   static size_t frame = 0;
 
-  const double t = global::t;
-  const size_t n = data;
-  const size_t m = NVAR;
+  const size_t m = 180;
+  const size_t n = data / m;
   const void  *h = data.host();
+  const State *s = (State *)h;
+
+  real r[m];
+  for(size_t i, j = 0; j < m; ++j) {
+    for(i = 0; i < n && s[j * n + i].r < 3; ++i);
+    r[j] = 1.5 + (6.0 / n) * i;
+  }
 
   char name[256];
   snprintf(name, sizeof(name), "%04zu.raw", frame++);
 
   FILE *file = fopen(name, "wb");
-  fwrite(&t, sizeof(double), 1, file);
-  fwrite(&m, sizeof(size_t), 1, file);
-  fwrite(&n, sizeof(size_t), 1, file);
-  fwrite( h, sizeof(State),  n, file);
-  fclose(file);
+  if(file) {
+    fwrite(r, sizeof(real), m, file);
+    fclose(file);
+  } else
+    error("dump(): fail to output to file ""%s""\n", name);
 #endif
 }
