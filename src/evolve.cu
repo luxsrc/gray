@@ -26,8 +26,8 @@
 #define GET(s)  ((real *)&(s))[index]
 #define EACH(s) for(int index = 0; index < NVAR; ++index) GET(s)
 #  include "scheme.h" // scheme.h needs GET(s) and EACH(s)
-#undef GET(s)
-#undef EACH(s)
+#undef GET
+#undef EACH
 
 #ifdef PARTICLE_TIME
 #  define GET_TIME (t = shared[threadIdx.x].PARTICLE_TIME)
