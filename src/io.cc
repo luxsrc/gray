@@ -26,7 +26,7 @@ void dump(Data &data)
 #ifdef DUMP
   static size_t frame = 0;
 
-  const size_t m = 180;
+  const size_t m = 181;
   const size_t n = (size_t)data / m;
   const void  *h = data.host();
   const State *s = (State *)h;
