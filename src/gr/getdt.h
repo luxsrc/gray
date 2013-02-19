@@ -27,5 +27,5 @@ static __device__ real getdt(const State &s, real t,
     return 0; // 0 stops the integration
   else
     return min(dt_scale / (fabs(a.r / s.r) + fabs(a.theta) + fabs(a.phi)),
-               fabs((s.r - r_bh) / a.r) * (real)0.5);
+               fabs((s.r - r_bh) / a.r / 3));
 }

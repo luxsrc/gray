@@ -21,7 +21,7 @@ static inline __device__ int fixup(State &y, const State &s,
 {
   size_t count = 0;
 
-  if(y.theta > (real)M_PI || y.theta < 0) {
+  if(y.theta > (real)M_PI - 1e-4 || y.theta < 1e-4) {
     #pragma unroll
     EACH(y) = GET(s) + 2 * dt * GET(k); // jump over the pole by forward Euler
     ++count;
