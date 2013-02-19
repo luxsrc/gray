@@ -16,7 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-static inline __device__ int fixup(State &s)
+static inline __device__ int fixup(State &y, const State &s,
+                                             const State &k, real dt)
 {
   return 0;
 }

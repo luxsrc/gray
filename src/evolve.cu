@@ -21,11 +21,11 @@
 #include <para.h>
 #include <rhs.h>
 #include <getdt.h>
-#include <fixup.h>
 
 #define GET(s)  ((real *)&(s))[index]
 #define EACH(s) for(int index = 0; index < NVAR; ++index) GET(s)
-#  include "scheme.h" // scheme.h needs GET(s) and EACH(s)
+#  include <fixup.h>
+#  include "scheme.h"
 #undef GET
 #undef EACH
 

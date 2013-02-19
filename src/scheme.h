@@ -37,7 +37,7 @@ static __device__ int scheme(State &y, real &t, real dt)
   #pragma unroll
   EACH(y) = GET(s) + dt/6 * (GET(k1) + 2 * (GET(k2) + GET(k3)) + GET(k4));
 
-  return fixup(y); // return non-negative number to continue
+  return fixup(y, s, k1, dt); // return non-negative number to continue
 }
 
 static double flop(void)
