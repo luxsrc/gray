@@ -29,7 +29,7 @@
 #endif
 
 #ifndef N_DEFAULT
-#define N_DEFAULT 65536
+#define N_DEFAULT (1024 * 1024)
 #endif
 
 namespace global {
