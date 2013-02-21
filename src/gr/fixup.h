@@ -16,23 +16,29 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-static inline __device__ int fixup(State &s)
+static inline __device__ int fixup(State &y, const State &s,
+                                             const State &k, real dt)
 {
-  const real pi = M_PI;
+  size_t count = 0;
 
-  if(s.theta > pi) {
-    s.phi   += pi;
-    s.theta  = -s.theta + 2 * pi;
-    s.ktheta = -s.ktheta;
-    return 1;
+  if(y.theta > (real)M_PI || y.theta < 0) {
+    #pragma unroll
+    EACH(y) = GET(s) + 2 * dt * GET(k); // jump over the pole by forward Euler
+    ++count;
   }
 
-  if(s.theta < 0) {
-    s.phi   -= pi;
-    s.theta  = -s.theta;
-    s.ktheta = -s.ktheta;
-    return 1;
+  if(y.theta > (real)M_PI) {
+    y.phi   += (real)M_PI;
+    y.theta  = -y.theta + 2 * (real)M_PI;
+    y.ktheta = -y.ktheta;
+    ++count;
+  }
+  if(y.theta < 0) {
+    y.phi   -= (real)M_PI;
+    y.theta  = -y.theta;
+    y.ktheta = -y.ktheta;
+    ++count;
   }
 
-  return 0;
+  return count;
 }
