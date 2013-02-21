@@ -20,7 +20,7 @@
 
 static __device__ State ic(const size_t i, size_t n, const real t)
 {
-  const size_t m = 182;
+  const size_t m = 181;
   n /= m;
 
   // Photon position and momentum in spherical coordinates
@@ -33,8 +33,7 @@ static __device__ State ic(const size_t i, size_t n, const real t)
     real x, y, z;
     {
       const real a = (real)1.5 + 6 * (i % n + (real)0.5) / n;
-      const real b = (i / n) ==   0 ?          0 :
-                     (i / n) == 181 ? (real)M_PI : deg2rad * ((i / n) - 0.5);
+      const real b = deg2rad * (i / n);
       const real alpha = a * cos(b);
       const real beta  = a * sin(b);
 
