@@ -39,9 +39,19 @@ static __global__ void driver(State *state, size_t *count, size_t n,
     size_t c = 0;
 
     if(t < target)
-      while(GET_TIME < target && 0 <= scheme(s, t, target - t)) ++c;
+      while(GET_TIME < target) {
+        const real dt = scheme(s, t, target - t);
+        if(0 == dt) break;
+        t += dt;
+        c += 1;
+      }
     else
-      while(GET_TIME > target && 0 <= scheme(s, t, target - t)) ++c;
+      while(GET_TIME > target) {
+        const real dt = scheme(s, t, target - t);
+        if(0 == dt) break;
+        t += dt;
+        c += 1;
+      }
 
     count[threadIdx.x] = c;
   }

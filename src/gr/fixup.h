@@ -47,29 +47,25 @@ static inline __device__ real xi(const State &s)
                    g30 *   kt     *   kphi   * 2) / (g00 * kt * kt));
 }
 
-static inline __device__ int fixup(State &y, const State &s,
-                                             const State &k, real dt)
+static inline __device__ real fixup(State &y, const State &s,
+                                              const State &k, real dt)
 {
-  size_t count = 0;
-
   if(tolerance < xi(y)) {
+    dt /= 9;
     #pragma unroll
-    EACH(y) = GET(s) + dt / 9 * GET(k); // fall back to forward Euler
-    ++count;
+    EACH(y) = GET(s) + dt * GET(k); // fall back to forward Euler
   }
 
   if(y.theta > (real)M_PI) {
     y.phi   += (real)M_PI;
     y.theta  = -y.theta + 2 * (real)M_PI;
     y.ktheta = -y.ktheta;
-    ++count;
   }
   if(y.theta < 0) {
     y.phi   -= (real)M_PI;
     y.theta  = -y.theta;
     y.ktheta = -y.ktheta;
-    ++count;
   }
 
-  return count;
+  return dt;
 }
