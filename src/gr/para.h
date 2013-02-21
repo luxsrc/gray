@@ -22,22 +22,24 @@
 #ifndef __CUDACC__ // for src/main.cc
 #  define DT_DUMP (-1)
 #else // for src/init.cu and src/evolve.cu
-static __constant__ real r_obs    = 20;        // observer radius in GM/c^2
-static __constant__ real i_obs    = 30;        // observer theta in degrees
-static __constant__ real a_spin   = 0.999;     // dimensionless spin j/mc
-static __constant__ real dt_scale = 1.0 / 256; // typical step size
-static __constant__ real epsilon  = 1e-3;      // stop photon
-
+static __constant__ real r_obs     = 20;        // observer radius in GM/c^2
+static __constant__ real i_obs     = 30;        // observer theta in degrees
+static __constant__ real a_spin    = 0.999;     // dimensionless spin j/mc
+static __constant__ real dt_scale  = 1.0 / 256; // typical step size
+static __constant__ real epsilon   = 1e-3;      // stop photon
+static __constant__ real tolerance = 1e-6;      // if uu+1 > tolerance, fall
+                                                // back to forward Euler
 static inline bool config(const char c, const real v)
 {
   cudaError_t err = cudaErrorInvalidSymbol;
 
   switch(c) {
-  case 'r': err = cudaMemcpyToSymbol(r_obs,    &v, sizeof(real)); break;
-  case 'i': err = cudaMemcpyToSymbol(i_obs,    &v, sizeof(real)); break;
-  case 'a': err = cudaMemcpyToSymbol(a_spin,   &v, sizeof(real)); break;
-  case 's': err = cudaMemcpyToSymbol(dt_scale, &v, sizeof(real)); break;
-  case 'e': err = cudaMemcpyToSymbol(epsilon,  &v, sizeof(real)); break;
+  case 'r': err = cudaMemcpyToSymbol(r_obs,     &v, sizeof(real)); break;
+  case 'i': err = cudaMemcpyToSymbol(i_obs,     &v, sizeof(real)); break;
+  case 'a': err = cudaMemcpyToSymbol(a_spin,    &v, sizeof(real)); break;
+  case 's': err = cudaMemcpyToSymbol(dt_scale,  &v, sizeof(real)); break;
+  case 'e': err = cudaMemcpyToSymbol(epsilon,   &v, sizeof(real)); break;
+  case 't': err = cudaMemcpyToSymbol(tolerance, &v, sizeof(real)); break;
   }
 
   return cudaSuccess == err;

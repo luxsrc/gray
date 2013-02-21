@@ -56,9 +56,9 @@ static __device__ State ic(const size_t i, size_t n, const real t)
   // Impact parameter = L / E
   real bimpact;
   {
-    real s2, g00, g11, g22, g33, g30;
+    real g00, g11, g22, g33, g30;
     {
-      real sum, tmp, r2, a2;
+      real tmp, s2, r2, a2, sum;
 
       tmp = sin(theta);
       s2  = tmp * tmp ;
