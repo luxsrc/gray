@@ -16,28 +16,33 @@
 // You should have received a copy of the GNU General Public License
 // along with geode.  If not, see <http://www.gnu.org/licenses/>.
 
-static __device__ int scheme(State &y, real &t, real dt)
+static __device__ real scheme(State &y, real t, real dt)
 {
   const State s = y; // create a constant copy
 
   const State k1 = rhs(y, t);
-  if(0 == (dt = dt>0 ? getdt(y,t,k1,dt) : -getdt(y,t,k1,-dt))) return -1;
+  // Begin compute dt
+  dt = dt > 0 ? getdt(y, t, k1, dt) : -getdt(y, t, k1, -dt);
+  if(0 == dt) return 0;
+  const real dt_2 = dt / 2;
+  const real dt_6 = dt / 6;
+  // End computing dt
   #pragma unroll
-  EACH(y) = GET(s) + dt/2 * GET(k1);
+  EACH(y) = GET(s) + dt_2 * GET(k1);
 
-  const State k2 = rhs(y, t += dt/2);
+  const State k2 = rhs(y, t + dt_2);
   #pragma unroll
-  EACH(y) = GET(s) + dt/2 * GET(k2);
+  EACH(y) = GET(s) + dt_2 * GET(k2);
 
-  const State k3 = rhs(y, t);
+  const State k3 = rhs(y, t + dt_2);
   #pragma unroll
   EACH(y) = GET(s) + dt   * GET(k3);
 
-  const State k4 = rhs(y, t += dt/2);
+  const State k4 = rhs(y, t + dt);
   #pragma unroll
-  EACH(y) = GET(s) + dt/6 * (GET(k1) + 2 * (GET(k2) + GET(k3)) + GET(k4));
+  EACH(y) = GET(s) + dt_6 * (GET(k1) + 2 * (GET(k2) + GET(k3)) + GET(k4));
 
-  return fixup(y, s, k1, dt); // return non-negative number to continue
+  return fixup(y, s, k1, dt);
 }
 
 static double flop(void)
