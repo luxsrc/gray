@@ -28,7 +28,7 @@ static __constant__ real i_obs     = 30;        // observer theta in degrees
 static __constant__ real a_spin    = 0.999;     // dimensionless spin j/mc
 static __constant__ real dt_scale  = 1.0 / 256; // typical step size
 static __constant__ real epsilon   = 1e-6;      // stop photon
-static __constant__ real tolerance = 1e-3;      // if uu+1 > tolerance, fall
+static __constant__ real tolerance = 1e-3;      // if xi+1 > tolerance, fall
                                                 // back to forward Euler
 static inline bool config(const char c, const real v)
 {
