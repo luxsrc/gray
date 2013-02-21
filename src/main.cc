@@ -58,9 +58,9 @@ int main(int argc, char **argv)
       error("Unknown flag ""%s""\n", arg);
     else {
       switch(arg[0]) {
-      case 'n': n               = atoi(arg + 2); break;
-      case 't': global::t       = atof(arg + 2); break;
-      case 'd': global::dt_dump = atof(arg + 2); break;
+      case 'N': n               = atoi(arg + 2); break;
+      case 'T': global::t       = atof(arg + 2); break;
+      case 'D': global::dt_dump = atof(arg + 2); break;
       default :
         if(!init_config(arg) || !prob_config(arg))
           error("Unknown parameter ""%s""\n", arg);

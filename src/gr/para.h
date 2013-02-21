@@ -23,12 +23,13 @@
 #  define N_DEFAULT (182 * 6000)
 #  define DT_DUMP   (-100)
 #else // for src/init.cu and src/evolve.cu
-static __constant__ real r_obs    = 1000;      // observer radius in GM/c^2
-static __constant__ real i_obs    = 30;        // observer theta in degrees
-static __constant__ real a_spin   = 0.999;     // dimensionless spin j/mc
-static __constant__ real dt_scale = 1.0 / 128; // typical step size
-static __constant__ real epsilon  = 1e-6;      // stop photon
-
+static __constant__ real r_obs     = 1000;      // observer radius in GM/c^2
+static __constant__ real i_obs     = 30;        // observer theta in degrees
+static __constant__ real a_spin    = 0.999;     // dimensionless spin j/mc
+static __constant__ real dt_scale  = 1.0 / 128; // typical step size
+static __constant__ real epsilon   = 1e-6;      // stop photon
+static __constant__ real tolerance = 1e-6;      // if uu+1 > tolerance, fall
+                                                // back to forward Euler
 static inline bool config(const char c, const real v)
 {
   cudaError_t err = cudaErrorInvalidSymbol;
@@ -39,6 +40,7 @@ static inline bool config(const char c, const real v)
   case 'a': err = cudaMemcpyToSymbol(a_spin,   &v, sizeof(real)); break;
   case 's': err = cudaMemcpyToSymbol(dt_scale, &v, sizeof(real)); break;
   case 'e': err = cudaMemcpyToSymbol(epsilon,  &v, sizeof(real)); break;
+  case 't': err = cudaMemcpyToSymbol(epsilon,  &v, sizeof(real)); break;
   }
 
   return cudaSuccess == err;
