@@ -38,12 +38,16 @@
 #undef GET_TIME
 
 static size_t *count = NULL;
+static size_t *temp  = NULL;
 static cudaEvent_t time0, time1;
 
 static void setup(size_t n)
 {
   if(cudaSuccess != cudaMalloc((void **)&count, sizeof(size_t) * n))
     error("evolve(): fail to allocate device memory\n");
+
+  if(NULL == (temp = (size_t *)malloc(sizeof(size_t) * n)))
+    error("evolve(): fail to allocate host memory\n");
 
   if(cudaSuccess != cudaEventCreate(&time0) ||
      cudaSuccess != cudaEventCreate(&time1))
@@ -55,6 +59,11 @@ static void cleanup(void)
   if(count) {
     cudaFree(count);
     count = NULL;
+  }
+
+  if(temp) {
+    free(temp);
+    temp = NULL;
   }
 
   if(cudaSuccess != cudaEventDestroy(time1) ||
@@ -92,7 +101,6 @@ double evolve(Data &data, double dt)
      cudaSuccess != cudaEventElapsedTime(&ms, time0, time1))
     error("evolve(): fail to obtain elapsed time\n");
 
-  size_t temp[n];
   if(cudaSuccess !=
      cudaMemcpy(temp, count, sizeof(size_t) * n, cudaMemcpyDeviceToHost))
     error("evolve(): fail to copy memory from device to host\n");
