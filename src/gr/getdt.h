@@ -23,9 +23,10 @@ static __device__ real getdt(const State &s, real t,
 {
   const real r_bh = 1 + sqrt(1 - a_spin * a_spin);
 
-  if(s.r < r_bh + epsilon)
+  if(s.r < r_bh + epsilon || s.theta > (real)M_PI / 2)
     return 0; // 0 stops the integration
   else
-    return min(dt_scale / (fabs(a.r / s.r) + fabs(a.theta) + fabs(a.phi)),
-               fabs((s.r - r_bh) / a.r / 2));
+    return min(fabs((1 + epsilon) * (s.theta - (real)M_PI / 2) / a.theta),
+               min(dt_scale / (fabs(a.r / s.r) + fabs(a.theta) + fabs(a.phi)),
+                   fabs((s.r - r_bh) / a.r / 2)));
 }

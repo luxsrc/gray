@@ -63,9 +63,9 @@ int solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
 
-  do {
-    dump(data);
-  } while(0 < evolve(data, global::dt_dump));
+  while(0 < evolve(data, global::dt_dump));
+
+  dump(data);
 
   return 0;
 }

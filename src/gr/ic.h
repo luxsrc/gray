@@ -35,8 +35,8 @@ static __device__ State ic(const size_t i, size_t n, const real t)
 
     real x, y, z;
     {
-      real alpha =  (i % n + half) / n - half;
-      real beta  = ((i / n + half) / m - half) * m / n;
+      real alpha =  (real)(i % n) / (n - 1) - half;
+      real beta  = ((real)(i / n) / (m - 1) - half) * (m - 1) / (n - 1);
 
       x  = r_obs * sin_obs - scale * beta * cos_obs;
       y  =                   scale * alpha         ;
