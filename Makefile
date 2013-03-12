@@ -48,11 +48,10 @@ help:
 	 done
 	@echo
 	@echo "\
-Use \`make <prob> [DEBUG=1] [DETAILS=1] [DOUBLE=1] [GL=0] [IO=0]\`\n\
-and \`bin/<prob>\` to compile and run GRay.  The option DEBUG=1\n\
-turns on debugging messages, DETAILS=1 prints ptxas information,\n\
-DOUBLE=1 enforces double-precision, while GL=0 disables OpenGL\n\
-and IO=0 disables IO."
+Use \`make <prob> [DEBUG=1] [DETAILS=1] [DOUBLE=1] [GL=0] [IO=0]\` and\n\
+\`bin/GRay-<prob>\` to compile and run GRay.  The option DEBUG=1 turns on\n\
+debugging messages, DETAILS=1 prints ptxas information, DOUBLE=1 enforces\n\
+double-precision, while GL=0 disables OpenGL and IO=0 disables IO."
 
 %:
 	@if [ ! -d src/$@ ]; then                                \
@@ -63,18 +62,18 @@ and IO=0 disables IO."
 
 	@mkdir -p bin
 	@echo -n 'Compiling $@... '
-	@$(NVCC) src/*.{cu,cc} $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/$@
-	@if [ -f bin/$@ ]; then                     \
-	   echo 'DONE.  Use `bin/$@` to run GRay.'; \
-	 else                                       \
-	   echo 'FAIL!!!';                          \
+	@$(NVCC) src/*.{cu,cc} $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/GRay-$@
+	@if [ -f bin/GRay-$@ ]; then                     \
+	   echo 'DONE.  Use `bin/GRay-$@` to run GRay.'; \
+	 else                                            \
+	   echo 'FAIL!!!';                               \
 	 fi
 
 clean:
 	@echo -n 'Clean up... '
-	@for F in src/*/; do   \
-	   f=$${F##src/};      \
-	   rm -f bin/$${f%%/}; \
+	@for F in src/*/; do        \
+	   f=$${F##src/};           \
+	   rm -f bin/GRay-$${f%%/}; \
 	 done
 	@rm -f src/*~ src/*/*~
 	@if [ -z "`ls bin 2>&1`" ]; then rmdir bin; fi
