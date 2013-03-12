@@ -49,7 +49,7 @@ help:
 	@echo
 	@echo "\
 Use \`make <prob> [DEBUG=1] [DETAILS=1] [DOUBLE=1] [GL=0] [IO=0]\`\n\
-and \`bin/<prob>\` to compile and run geode.  The option DEBUG=1\n\
+and \`bin/<prob>\` to compile and run GRay.  The option DEBUG=1\n\
 turns on debugging messages, DETAILS=1 prints ptxas information,\n\
 DOUBLE=1 enforces double-precision, while GL=0 disables OpenGL\n\
 and IO=0 disables IO."
@@ -64,10 +64,10 @@ and IO=0 disables IO."
 	@mkdir -p bin
 	@echo -n 'Compiling $@... '
 	@$(NVCC) src/*.{cu,cc} $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/$@
-	@if [ -f bin/$@ ]; then                      \
-	   echo 'DONE.  Use `bin/$@` to run geode.'; \
-	 else                                        \
-	   echo 'FAIL!!!';                           \
+	@if [ -f bin/$@ ]; then                     \
+	   echo 'DONE.  Use `bin/$@` to run GRay.'; \
+	 else                                       \
+	   echo 'FAIL!!!';                          \
 	 fi
 
 clean:
