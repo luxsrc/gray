@@ -52,6 +52,7 @@ void sense()
   if(nite::STATUS_OK == tracker.readFrame(&frame)) {
     const nite::Array<nite::UserData>& users = frame.getUsers();
 
+    head.z = 0;
     for(int i = 0; i < users.getSize(); ++i) {
       const nite::UserData& user = users[i];
 
@@ -62,5 +63,20 @@ void sense()
         print("head: (%g, %g, %g)\n", head.x, head.y, head.z);
       }
     }
+  }
+}
+
+void track()
+{
+  glLoadIdentity();
+  glTranslatef(0, 0, -5); // translate 5 meters
+
+  if(head.z != 0) {
+    glPushMatrix();
+    glTranslatef(head.x / 1000, head.y / 1000, head.z / 1000);
+    glRotatef(-90, 1, 0, 0);
+    glColor3f(1, 1, 0);
+    glutSolidSphere(0.1, 32, 16);
+    glPopMatrix();
   }
 }

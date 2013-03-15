@@ -79,6 +79,7 @@ extern void error(const char *, ...);
 
 // NiTE and OpenNI related functions for natural interactions
 extern void sense();
+extern void track();
 
 // OpenGL/GLUT functions
 #ifndef DISABLE_GL
