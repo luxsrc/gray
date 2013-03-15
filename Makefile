@@ -1,8 +1,8 @@
-ifeq ($(DEBUG),1)
+ifeq ($(DEBUG),1) # use `make <prob> DEBUG=1` to enable debug messages
 	CPPFLAGS += -DEBUG
 endif
 
-ifeq ($(DETAILS),1) # show the ptxas info
+ifeq ($(DETAILS),1) # use `make <prob> DETAILS=1` to show the ptxas info
 	CFLAGS += --ptxas-options=-v
 endif
 
@@ -22,7 +22,7 @@ else
 	endif
 endif
 
-ifneq ($(IO),0)
+ifneq ($(IO),0) # use `make <prob> IO=0` to disable IO
 	CPPFLAGS += -DUMP
 endif
 
