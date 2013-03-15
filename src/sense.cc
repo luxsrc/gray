@@ -21,12 +21,18 @@
 
 static bool first = true;
 
+static nite::UserTracker tracker;
+static nite::Point3f head;
+
 static void setup()
 {
   print("Making sense...");
 
   if(nite::STATUS_OK != nite::NiTE::initialize())
     error("sense(): fail to initialize NiTE\n");
+
+  if(nite::STATUS_OK != tracker.create())
+    error("sense(): fail to create user tracker\n");
 
   first = false;
 
@@ -41,4 +47,20 @@ static void cleanup()
 void sense()
 {
   if(first && !atexit(cleanup)) setup();
+
+  nite::UserTrackerFrameRef frame;
+  if(nite::STATUS_OK == tracker.readFrame(&frame)) {
+    const nite::Array<nite::UserData>& users = frame.getUsers();
+
+    for(int i = 0; i < users.getSize(); ++i) {
+      const nite::UserData& user = users[i];
+
+      if(user.isNew())
+        tracker.startSkeletonTracking(user.getId());
+      else if(nite::SKELETON_TRACKED == user.getSkeleton().getState()) {
+        head = user.getSkeleton().getJoint(nite::JOINT_HEAD).getPosition();
+        print("head: (%g, %g, %g)\n", head.x, head.y, head.z);
+      }
+    }
+  }
 }
