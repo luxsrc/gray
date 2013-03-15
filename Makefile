@@ -1,9 +1,14 @@
+CUDA = $(subst /bin/nvcc,,$(shell which nvcc))
+NVCC = $(CUDA)/bin/nvcc
+ONI  = /usr/local/OpenNI/OpenNI-2.1.0
+NITE = /usr/local/NiTE/NiTE-2.0.0
+
 ifeq ($(DEBUG),1) # use `make <prob> DEBUG=1` to enable debug messages
 	CPPFLAGS += -DEBUG
 endif
 
 ifeq ($(DETAILS),1) # use `make <prob> DETAILS=1` to show the ptxas info
-	CFLAGS += --ptxas-options=-v
+	CFLAGS += -v --ptxas-options=-v
 endif
 
 ifeq ($(DOUBLE),1) # use `make <prob> DOUBLE=1` to compile in double precision
@@ -26,17 +31,15 @@ ifneq ($(IO),0) # use `make <prob> IO=0` to disable IO
 	CPPFLAGS += -DUMP
 endif
 
-CUDA = $(subst /bin/nvcc,,$(shell which nvcc))
-NVCC = $(CUDA)/bin/nvcc
-
 ifeq ($(wildcard $(CUDA)/lib64/libcuda*),)
 	LDFLAGS += $(addprefix -Xlinker ,-rpath $(CUDA)/lib)
 else
 	LDFLAGS += $(addprefix -Xlinker ,-rpath $(CUDA)/lib64)
 endif
 
-CPPFLAGS += -Isrc/$@
-CFLAGS   += $(addprefix --compiler-options ,-Wall) -O3
+CPPFLAGS += -Isrc/$@ -I$(NITE)/Include -I$(ONI)/Include
+LDFLAGS  += -L. -lNiTE2 -lOpenNI2
+CFLAGS   += $(addprefix --compiler-options ,-Wall) -m64 -O3
 
 help:
 	@echo 'The follow problems are avilable:'
@@ -51,7 +54,11 @@ help:
 Use \`make <prob> [DEBUG=1] [DETAILS=1] [DOUBLE=1] [GL=0] [IO=0]\` and\n\
 \`bin/GRay-<prob>\` to compile and run GRay.  The option DEBUG=1 turns on\n\
 debugging messages, DETAILS=1 prints ptxas information, DOUBLE=1 enforces\n\
-double-precision, while GL=0 disables OpenGL and IO=0 disables IO."
+double-precision, while GL=0 disables OpenGL and IO=0 disables IO.\n\
+\n\
+To compile and link with OpenNI and NiTE, one needs to set the paths for\n\
+them at the beginning of the \"Makefile\" and copy the files in Redist/ to\n\
+the working directory."
 
 %:
 	@if [ ! -d src/$@ ]; then                                \

@@ -77,6 +77,9 @@ extern void error(const char *, ...);
 #  define debug(...) // do nothing
 #endif
 
+// NiTE and OpenNI related functions for natural interactions
+extern void sense();
+
 // OpenGL/GLUT functions
 #ifndef DISABLE_GL
 extern void mktexture(GLuint[1]);

@@ -43,6 +43,8 @@ static void idle(void)
     if(ms > 80 && delta > 1    ) delta /= 2;
   }
 
+  sense();
+
   glutPostRedisplay();
 }
 
