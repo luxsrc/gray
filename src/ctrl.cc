@@ -21,7 +21,8 @@
 #ifndef DISABLE_GL
 #include <cstdlib>
 
-static float ax = 330, az = 90, ly =-70; // view angles
+double global::dt_saved = 0;
+float  global::ax = 330, global::ly = -70, global::az = 90;
 
 static int last_x = 0, last_y = 0;
 static int left   = 0, right  = 0;
@@ -31,7 +32,7 @@ static int shader     = 1;
 
 static void keyboard(unsigned char key, int x, int y)
 {
-  static double dt_stored = 0.0;
+  using namespace global;
 
   switch(key) {
   case 'q': case 'Q': case 27: // ESCAPE key
@@ -47,16 +48,16 @@ static void keyboard(unsigned char key, int x, int y)
     if(++shader >= 2) shader = 0;
     break;
   case 'r': case 'R':
-    if(global::dt_dump == 0.0)
-      dt_stored *= -1; // fall through
+    if(dt_dump == 0.0)
+      dt_saved *= -1; // fall through
     else {
-      global::dt_dump *= -1;
+      dt_dump *= -1;
       break;
     }
   case 'p': case 'P':
-    double temp = dt_stored;
-    dt_stored = global::dt_dump;
-    global::dt_dump = temp;
+    double temp = dt_saved;
+    dt_saved = dt_dump;
+    dt_dump = temp;
     break;
   }
 }
@@ -74,6 +75,8 @@ static void mouse(int b, int s, int x, int y)
 
 static void motion(int x, int y)
 {
+  using namespace global;
+
   int dx = x - last_x; last_x = x;
   int dy = y - last_y; last_y = y;
 
@@ -96,7 +99,7 @@ void regctrl()
 
 int getctrl()
 {
-  glLoadIdentity();
+  using namespace global;
 
   glRotatef(-90, 1, 0, 0);
   glTranslatef(0, -ly, 0);
