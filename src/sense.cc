@@ -25,6 +25,8 @@ static bool first = true;
 static nite::UserTracker tracker;
 static nite::Point3f head, neck, torso, upper[6], lower[6];
 
+static bool left = false, right = false;
+
 static void setup()
 {
   print("Making sense...");
@@ -83,6 +85,23 @@ void sense()
       lower[3] = s.getJoint(nite::JOINT_RIGHT_HIP     ).getPosition();
       lower[4] = s.getJoint(nite::JOINT_RIGHT_KNEE    ).getPosition();
       lower[5] = s.getJoint(nite::JOINT_RIGHT_FOOT    ).getPosition();
+
+      const nite::Point3f u(neck.x - torso.x,
+                            neck.y - torso.y,
+                            neck.z - torso.z);
+      const nite::Point3f l(upper[0].x - upper[1].x,
+                            upper[0].y - upper[1].y,
+                            upper[0].z - upper[1].z);
+      const nite::Point3f r(upper[5].x - upper[4].x,
+                            upper[5].y - upper[4].y,
+                            upper[5].z - upper[4].z);
+
+      const float U = sqrt(u.x * u.x + u.y * u.y + u.z * u.z);
+      const float L = sqrt(l.x * l.x + l.y * l.y + l.z * l.z);
+      const float R = sqrt(r.x * r.x + r.y * r.y + r.z * r.z);
+
+      left  = fabs((u.x * l.x + u.y * l.y + u.z * l.z) / (U * L)) < .5;
+      right = fabs((u.x * r.x + u.y * r.y + u.z * r.z) / (U * R)) < .5;
     } else
       head.z = 0;
   }
@@ -127,5 +146,27 @@ void track()
     for(int i = 0; i < 6; ++i)
       glVertex3f(lower[i].x, lower[i].y, lower[i].z);
     glEnd();
+
+    if(left) {
+      glLineWidth(7);
+      glColor3f(.333, .333, 1);
+      glBegin(GL_LINE_STRIP);
+      glVertex3f(upper[0].x, upper[0].y, upper[0].z);
+      glVertex3f(upper[1].x, upper[1].y, upper[1].z);
+      glEnd();
+      glColor3f(1, 1, 0);
+      glLineWidth(1);
+    }
+
+    if(right) {
+      glLineWidth(7);
+      glColor3f(.333, .333, 1);
+      glBegin(GL_LINE_STRIP);
+      glVertex3f(upper[5].x, upper[5].y, upper[5].z);
+      glVertex3f(upper[4].x, upper[4].y, upper[4].z);
+      glEnd();
+      glColor3f(1, 1, 0);
+      glLineWidth(1);
+    }
   }
 }
