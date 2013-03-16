@@ -95,36 +95,37 @@ void track()
 
   if(head.z != 0) {
     glColor3f(1, 1, 0);
+    glScalef(1./2000, 1./2000, 1./2000);
 
     glBegin(GL_LINE_STRIP);
-    const float hx = head.x / 1000, hy = head.y / 1000, hz = head.z / 1000;
+    const float hx = head.x, hy = head.y, hz = head.z;
     for(int i = -16; i <= 48; ++i) {
       const float phi = M_PI * i / 32;
-      glVertex3f(hx + 0.1 * cos(phi), hy + 0.1 * sin(phi), hz);
+      glVertex3f(hx + 150 * cos(phi), hy + 150 * sin(phi), hz);
     }
-    glVertex3f(neck.x / 1000, neck.y / 1000, neck.z / 1000);
+    glVertex3f(neck.x, neck.y, neck.z);
     glEnd();
 
     glBegin(GL_LINE_STRIP);
-    glVertex3f(upper[2].x / 1000, upper[2].y / 1000, upper[2].z / 1000);
-    glVertex3f(   torso.x / 1000,    torso.y / 1000,    torso.z / 1000);
-    glVertex3f(upper[3].x / 1000, upper[3].y / 1000, upper[3].z / 1000);
+    glVertex3f(upper[2].x, upper[2].y, upper[2].z);
+    glVertex3f(   torso.x,    torso.y,    torso.z);
+    glVertex3f(upper[3].x, upper[3].y, upper[3].z);
     glEnd();
 
     glBegin(GL_LINE_STRIP);
-    glVertex3f(lower[2].x / 1000, lower[2].y / 1000, lower[2].z / 1000);
-    glVertex3f(   torso.x / 1000,    torso.y / 1000,    torso.z / 1000);
-    glVertex3f(lower[3].x / 1000, lower[3].y / 1000, lower[3].z / 1000);
-    glEnd();
-
-    glBegin(GL_LINE_STRIP);
-    for(int i = 0; i < 6; ++i)
-      glVertex3f(upper[i].x / 1000, upper[i].y / 1000, upper[i].z / 1000);
+    glVertex3f(lower[2].x, lower[2].y, lower[2].z);
+    glVertex3f(   torso.x,    torso.y,    torso.z);
+    glVertex3f(lower[3].x, lower[3].y, lower[3].z);
     glEnd();
 
     glBegin(GL_LINE_STRIP);
     for(int i = 0; i < 6; ++i)
-      glVertex3f(lower[i].x / 1000, lower[i].y / 1000, lower[i].z / 1000);
+      glVertex3f(upper[i].x, upper[i].y, upper[i].z);
+    glEnd();
+
+    glBegin(GL_LINE_STRIP);
+    for(int i = 0; i < 6; ++i)
+      glVertex3f(lower[i].x, lower[i].y, lower[i].z);
     glEnd();
   }
 }
