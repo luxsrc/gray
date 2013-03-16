@@ -21,8 +21,10 @@
 #ifndef DISABLE_GL
 #include <cstdlib>
 
-double global::dt_saved = 0;
-float  global::ax = 330, global::ly = -70, global::az = 90;
+namespace global {
+  double dt_saved = 0;
+  float  ax = 330, ly = -70, az = 90;
+}
 
 static int last_x = 0, last_y = 0;
 static int left   = 0, right  = 0;
@@ -55,7 +57,7 @@ static void keyboard(unsigned char key, int x, int y)
       break;
     }
   case 'p': case 'P':
-    double temp = dt_saved;
+    const double temp = dt_saved;
     dt_saved = dt_dump;
     dt_dump = temp;
     break;
@@ -77,8 +79,8 @@ static void motion(int x, int y)
 {
   using namespace global;
 
-  int dx = x - last_x; last_x = x;
-  int dy = y - last_y; last_y = y;
+  const int dx = x - last_x; last_x = x;
+  const int dy = y - last_y; last_y = y;
 
   if(right)
     ly -= 0.1 * dy;
@@ -101,6 +103,7 @@ int getctrl()
 {
   using namespace global;
 
+  glLoadIdentity();
   glRotatef(-90, 1, 0, 0);
   glTranslatef(0, -ly, 0);
   glRotatef(-(az- 90), 1, 0, 0);
