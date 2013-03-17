@@ -102,6 +102,44 @@ void sense()
 
       left  = fabs((u.x * l.x + u.y * l.y + u.z * l.z) / (U * L)) < .5;
       right = fabs((u.x * r.x + u.y * r.y + u.z * r.z) / (U * R)) < .5;
+
+      static bool left_old, right_old;
+      static float d_old, x_old, z_old, ax_old, ly_old, az_old;
+
+      if(left && right) {
+        const float dx = upper[0].x - upper[5].x;
+        const float dy = upper[0].y - upper[5].y;
+        const float d  = sqrt(dx * dx + dy * dy);
+        if(!left_old || !right_old) {
+          d_old = d;
+          ly_old = global::ly;
+        }
+        global::ly = ly_old * d_old / d;
+      } else if(left) {
+        if(!left_old)
+          x_old = upper[0].x;
+        if(upper[0].x < x_old - 100)
+          global::dt_dump = -fabs(global::dt_dump);
+        else if(upper[0].x > x_old + 100)
+          global::dt_dump =  fabs(global::dt_dump);
+        else {
+          const double temp = global::dt_saved;
+          global::dt_saved = global::dt_dump;
+          global::dt_dump = temp;
+        }
+      } else if(right) {
+        if(!right_old) {
+          ax_old = global::ax;
+          az_old = global::az;
+          x_old = upper[5].x;
+          z_old = upper[5].y;
+        }
+        global::ax = ax_old + upper[5].x - x_old;
+        global::az = az_old + upper[5].y - z_old;
+      }
+
+      left_old  = left;
+      right_old = right;
     } else
       head.z = 0;
   }
