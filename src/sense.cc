@@ -150,11 +150,11 @@ void sense()
 void track()
 {
   glLoadIdentity();
-  glTranslatef(0, 0, -5); // translate 5 meters
+  glTranslatef(global::ratio - 0.1f, 1 - 0.1f, -5.0f);
 
   if(head.z != 0) {
     glColor3f(1, 1, 0);
-    glScalef(1./2000, 1./2000, 1./2000);
+    glScalef(1./10000, 1./10000, 1./10000);
 
     glBegin(GL_LINE_STRIP);
     const float hx = head.x, hy = head.y, hz = head.z;

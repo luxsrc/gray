@@ -81,10 +81,12 @@ static void display(void)
 
 static void reshape(int w, int h)
 {
+  global::ratio = (float)w / h;
+
   glViewport(0, 0, w, h);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(27.0, (double)w / h, 1.0, 2500.0);
+  gluPerspective(27.0, global::ratio, 1.0, 2500.0);
   glMatrixMode(GL_MODELVIEW);
 }
 

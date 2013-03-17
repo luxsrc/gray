@@ -70,7 +70,7 @@
 // Global variables
 namespace global {
   extern double t, dt_dump, dt_saved;
-  extern float  ax, ly, az;
+  extern float  ratio, ax, ly, az;
 }
 
 // Basic function prototypes
