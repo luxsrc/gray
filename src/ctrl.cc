@@ -22,15 +22,15 @@
 #include <cstdlib>
 
 namespace global {
-  double dt_saved = 0;
   float  ax = 330, ly = -70, az = 90;
 }
 
 static int last_x = 0, last_y = 0;
 static int left   = 0, right  = 0;
 
-static int fullscreen = 0;
-static int shader     = 1;
+static bool fullscreen = false;
+static bool draw_body  = true;
+static int  shader     = 1;
 
 static void keyboard(unsigned char key, int x, int y)
 {
@@ -45,6 +45,9 @@ static void keyboard(unsigned char key, int x, int y)
       glutFullScreen();
     else
       glutReshapeWindow(512, 512);
+    break;
+  case 'h': case 'H':
+    draw_body = !draw_body;
     break;
   case 's': case 'S':
     if(++shader >= 2) shader = 0;
@@ -102,6 +105,12 @@ void regctrl()
 int getctrl()
 {
   using namespace global;
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+#ifndef DISABLE_NITE
+  if(draw_body) track();
+#endif
 
   glLoadIdentity();
   glRotatef(-90, 1, 0, 0);

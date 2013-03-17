@@ -39,11 +39,7 @@ static GLuint texture;
 
 static void display(void)
 {
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#ifndef DISABLE_NITE
-  track();
-#endif
-  int i = getctrl();
+  const int i = getctrl();
 
   // Draw wire sphere, i.e., the "black hole"
   glColor3f(0.0, 1.0, 0.0);
