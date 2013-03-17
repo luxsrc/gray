@@ -28,6 +28,10 @@
 #  define DISABLE_GL
 #  undef   ISABLE_GL
 #endif
+#ifdef ISABLE_NITE
+#  define DISABLE_NITE
+#  undef   ISABLE_NITE
+#endif
 #ifdef OUBLE
 #  define DOUBLE
 #  undef   OUBLE
@@ -79,8 +83,10 @@ extern void error(const char *, ...);
 #endif
 
 // NiTE and OpenNI related functions for natural interactions
+#ifndef DISABLE_NITE
 extern void sense();
 extern void track();
+#endif
 
 // OpenGL/GLUT functions
 #ifndef DISABLE_GL

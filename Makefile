@@ -1,7 +1,5 @@
 CUDA = $(subst /bin/nvcc,,$(shell which nvcc))
 NVCC = $(CUDA)/bin/nvcc
-ONI  = /usr/local/OpenNI/OpenNI-2.1.0
-NITE = /usr/local/NiTE/NiTE-2.0.0
 
 ifeq ($(DEBUG),1) # use `make <prob> DEBUG=1` to enable debug messages
 	CPPFLAGS += -DEBUG
@@ -31,14 +29,21 @@ ifneq ($(IO),0) # use `make <prob> IO=0` to disable IO
 	CPPFLAGS += -DUMP
 endif
 
+ifneq ($(NITE),1) # use `make <prob> NITE=1 to enable natural interaction
+	CPPFLAGS += -DISABLE_NITE
+else
+	CPPFLAGS += -I/usr/local/NiTE/NiTE-2.0.0/Include \
+	            -I/usr/local/OpenNI/OpenNI-2.1.0/Include
+	LDFLAGS  += -L. -lNiTE2 -lOpenNI2
+endif
+
 ifeq ($(wildcard $(CUDA)/lib64/libcuda*),)
 	LDFLAGS += $(addprefix -Xlinker ,-rpath $(CUDA)/lib)
 else
 	LDFLAGS += $(addprefix -Xlinker ,-rpath $(CUDA)/lib64)
 endif
 
-CPPFLAGS += -Isrc/$@ -I$(NITE)/Include -I$(ONI)/Include
-LDFLAGS  += -L. -lNiTE2 -lOpenNI2
+CPPFLAGS += -Isrc/$@
 CFLAGS   += $(addprefix --compiler-options ,-Wall) -m64 -O3
 
 help:

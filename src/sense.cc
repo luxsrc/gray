@@ -17,6 +17,8 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
+
+#ifndef DISABLE_NITE
 #include <cmath>
 #include <NiTE.h>
 
@@ -208,3 +210,4 @@ void track()
     }
   }
 }
+#endif
