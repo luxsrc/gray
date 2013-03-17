@@ -102,8 +102,8 @@ void sense()
       const float L = sqrt(l.x * l.x + l.y * l.y + l.z * l.z);
       const float R = sqrt(r.x * r.x + r.y * r.y + r.z * r.z);
 
-      left  = fabs((u.x * l.x + u.y * l.y + u.z * l.z) / (U * L)) < .5;
-      right = fabs((u.x * r.x + u.y * r.y + u.z * r.z) / (U * R)) < .5;
+      left  = fabs((u.x * l.x + u.y * l.y + u.z * l.z) / (U * L)) < .333;
+      right = fabs((u.x * r.x + u.y * r.y + u.z * r.z) / (U * R)) < .333;
 
       static bool left_old, right_old;
       static float d_old, x_old, z_old, ax_old, ly_old, az_old;
@@ -120,9 +120,9 @@ void sense()
       } else if(left) {
         if(!left_old)
           x_old = upper[0].x;
-        if(upper[0].x < x_old - 100)
+        if(upper[0].x < x_old - 50)
           global::dt_dump = -fabs(global::dt_dump);
-        else if(upper[0].x > x_old + 100)
+        else if(upper[0].x > x_old + 50)
           global::dt_dump =  fabs(global::dt_dump);
         else {
           const double temp = global::dt_saved;
@@ -136,8 +136,8 @@ void sense()
           x_old = upper[5].x;
           z_old = upper[5].y;
         }
-        global::ax = ax_old + upper[5].x - x_old;
-        global::az = az_old + upper[5].y - z_old;
+        global::ax = ax_old + (upper[5].x - x_old) / 2;
+        global::az = az_old + (upper[5].y - z_old) / 2;
       }
 
       left_old  = left;
