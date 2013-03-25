@@ -91,8 +91,8 @@ static void display(void)
   glEnableClientState(GL_COLOR_ARRAY);
 
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glVertexPointer(3, GL_REAL, sizeof(State), (char *)(6 * sizeof(real)));
-  glColorPointer (3, GL_REAL, sizeof(State), (char *)(9 * sizeof(real)));
+  glVertexPointer(3, GL_REAL, sizeof(State), (char *)(7  * sizeof(real)));
+  glColorPointer (3, GL_REAL, sizeof(State), (char *)(10 * sizeof(real)));
   glDrawArrays(GL_POINTS, 0, n);
 
   glDisableClientState(GL_COLOR_ARRAY);

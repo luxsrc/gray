@@ -24,8 +24,8 @@
 typedef struct {
   real t, r, theta, phi;
   real kr, ktheta;
-  real bimpact; // impact parameter defined as L / E
-  real alpha0, beta0;
+  real bimpact;            // impact parameter defined as L / E
+  real alpha0, beta0, kt0; // initial parameters
   real Fr, Fg, Fb;
 } State;
 

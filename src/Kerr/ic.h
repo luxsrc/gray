@@ -54,7 +54,7 @@ static __device__ State ic(const size_t i, size_t n, const real t)
   }
 
   // Impact parameter = L / E
-  real bimpact;
+  real bimpact, kt;
   {
     real g00, g11, g22, g33, g30;
     {
@@ -75,7 +75,6 @@ static __device__ State ic(const size_t i, size_t n, const real t)
       g33 = (sum - a_spin * g30) * s2;
     }
 
-    real kt;
     {
       real g30_kphi = g30 * kphi;
       real Delta    = g30_kphi * g30_kphi - g00 * (g11 * kr     * kr     +
@@ -87,5 +86,7 @@ static __device__ State ic(const size_t i, size_t n, const real t)
     bimpact = -(g33 * kphi + g30 * kt) / (g00 * kt + g30 * kphi);
   }
 
-  return (State){t, r, theta, phi, kr, ktheta, bimpact, alpha, beta, 0, 0, 0};
+  return (State){t, r, theta, phi, kr, ktheta, bimpact,
+                 alpha, beta, kt,
+                 0, 0, 0};
 }
