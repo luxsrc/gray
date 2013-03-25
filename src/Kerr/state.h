@@ -25,6 +25,7 @@ typedef struct {
   real t, r, theta, phi;
   real kr, ktheta;
   real bimpact; // impact parameter defined as L / E
+  real Fr, Fg, Fb;
 } State;
 
 #endif // STATE_H

@@ -17,7 +17,7 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #define VERTEX_POINTER_OFFSET 1
-#define COLOR_POINTER_OFFSET  4
+#define COLOR_POINTER_OFFSET  7
 
 #define R_MAP                           \
   r.w = gl_Vertex.x * sin(gl_Vertex.y); \

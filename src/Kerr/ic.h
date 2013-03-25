@@ -87,5 +87,5 @@ static __device__ State ic(const size_t i, size_t n, const real t)
     bimpact = -(g33 * kphi + g30 * kt) / (g00 * kt + g30 * kphi);
   }
 
-  return (State){t, r, theta, phi, kr, ktheta, bimpact};
+  return (State){t, r, theta, phi, kr, ktheta, bimpact, 0, 0, 0};
 }
