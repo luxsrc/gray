@@ -34,12 +34,12 @@
 
 static size_t  n;
 static GLuint  vbo; // OpenGL Vertex Buffer Object
-static GLuint  shader[2], texture;
+static GLuint  shader[3], texture;
 static GLfloat width = 1024, height = 512;
 
 static void display(void)
 {
-  // Left view port
+  // LEFT VIEW PORT
   glViewport(0, 0, width / 2, height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -77,16 +77,29 @@ static void display(void)
   glDisable(GL_BLEND);
   glDisable(GL_POINT_SPRITE_ARB);
 
-  glUseProgram(0);
-
-  // Left view port
+  // RIGHT VIEW PORT
   glViewport(width / 2, 0, width / 2, height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
+  // Draw traced image by shader; TODO: we should use glTexSubImage2D()
+  glUseProgram(shader[2]);
+
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glEnableClientState(GL_COLOR_ARRAY);
+
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glVertexPointer(3, GL_REAL, sizeof(State), (char *)(6 * sizeof(real)));
+  glColorPointer (3, GL_REAL, sizeof(State), (char *)(9 * sizeof(real)));
+  glDrawArrays(GL_POINTS, 0, n);
+
+  glDisableClientState(GL_COLOR_ARRAY);
+  glDisableClientState(GL_VERTEX_ARRAY);
+
   // DONE
+  glUseProgram(0);
   if(GL_NO_ERROR != glGetError())
     error("callback: display(): fail to visualize simulation\n");
   glutSwapBuffers();

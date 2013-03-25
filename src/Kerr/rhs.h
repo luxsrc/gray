@@ -86,5 +86,5 @@ static inline __device__ State rhs(const State &s, real t)
               + 2 * G130 *   kphi   *   kt    ) / g11;
   } // 24 FLOP
 
-  return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, 0, 1, 1, 1};
+  return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, 0, 0, 0, 1, 1, 1};
 }
