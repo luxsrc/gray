@@ -36,7 +36,8 @@ static inline bool config(const char c, const real v)
   switch(c) {
   case 'r': err = cudaMemcpyToSymbol(r_obs,     &v, sizeof(real)); break;
   case 'i': err = cudaMemcpyToSymbol(i_obs,     &v, sizeof(real)); break;
-  case 'a': err = cudaMemcpyToSymbol(a_spin,    &v, sizeof(real)); break;
+  case 'a': err = cudaMemcpyToSymbol(a_spin,    &v, sizeof(real));
+                             global::a_spin    = v;                break;
   case 's': err = cudaMemcpyToSymbol(dt_scale,  &v, sizeof(real)); break;
   case 'e': err = cudaMemcpyToSymbol(epsilon,   &v, sizeof(real)); break;
   case 't': err = cudaMemcpyToSymbol(tolerance, &v, sizeof(real)); break;

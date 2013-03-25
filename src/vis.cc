@@ -32,6 +32,10 @@
 
 #define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
 
+namespace global {
+  float a_spin = 0.999;
+}
+
 static size_t  n;
 static GLuint  vbo; // OpenGL Vertex Buffer Object
 static GLuint  shader[3], texture;
@@ -49,11 +53,7 @@ static void display(void)
 
   // Draw wire sphere, i.e., the "black hole"
   glColor3f(0.0, 1.0, 0.0);
-#ifdef A_SPIN
-  glutWireSphere(1.0 + sqrt(1.0 - A_SPIN * A_SPIN), 32, 16);
-#else
-  glutWireSphere(1.0, 32, 16);
-#endif
+  glutWireSphere(1.0 + sqrt(1.0 - global::a_spin * global::a_spin), 32, 16);
 
   // Draw particles, i.e., photon locations
   glUseProgram(shader[i]);
