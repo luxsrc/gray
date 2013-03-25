@@ -17,6 +17,7 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
+#include "harm.h"
 #include <cstdlib>
 #include <para.h>
 
@@ -39,8 +40,16 @@ namespace global {
   float  ratio    = 1;
 }
 
+static void cleanup()
+{
+  if(harm::field) free(harm::field);
+  if(harm::coord) free(harm::coord);
+}
+
 int main(int argc, char **argv)
 {
+  const char *name = NULL;
+
   print("GRay: a massive parallel GRaysic integrator\n");
   debug("Debugging is turned on\n");
 
@@ -63,6 +72,7 @@ int main(int argc, char **argv)
       case 'N': n               = atoi(arg + 2); break;
       case 'T': global::t       = atof(arg + 2); break;
       case 'D': global::dt_dump = atof(arg + 2); break;
+      case 'H': name            =      arg + 2 ; break;
       default :
         if(!init_config(arg) || !prob_config(arg))
           error("Unknown parameter ""%s""\n", arg);
@@ -70,6 +80,15 @@ int main(int argc, char **argv)
       }
       print("Set parameter ""%s""\n", arg);
     }
+  }
+
+  if(name) {
+    Coord *coord = load_coord("usgdump2d");
+    Field *field = load_field(name);
+    if(coord && field && !atexit(cleanup))
+      print("Loaded harm data from \"%s\"\n", name);
+    else
+      error("Fail to load harm data from \"%s\"", name);
   }
 
   Data data(n ? n : N_DEFAULT);
