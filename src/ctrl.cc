@@ -22,7 +22,7 @@
 #include <cstdlib>
 
 namespace global {
-  float  ax = 330, ly = -70, az = 90;
+  float ax = 330, ly = -70, az = 90;
 }
 
 static int last_x = 0, last_y = 0;
