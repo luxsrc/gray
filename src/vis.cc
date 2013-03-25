@@ -32,13 +32,19 @@
 
 #define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
 
-static size_t n;
-static GLuint vbo; // OpenGL Vertex Buffer Object
-static GLuint shader[2];
-static GLuint texture;
+static size_t  n;
+static GLuint  vbo; // OpenGL Vertex Buffer Object
+static GLuint  shader[2], texture;
+static GLfloat width = 1024, height = 512;
 
 static void display(void)
 {
+  // Left view port
+  glViewport(0, 0, width / 2, height);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluPerspective(27.0, global::ratio, 1.0, 2500.0);
+  glMatrixMode(GL_MODELVIEW);
   const int i = getctrl();
 
   // Draw wire sphere, i.e., the "black hole"
@@ -73,21 +79,22 @@ static void display(void)
 
   glUseProgram(0);
 
+  // Left view port
+  glViewport(width / 2, 0, width / 2, height);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  // DONE
   if(GL_NO_ERROR != glGetError())
     error("callback: display(): fail to visualize simulation\n");
-
   glutSwapBuffers();
 }
 
 static void reshape(int w, int h)
 {
-  global::ratio = (float)w / h;
-
-  glViewport(0, 0, w, h);
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(27.0, global::ratio, 1.0, 2500.0);
-  glMatrixMode(GL_MODELVIEW);
+  global::ratio = (width = w) / (height = h) / 2;
 }
 
 void vis(GLuint vbo_in, size_t n_in)

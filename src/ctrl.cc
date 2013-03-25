@@ -44,7 +44,7 @@ static void keyboard(unsigned char key, int x, int y)
     if((fullscreen = !fullscreen))
       glutFullScreen();
     else
-      glutReshapeWindow(512, 512);
+      glutReshapeWindow(1024, 512);
     break;
   case 'h': case 'H':
     draw_body = !draw_body;
