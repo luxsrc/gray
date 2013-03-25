@@ -38,8 +38,6 @@ Coord *load_coord(const char *name)
   if(!file)
     error("ERROR: fail to open file \"%s\".\n", name);
   else {
-    size_t count;
-
     fseek(file, 12, SEEK_CUR);
     fread(&n1, sizeof(size_t), 1, file);
     fread(&n2, sizeof(size_t), 1, file);
@@ -48,15 +46,29 @@ Coord *load_coord(const char *name)
     fread(&R0, sizeof(double), 1, file);
     fseek(file, 44, SEEK_CUR);
 
-    count = n1 * n2;
-    if(!(data = (Coord *)malloc(sizeof(Coord) * count)))
-      error("ERROR: fail to allocate memory\n");
-    else {
-      size_t i;
-      for(i = 0; i < count; ++i) {
+    size_t count = n1 * n2;
+    Coord *host;
+    if(!(host = (Coord *)malloc(sizeof(Coord) * count)))
+      error("ERROR: fail to allocate host memory\n");
+    else if(cudaSuccess != cudaMalloc((void **)&data,sizeof(Coord) * count)) {
+      free(host);
+      error("ERROR: fail to allocate device memory\n");
+    } else {
+      for(size_t i = 0; i < count; ++i) {
         fseek(file, 4, SEEK_CUR);
-        fread(data + i, sizeof(Coord), 1, file);
+        fread(host + i, sizeof(Coord), 1, file);
         fseek(file, 52, SEEK_CUR);
+      }
+
+      cudaError_t err =
+        cudaMemcpy((void **)data, (void **)host,
+                   sizeof(Coord) * count, cudaMemcpyHostToDevice);
+      free(host);
+
+      if(cudaSuccess != err) {
+        cudaFree(data);
+        data = NULL;
+        error("ERROR: fail to copy data from host to device\n");
       }
     }
 
@@ -78,19 +90,29 @@ Field *load_field(const char *name)
   if(!file)
     error("ERROR: fail to open file \"%s\".\n", name);
   else {
-    size_t count;
-
     fscanf(file, "%lf %zu %zu %zu", &t, &n1, &n2, &n3);
-    count = n1 * n2 * n3;
-
     while('\n' != fgetc(file));
 
-    if(!(data = (Field *)malloc(sizeof(Field) * count)))
-      error("ERROR: fail to allocate memory\n");
-    else if(count != fread(data, sizeof(Field), count, file)) {
-      free(data);
-      data = NULL;
-      error("ERROR: end of file\n");
+    size_t count = n1 * n2 * n3;
+    Field *host;
+    if(!(host = (Field *)malloc(sizeof(Field) * count)))
+      error("ERROR: fail to allocate host memory\n");
+    else if(cudaSuccess != cudaMalloc((void **)&data, sizeof(Field) * count)) {
+      free(host);
+      error("ERROR: fail to allocate device memory\n");
+    } else {
+      fread(host, sizeof(Field), count, file);
+
+      cudaError_t err =
+        cudaMemcpy((void **)data, (void **)host,
+                   sizeof(Field) * count, cudaMemcpyHostToDevice);
+      free(host);
+
+      if(cudaSuccess != err) {
+        cudaFree(data);
+        data = NULL;
+        error("ERROR: fail to copy data from host to device\n");
+      }
     }
 
     fclose(file);

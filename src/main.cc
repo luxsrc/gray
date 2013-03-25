@@ -42,8 +42,8 @@ namespace global {
 
 static void cleanup()
 {
-  if(harm::field) free(harm::field);
-  if(harm::coord) free(harm::coord);
+  if(harm::field) cudaFree(harm::field);
+  if(harm::coord) cudaFree(harm::coord);
 }
 
 int main(int argc, char **argv)
