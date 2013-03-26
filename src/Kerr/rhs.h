@@ -91,8 +91,8 @@ static inline __device__ State rhs(const State &s, real t)
     const real dR  = s.r * sin_theta - 6;
     const real dz  = s.r * cos_theta;
 
-    s2  = g00 / (kt * kt); // assume observer is far enough so g00_obs = -1
-    src = (dR * dR + dz * dz < 4) ? s2 * s2 : 0;
+    // Assume observer is far enough so g00_obs = -1
+    src = (dR * dR + dz * dz < 4) ? g00 * g00 : 0;
   }
 
   return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, // null geodesic
