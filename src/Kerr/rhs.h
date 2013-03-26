@@ -33,9 +33,9 @@ static inline __device__ State rhs(const State &s, real t)
     s2 = sin_theta * sin_theta;
   } // 4 FLOP
 
-  real g00, g11, g22, g33_s2, Dlt, kt, kphi;
+  real g00, g11, g22, g33, g30, g33_s2, Dlt, kt, kphi;
   {
-    real g30, g33, sum, tmp;
+    real sum, tmp;
     sum    = r2 + a2;
     Dlt    = sum - R_SCHW * s.r;
 
@@ -90,9 +90,10 @@ static inline __device__ State rhs(const State &s, real t)
   {
     const real dR  = s.r * sin_theta - 6;
     const real dz  = s.r * cos_theta;
-
-    // Assume observer is far enough so g00_obs = -1
-    src = (dR * dR + dz * dz < 4) ? g00 * g00 : 0;
+    const real Omg = 0.5;
+    cs  = Omg * s.bimpact - 1; // g00 * kt + g30 * kphi = -E = -1
+    s2  = (g00 + 2 * g30 * Omg + g33 * Omg * Omg) / (cs * cs); // g00_obs ~ -1
+    src = (dR * dR + dz * dz < 4) ? s2 * s2 : 0;
   }
 
   return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, // null geodesic
