@@ -87,12 +87,12 @@ static inline __device__ State rhs(const State &s, real t)
   } // 24 FLOP
 
   {
-    cs = s.kt0 / kt; // = k.u_obs / k.u_emi
+    cs = 1  / kt; // = k.u_obs / k.u_emi
     c2 = cs * cs;
     s2 = c2 * c2;
   }
 
   return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, // null geodesic
-                 0,  0,  0,  0,                        // constant of motions
+                 0,  0,  0,                            // constants of motion
                  s2, s2, s2};                          // radiative transfer
 }
