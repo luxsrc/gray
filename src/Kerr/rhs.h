@@ -24,9 +24,9 @@ static inline __device__ State rhs(const State &s, real t)
   const real a2 = a_spin * a_spin;
   const real r2 = s.r * s.r; // 1 FLOP
 
-  real c2, cs, s2;
+  real sin_theta, cos_theta, c2, cs, s2;
   {
-    real sin_theta, cos_theta; sincos(s.theta, &sin_theta, &cos_theta);
+    sincos(s.theta, &sin_theta, &cos_theta);
 
     c2 = cos_theta * cos_theta;
     cs = cos_theta * sin_theta;
@@ -86,13 +86,15 @@ static inline __device__ State rhs(const State &s, real t)
               + 2 * G130 *   kphi   *   kt    ) / g11;
   } // 24 FLOP
 
+  real src;
   {
-    cs = 1  / kt; // = k.u_obs / k.u_emi
-    c2 = cs * cs;
-    s2 = c2 * c2;
+    const real dR  = s.r * sin_theta - 6;
+    const real dz  = s.r * cos_theta;
+
+    src = (dR * dR + dz * dz < 4) ? 1 / (kt * kt * kt * kt) : 0;
   }
 
   return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, // null geodesic
-                 0,  0,  0,                            // constants of motion
-                 s2, s2, s2};                          // radiative transfer
+                 0,   0,   0,                          // constants of motion
+                 src, src, src};                       // radiative transfer
 }
