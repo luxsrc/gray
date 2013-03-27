@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#define FLOP_RHS 74
+#define FLOP_RHS 79 // assume outside torus
 #define R_SCHW   2
 
 static inline __device__ State rhs(const State &s, real t)
@@ -86,14 +86,15 @@ static inline __device__ State rhs(const State &s, real t)
               + 2 * G130 *   kphi   *   kt    ) / g11;
   } // 24 FLOP
 
-  real src;
+  real src = 0;
   {
     const real dR = s.r * sin_theta - R_torus;
-    const real dz = s.r * cos_theta;
-    cs  = Omega * s.bimpact - 1; // note that g00 * kt + g30 * kphi = -E = -1
-    s2  = (g00 + 2 * g30 * Omega + g33 * Omega * Omega) / (cs * cs);
-    src = (dR * dR + dz * dz < 4) ? s2 * s2 : 0;
-  }
+    if(dR * dR + r2 * c2 < 4) {
+      cs  = Omega * s.bimpact - 1; // note that g00 * kt + g30 * kphi = -E = -1
+      s2  = (g00 + 2 * g30 * Omega + g33 * Omega * Omega) / (cs * cs);
+      src = s2 * s2;
+    }
+  } // 5 FLOP if outside torus; 16 FLOP if inside torus
 
   return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, // null geodesic
                  0,   0,   0,                          // constants of motion
