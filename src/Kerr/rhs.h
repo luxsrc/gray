@@ -88,11 +88,10 @@ static inline __device__ State rhs(const State &s, real t)
 
   real src;
   {
-    const real dR  = s.r * sin_theta - 6;
-    const real dz  = s.r * cos_theta;
-    const real Omg = 0.5;
-    cs  = Omg * s.bimpact - 1; // g00 * kt + g30 * kphi = -E = -1
-    s2  = (g00 + 2 * g30 * Omg + g33 * Omg * Omg) / (cs * cs); // g00_obs ~ -1
+    const real dR = s.r * sin_theta - R_torus;
+    const real dz = s.r * cos_theta;
+    cs  = Omega * s.bimpact - 1; // note that g00 * kt + g30 * kphi = -E = -1
+    s2  = (g00 + 2 * g30 * Omega + g33 * Omega * Omega) / (cs * cs);
     src = (dR * dR + dz * dz < 4) ? s2 * s2 : 0;
   }
 

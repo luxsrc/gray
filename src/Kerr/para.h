@@ -22,6 +22,8 @@
 #ifndef __CUDACC__ // for src/main.cc
 #  define DT_DUMP (-1)
 #else // for src/init.cu and src/evolve.cu
+
+// Parameters for geodesic integration
 static __constant__ real r_obs     = 30;       // observer radius in GM/c^2
 static __constant__ real i_obs     = 30;       // observer theta in degrees
 static __constant__ real a_spin    = 0.999;    // dimensionless spin j/mc
@@ -29,6 +31,10 @@ static __constant__ real dt_scale  = 1.0 / 32; // typical step size
 static __constant__ real epsilon   = 1e-3;     // stop photon
 static __constant__ real tolerance = 1e-1;     // if xi+1 > tolerance, fall
                                                // back to forward Euler
+// Parameters for radiative transfer
+static __constant__ real R_torus   = 6;
+static __constant__ real Omega     = 0.5;
+
 static inline bool config(const char c, const real v)
 {
   cudaError_t err = cudaErrorInvalidSymbol;
