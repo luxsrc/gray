@@ -24,18 +24,18 @@ static inline __device__ State rhs(const State &s, real t)
   const real a2 = a_spin * a_spin;
   const real r2 = s.r * s.r; // 1 FLOP
 
-  real c2, cs, s2;
+  real sin_theta, cos_theta, c2, cs, s2;
   {
-    real sin_theta, cos_theta; sincos(s.theta, &sin_theta, &cos_theta);
+    sincos(s.theta, &sin_theta, &cos_theta);
 
     c2 = cos_theta * cos_theta;
     cs = cos_theta * sin_theta;
     s2 = sin_theta * sin_theta;
   } // 4 FLOP
 
-  real g11, g22, g33_s2, Dlt, kt, kphi;
+  real g00, g11, g22, g33, g30, g33_s2, Dlt, kt, kphi;
   {
-    real g00, g30, g33, sum, tmp;
+    real sum, tmp;
     sum    = r2 + a2;
     Dlt    = sum - R_SCHW * s.r;
 
@@ -86,5 +86,17 @@ static inline __device__ State rhs(const State &s, real t)
               + 2 * G130 *   kphi   *   kt    ) / g11;
   } // 24 FLOP
 
-  return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, 0.0};
+  real src;
+  {
+    const real dR  = s.r * sin_theta - 6;
+    const real dz  = s.r * cos_theta;
+    const real Omg = 0.5;
+    cs  = Omg * s.bimpact - 1; // g00 * kt + g30 * kphi = -E = -1
+    s2  = (g00 + 2 * g30 * Omg + g33 * Omg * Omg) / (cs * cs); // g00_obs ~ -1
+    src = (dR * dR + dz * dz < 4) ? s2 * s2 : 0;
+  }
+
+  return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, // null geodesic
+                 0,   0,   0,                          // constants of motion
+                 src, src, src};                       // radiative transfer
 }

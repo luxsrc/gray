@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 
 #ifndef DISABLE_GL
   glutInit(&argc, argv);
-  glutInitWindowSize(512, 512);
+  glutInitWindowSize(1024, 512);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
   glutCreateWindow(argv[0]);
   if(GL_NO_ERROR != glGetError())

@@ -25,7 +25,7 @@ static __device__ State ic(const size_t i, size_t n, const real t)
   n /= m;
 
   // Photon position and momentum in spherical coordinates
-  real r, theta, phi, kr, ktheta, kphi;
+  real r, theta, phi, kr, ktheta, kphi, alpha, beta;
   {
     const real deg2rad = M_PI / 180;
     const real cos_obs = cos(deg2rad * i_obs);
@@ -34,14 +34,14 @@ static __device__ State ic(const size_t i, size_t n, const real t)
     const real half    = .5;
 
     real x, y, z;
-    {
-      real alpha =  (i % n + half) / n - half;
-      real beta  = ((i / n + half) / m - half) * m / n;
 
-      x  = r_obs * sin_obs - scale * beta * cos_obs;
-      y  =                   scale * alpha         ;
-      z  = r_obs * cos_obs + scale * beta * sin_obs;
-    }
+    alpha =  (i % n + half) / n - half;
+    beta  = ((i / n + half) / m - half) * m / n;
+
+    x  = r_obs * sin_obs - scale * beta * cos_obs;
+    y  =                   scale * alpha         ;
+    z  = r_obs * cos_obs + scale * beta * sin_obs;
+
     const real R2 = x * x + y * y;
 
     r     = sqrt(R2 + z * z);
@@ -87,5 +87,5 @@ static __device__ State ic(const size_t i, size_t n, const real t)
     bimpact = -(g33 * kphi + g30 * kt) / (g00 * kt + g30 * kphi);
   }
 
-  return (State){t, r, theta, phi, kr, ktheta, bimpact};
+  return (State){t, r, theta, phi, kr, ktheta, bimpact, alpha, beta, 0, 0, 0};
 }
