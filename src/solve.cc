@@ -71,11 +71,13 @@ int solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
 
-  do {
 #ifdef DUMP
-    dump(data);
+  do dump(data);
 #endif
-  } while(0 < evolve(data, global::dt_dump));
+  while(0 < evolve(data, global::dt_dump));
+#ifndef DUMP
+  dump(data);
+#endif
 
   return 0;
 }
