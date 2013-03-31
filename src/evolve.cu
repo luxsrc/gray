@@ -17,6 +17,7 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
+#include "harm.h"
 #include <cstdlib>
 #include <para.h>
 #include <rhs.h>
@@ -82,6 +83,10 @@ double evolve(Data &data, double dt)
 
   const size_t bsz = 64;
   const size_t gsz = (n - 1) / bsz + 1;
+
+  if(cudaSuccess != cudaMemcpyToSymbol(coord, &harm::coord, sizeof(Coord *)) ||
+     cudaSuccess != cudaMemcpyToSymbol(field, &harm::field, sizeof(Field *)))
+    error("evolve(): fail to copy pointer(s) to device\n");
 
   if(cudaSuccess != cudaEventRecord(time0, 0))
     error("evolve(): fail to record event\n");
