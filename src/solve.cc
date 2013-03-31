@@ -37,7 +37,9 @@ static void idle(void)
       ms = evolve(*d, global::dt_dump * (limit - count) / limit);
       if(0 == ms) return;
       count = 0;
+#ifdef DUMP
       dump(*d);
+#endif
     }
     if(ms < 20 && delta < limit) delta *= 2;
     if(ms > 80 && delta > 1    ) delta /= 2;
@@ -57,7 +59,9 @@ int solve(Data &data)
   d = &data;
   glutIdleFunc(idle);
 
+#ifdef DUMP
   dump(data);
+#endif
   glutMainLoop();
 
   return 0;
@@ -68,7 +72,9 @@ int solve(Data &data)
   debug("solve(*%p)\n", &data);
 
   do {
+#ifdef DUMP
     dump(data);
+#endif
   } while(0 < evolve(data, global::dt_dump));
 
   return 0;

@@ -23,7 +23,6 @@ void dump(Data &data)
 {
   debug("dump(*%p)\n", &data);
 
-#ifdef DUMP
   static size_t frame = 0;
 
   const double t = global::t;
@@ -40,5 +39,4 @@ void dump(Data &data)
   fwrite(&n, sizeof(size_t), 1, file);
   fwrite( h, sizeof(State),  n, file);
   fclose(file);
-#endif
 }
