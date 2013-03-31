@@ -83,12 +83,16 @@ int main(int argc, char **argv)
   }
 
   if(name) {
-    Coord *coord = load_coord("usgdump2d");
-    Field *field = load_field(name);
+    using namespace harm;
+    coord = load_coord("usgdump2d");
+    field = load_field(name);
     if(coord && field && !atexit(cleanup))
       print("Loaded harm data from \"%s\"\n", name);
-    else
+    else {
+      if(field) cudaFree(field);
+      if(coord) cudaFree(coord);
       error("Fail to load harm data from \"%s\"", name);
+    }
   }
 
   Data data(n ? n : N_DEFAULT);
