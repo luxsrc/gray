@@ -33,7 +33,7 @@ static __constant__ real tolerance = 1e-1;     // if xi+1 > tolerance, fall
                                                // back to forward Euler
 // Parameters for radiative transfer
 static __constant__ real R_torus   = 6;
-static __constant__ real Omega     = 0.5;
+static __constant__ real Omega     = 0.068;
 
 static inline bool config(const char c, const real v)
 {

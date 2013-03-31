@@ -76,7 +76,7 @@ void mkshaders(GLuint shader[3])
       r.y = gl_Vertex.z;
       r.z = 0.0;
       r.w = 1.0;
-      gl_FrontColor = 0.1 * abs(gl_Color);
+      gl_FrontColor = abs(gl_Color) / 64.0; // Transform f back to I, 64 = 4^3
       gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * r;
     }
   ), GL_VERTEX_SHADER));

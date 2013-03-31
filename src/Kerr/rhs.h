@@ -90,9 +90,10 @@ static inline __device__ State rhs(const State &s, real t)
   {
     const real dR = s.r * sin_theta - R_torus;
     if(dR * dR + r2 * c2 < 4) {
-      cs  = Omega * s.bimpact - 1; // note that g00 * kt + g30 * kphi = -E = -1
-      s2  = (g00 + 2 * g30 * Omega + g33 * Omega * Omega) / (cs * cs);
-      src = s2 * s2;
+      const real nu0 = 4;
+      const real nu  = nu0 / sqrt(-g00 - 2 * g30 * Omega - g33 * Omega * Omega)
+        * (1 - Omega * s.bimpact); // note that g00 * kt + g30 * kphi = -E = -1
+      src = 100 * nu / (exp(nu) - 1);
     }
   } // 5 FLOP if outside torus; 16 FLOP if inside torus
 
