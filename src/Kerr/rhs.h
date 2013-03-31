@@ -102,5 +102,5 @@ static inline __device__ State rhs(const State &s, real t)
 
   return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, // null geodesic
                  0,     0,     0,                      // constants of motion
-                 src_R, src_G, src_B};                 // radiative transfer
+                -src_R,-src_G,-src_B};                 // radiative transfer
 }

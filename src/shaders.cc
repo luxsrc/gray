@@ -76,9 +76,9 @@ void mkshaders(GLuint shader[3])
       r.y = gl_Vertex.z;
       r.z = 0.0;
       r.w = 1.0;
-      gl_FrontColor.x = abs(gl_Color.x /  64.0);
-      gl_FrontColor.y = abs(gl_Color.y / 125.0);
-      gl_FrontColor.z = abs(gl_Color.z / 216.0);
+      gl_FrontColor.x = gl_Color.x /  64.0;
+      gl_FrontColor.y = gl_Color.y / 125.0;
+      gl_FrontColor.z = gl_Color.z / 216.0;
       gl_FrontColor.w = 1.0;
       gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * r;
     }
