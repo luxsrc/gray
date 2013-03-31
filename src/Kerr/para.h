@@ -19,6 +19,8 @@
 #ifndef PARA_H
 #define PARA_H
 
+#define WIDTH 1024
+
 #ifndef __CUDACC__ // for src/main.cc
 #  define DT_DUMP (-1)
 #else // for src/init.cu and src/evolve.cu

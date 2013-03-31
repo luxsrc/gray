@@ -20,6 +20,15 @@
 
 #ifndef DISABLE_GL
 #include <cstdlib>
+#include <para.h>
+
+#ifndef WIDTH
+#define WIDTH 512
+#endif
+
+#ifndef HEIGHT
+#define HEIGHT 512
+#endif
 
 namespace global {
   float ax = 330, ly = -70, az = 90;
@@ -44,7 +53,7 @@ static void keyboard(unsigned char key, int x, int y)
     if((fullscreen = !fullscreen))
       glutFullScreen();
     else
-      glutReshapeWindow(1024, 512);
+      glutReshapeWindow(WIDTH, HEIGHT);
     break;
   case 'h': case 'H':
     draw_body = !draw_body;
