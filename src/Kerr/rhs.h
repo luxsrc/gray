@@ -86,18 +86,21 @@ static inline __device__ State rhs(const State &s, real t)
               + 2 * G130 *   kphi   *   kt    ) / g11;
   } // 24 FLOP
 
-  real src = 0;
+  real src_R = 0, src_G = 0, src_B = 0;
   {
     const real dR = s.r * sin_theta - R_torus;
     if(dR * dR + r2 * c2 < 4) {
-      const real nu0 = 4;
-      const real nu  = nu0 / sqrt(-g00 - 2 * g30 * Omega - g33 * Omega * Omega)
-        * (1 - Omega * s.bimpact); // note that g00 * kt + g30 * kphi = -E = -1
-      src = 100 * nu / (exp(nu) - 1);
+      const real shift = (1 - Omega * s.bimpact) /
+        sqrt(-g00 - 2 * g30 * Omega - g33 * Omega * Omega);
+      real nu;
+
+      nu = 0.4 * shift; src_R = 10 * nu / (exp(nu) - 1);
+      nu = 0.5 * shift; src_G = 10 * nu / (exp(nu) - 1);
+      nu = 0.6 * shift; src_B = 10 * nu / (exp(nu) - 1);
     }
   } // 5 FLOP if outside torus; 16 FLOP if inside torus
 
   return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, // null geodesic
-                 0,   0,   0,                          // constants of motion
-                 src, src, src};                       // radiative transfer
+                 0,     0,     0,                      // constants of motion
+                 src_R, src_G, src_B};                 // radiative transfer
 }
