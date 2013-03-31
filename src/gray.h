@@ -70,7 +70,9 @@
 // Global variables
 namespace global {
   extern double t, dt_dump, dt_saved;
-  extern float  ratio, ax, ly, az, a_spin;
+#ifndef DISABLE_GL
+  extern float ratio, ax, ly, az, a_spin;
+#endif
 }
 
 // Basic function prototypes

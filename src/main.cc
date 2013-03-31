@@ -36,7 +36,6 @@ namespace global {
   double t        = T_START;
   double dt_dump  = DT_DUMP;
   double dt_saved = 0;
-  float  ratio    = 1;
 }
 
 int main(int argc, char **argv)
