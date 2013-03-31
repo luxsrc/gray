@@ -20,7 +20,16 @@
 
 #ifndef DISABLE_GL
 #include <cmath>
+#include <para.h>
 #include <shader.h> // to get vertex and color pointer offsets
+
+#ifndef WIDTH
+#define WIDTH 512
+#endif
+
+#ifndef HEIGHT
+#define HEIGHT 512
+#endif
 
 #ifndef VERTEX_POINTER_OFFSET
 #define VERTEX_POINTER_OFFSET 0
@@ -33,18 +42,23 @@
 #define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
 
 namespace global {
+  float ratio  = 1;
   float a_spin = 0.999;
 }
 
 static size_t  n;
 static GLuint  vbo; // OpenGL Vertex Buffer Object
 static GLuint  shader[3], texture;
-static GLfloat width = 1024, height = 512;
+static GLfloat width, height;
 
 static void display(void)
 {
   // LEFT VIEW PORT
-  glViewport(0, 0, width / 2, height);
+#if WIDTH > HEIGHT
+    glViewport(0, 0, width / 2, height);
+#else
+    glViewport(0, 0, width,     height);
+#endif
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(27.0, global::ratio, 1.0, 2500.0);
@@ -78,6 +92,7 @@ static void display(void)
   glDisable(GL_POINT_SPRITE_ARB);
 
   // RIGHT VIEW PORT
+#if WIDTH > HEIGHT
   glViewport(width / 2, 0, width / 2, height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -97,6 +112,7 @@ static void display(void)
 
   glDisableClientState(GL_COLOR_ARRAY);
   glDisableClientState(GL_VERTEX_ARRAY);
+#endif
 
   // DONE
   glUseProgram(0);
@@ -107,7 +123,11 @@ static void display(void)
 
 static void reshape(int w, int h)
 {
+#if WIDTH > HEIGHT
   global::ratio = (width = w) / (height = h) / 2;
+#else
+  global::ratio = (width = w) / (height = h);
+#endif
 }
 
 void vis(GLuint vbo_in, size_t n_in)

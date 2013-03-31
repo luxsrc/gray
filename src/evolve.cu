@@ -84,9 +84,11 @@ double evolve(Data &data, double dt)
   const size_t bsz = 64;
   const size_t gsz = (n - 1) / bsz + 1;
 
+#ifdef HARM
   if(cudaSuccess != cudaMemcpyToSymbol(coord, &harm::coord, sizeof(Coord *)) ||
      cudaSuccess != cudaMemcpyToSymbol(field, &harm::field, sizeof(Field *)))
     error("evolve(): fail to copy pointer(s) to device\n");
+#endif
 
   if(cudaSuccess != cudaEventRecord(time0, 0))
     error("evolve(): fail to record event\n");

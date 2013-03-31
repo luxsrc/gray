@@ -19,6 +19,9 @@
 #ifndef PARA_H
 #define PARA_H
 
+#define WIDTH 1024
+#define HARM  1
+
 #ifndef __CUDACC__ // for src/main.cc
 #  define DT_DUMP (-1)
 #else // for src/init.cu and src/evolve.cu
@@ -34,8 +37,8 @@ static __constant__ real tolerance = 1e-1;     // if xi+1 > tolerance, fall
 // Parameters for radiative transfer
 static __constant__ Coord *coord   = NULL;
 static __constant__ Field *field   = NULL;
-static __constant__ real R_torus   = 6;
-static __constant__ real Omega     = 0.068;
+static __constant__ real   R_torus = 6;
+static __constant__ real   Omega   = 0.068;
 
 static inline bool config(const char c, const real v)
 {
@@ -45,7 +48,10 @@ static inline bool config(const char c, const real v)
   case 'r': err = cudaMemcpyToSymbol(r_obs,     &v, sizeof(real)); break;
   case 'i': err = cudaMemcpyToSymbol(i_obs,     &v, sizeof(real)); break;
   case 'a': err = cudaMemcpyToSymbol(a_spin,    &v, sizeof(real));
-                             global::a_spin    = v;                break;
+#ifndef DISABLE_GL
+    global::a_spin = v;
+#endif
+    break;
   case 's': err = cudaMemcpyToSymbol(dt_scale,  &v, sizeof(real)); break;
   case 'e': err = cudaMemcpyToSymbol(epsilon,   &v, sizeof(real)); break;
   case 't': err = cudaMemcpyToSymbol(tolerance, &v, sizeof(real)); break;
