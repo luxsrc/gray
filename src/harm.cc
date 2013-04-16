@@ -32,17 +32,20 @@ Coord *load_coord(const char *name)
 {
   using namespace harm;
 
+  double a    = 0;
   Coord *data = NULL;
   FILE  *file = fopen(name, "r");
 
   if(!file)
     error("ERROR: fail to open file \"%s\".\n", name);
   else {
+
     fseek(file, 12, SEEK_CUR);
     fread(&n1, sizeof(size_t), 1, file);
     fread(&n2, sizeof(size_t), 1, file);
     fread(&n3, sizeof(size_t), 1, file);
-    fseek(file, 72, SEEK_CUR);
+    fseek(file, 64, SEEK_CUR);
+    fread(&a,  sizeof(double), 1, file);
     fread(&R0, sizeof(double), 1, file);
     fseek(file, 44, SEEK_CUR);
 
@@ -75,7 +78,7 @@ Coord *load_coord(const char *name)
     fclose(file);
   }
 
-  print("Harm R0 = %g\n", R0);
+  print("Harm a = %g, R0 = %g\n", a, R0);
 
   return data;
 }
