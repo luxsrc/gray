@@ -139,3 +139,10 @@ bool prob_config(const char *arg)
 
   return config(arg[0], atof(arg + 2));
 }
+
+bool prob_config(char flag, real val)
+{
+  debug("prob_config(""%c=%d"")\n", flag, val);
+
+  return config(flag, val);
+}

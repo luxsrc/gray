@@ -80,6 +80,9 @@ Coord *load_coord(const char *name)
 
   print("Harm a = %g, R0 = %g\n", a, R0);
 
+  if(!init_config('a', a) || !prob_config('a', a))
+    error("load_coord(): fail to set spin parameter\n");
+
   return data;
 }
 

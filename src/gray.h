@@ -107,6 +107,8 @@ extern int    solve (Data &);
 
 // Dirty wrapper functions that allow us to configure the CUDA kernels
 extern bool init_config(const char *);
+extern bool init_config(char, real  );
 extern bool prob_config(const char *);
+extern bool prob_config(char, real  );
 
 #endif // GRAY_H
