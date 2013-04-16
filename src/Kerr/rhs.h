@@ -150,17 +150,29 @@ static inline __device__ State rhs(const State &s, real t)
       b3 += b0 * u3 / u0;
     }
 
-    // Transform vector u from KSP to KS coordinates
+    // Transform vector u and b from KSP to KS coordinates
     {
-      const real tmp1 = u1, tmp2 = u2;
       const real det12 = coord[h2].dxdxp[1][1] * coord[h2].dxdxp[2][2]
                        - coord[h2].dxdxp[1][2] * coord[h2].dxdxp[2][1];
+      real temp1, temp2;
+
+      temp1 = u1;
+      temp2 = u2;
       u0 /= coord[h2].dxdxp[0][0];
-      u1  = (tmp1 * coord[h2].dxdxp[2][2] -
-             tmp2 * coord[h2].dxdxp[1][2]) / det12;
-      u2  = (tmp2 * coord[h2].dxdxp[1][1] -
-             tmp1 * coord[h2].dxdxp[1][2]) / det12;
+      u1  = (temp1 * coord[h2].dxdxp[2][2] -
+             temp2 * coord[h2].dxdxp[1][2]) / det12;
+      u2  = (temp2 * coord[h2].dxdxp[1][1] -
+             temp1 * coord[h2].dxdxp[1][2]) / det12;
       u3 /= coord[h2].dxdxp[3][3];
+
+      temp1 = b1;
+      temp2 = b2;
+      b0 /= coord[h2].dxdxp[0][0];
+      b1  = (temp1 * coord[h2].dxdxp[2][2] -
+             temp2 * coord[h2].dxdxp[1][2]) / det12;
+      b2  = (temp2 * coord[h2].dxdxp[1][1] -
+             temp1 * coord[h2].dxdxp[1][2]) / det12;
+      b3 /= coord[h2].dxdxp[3][3];
     }
 
     // Transform vector u from KS to BL coordinates
