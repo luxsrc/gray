@@ -175,9 +175,17 @@ static inline __device__ State rhs(const State &s, real t)
       b3 /= coord[h2].dxdxp[3][3];
     }
 
-    // Transform vector u from KS to BL coordinates
-    u0 += u1 * R_SCHW * s.r / Dlt;
-    u3 += u1 * a_spin       / Dlt;
+    // Transform vector u and b from KS to BL coordinates
+    {
+      const real temp0 = R_SCHW * s.r / Dlt;
+      const real temp3 = a_spin       / Dlt;
+
+      u0 += u1 * temp0;
+      u3 += u1 * temp3;
+
+      b0 += b1 * temp0;
+      b3 += b1 * temp3;
+    }
 
     // Compute red shift
     const real shift =
