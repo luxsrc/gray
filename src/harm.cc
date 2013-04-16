@@ -78,7 +78,7 @@ Coord *load_coord(const char *name)
     fclose(file);
   }
 
-  print("Harm a = %g, R0 = %g\n", a, R0);
+  print("Spin parameter a = %g, R0 = %g\n", a, R0);
 
   if(!init_config('a', a) || !prob_config('a', a))
     error("load_coord(): fail to set spin parameter\n");
@@ -89,6 +89,8 @@ Coord *load_coord(const char *name)
 Field *load_field(const char *name)
 {
   using namespace harm;
+
+  real max_den = 0, max_eng = 0;
 
   Field *data = NULL;
   FILE  *file = fopen(name, "r");
@@ -109,6 +111,11 @@ Field *load_field(const char *name)
     } else {
       fread(host, sizeof(Field), count, file);
 
+      for(size_t i = 0; i < count; ++i) {
+        if(max_den < host[i].rho) max_den = host[i].rho;
+        if(max_eng < host[i].u  ) max_eng = host[i].u;
+      }
+
       cudaError_t err =
         cudaMemcpy((void **)data, (void **)host,
                    sizeof(Field) * count, cudaMemcpyHostToDevice);
@@ -124,7 +131,9 @@ Field *load_field(const char *name)
     fclose(file);
   }
 
-  print("Harm data : %zu x %zu x %zu\n", n1, n2, n3);
+  print("Data size = %zu x %zu x %zu\n", n1, n2, n3);
+  print("Maximum density = %g\n"
+        "Maximum energy  = %g\n", max_den, max_eng);
 
   return data;
 }
