@@ -127,7 +127,8 @@ double evolve(Data &data, double dt)
   if(actual) {
     print("t =%7.2f; %.0f ms/%.0f steps ~%7.2f Gflops (%.2f%%),%7.2fGB/s\n",
           global::t, ms, actual, 1e-6 * flop() * actual / ms,
-          100 * actual / peak,   1e-6 * rwsz() * n      / ms); // read + write
+          100 * actual / peak,   1e-6 * (24 * sizeof(real) * actual +
+                                         rwsz() * n) / ms); // read + write
     return ms;
   } else
     return 0;
