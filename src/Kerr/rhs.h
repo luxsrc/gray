@@ -87,13 +87,75 @@ static inline __device__ State rhs(const State &s, real t)
   } // 24 FLOP
 
   real src_R = 0, src_G = 0, src_B = 0;
-  {
+  if(field) {
+    int h2, h3;
+    {
+      int ir = (logf((float)(s.r - 0.1)) - 0.4215) / 0.0320826 + 0.5;
+      if(ir < 0) ir = 0; else if(ir > 240) ir = 240;
+
+      int itheta = s.theta / 0.0215945 - 10.2406 + 0.5;
+      if(itheta < 0) itheta = 0; else if(itheta > 125) itheta = 125;
+
+      int iphi = (s.phi >= 0) ? ((int)(60 * s.phi / (2 * M_PI) + 0.5) %  60):
+                                ((int)(60 * s.phi / (2 * M_PI) - 0.5) % -60);
+      if(iphi < 0) iphi += 60;
+
+      h2 = itheta * 264 + ir;
+      h3 = (iphi * 126 + itheta) * 264 + ir;
+    }
+
+    const real rho = field[h3].rho;
+
+    // Vector u
+    real u1 = field[h3].v1;
+    real u2 = field[h3].v2;
+    real u3 = field[h3].v3;
+    real u0 = 1 / sqrt(-(coord[h2].gcov[0][0]           +
+                         coord[h2].gcov[1][1] * u1 * u1 +
+                         coord[h2].gcov[2][2] * u2 * u2 +
+                         coord[h2].gcov[3][3] * u3 * u3 +
+                         2 * (coord[h2].gcov[0][1] * u1      +
+                              coord[h2].gcov[0][2] * u2      +
+                              coord[h2].gcov[0][3] * u3      +
+                              coord[h2].gcov[1][2] * u1 * u2 +
+                              coord[h2].gcov[1][3] * u1 * u3 +
+                              coord[h2].gcov[2][3] * u2 * u3)));
+    u1 *= u0;
+    u2 *= u0;
+    u3 *= u0;
+
+    // Transform vector u from KSP to KS coordinates
+    {
+      const real tmp1 = u1, tmp2 = u2;
+      const real det12 = coord[h2].dxdxp[1][1] * coord[h2].dxdxp[2][2]
+                       - coord[h2].dxdxp[1][2] * coord[h2].dxdxp[2][1];
+      u0 /= coord[h2].dxdxp[0][0];
+      u1  = (tmp1 * coord[h2].dxdxp[2][2] -
+             tmp2 * coord[h2].dxdxp[1][2]) / det12;
+      u2  = (tmp2 * coord[h2].dxdxp[1][1] -
+             tmp1 * coord[h2].dxdxp[1][2]) / det12;
+      u3 /= coord[h2].dxdxp[3][3];
+    }
+
+    // Transform vector u from KS to BL coordinates
+    u0 += u1 * R_SCHW * s.r / Dlt;
+    u3 += u1 * a_spin       / Dlt;
+
+    // Compute red shift
+    const real shift =
+      -(-u0 + g11 * s.kr * u1 + g22 * s.ktheta * u2 + s.bimpact * u3);
+
+    real nu;
+    nu = 4 * shift; src_R = 1000 * rho * nu / (exp(nu) - 1);
+    nu = 5 * shift; src_G = 1000 * rho * nu / (exp(nu) - 1);
+    nu = 6 * shift; src_B = 1000 * rho * nu / (exp(nu) - 1);
+  } else {
     const real dR = s.r * sin_theta - R_torus;
     if(dR * dR + r2 * c2 < 4) {
       const real shift = (1 - Omega * s.bimpact) /
         sqrt(-g00 - 2 * g30 * Omega - g33 * Omega * Omega);
-      real nu;
 
+      real nu;
       nu = 0.4 * shift; src_R = 10 * nu / (exp(nu) - 1);
       nu = 0.5 * shift; src_G = 10 * nu / (exp(nu) - 1);
       nu = 0.6 * shift; src_B = 10 * nu / (exp(nu) - 1);

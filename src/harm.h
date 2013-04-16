@@ -25,11 +25,11 @@ typedef struct {
   size_t i, j, k;
   double x1, x2, x3;
   double v1, v2, v3;
-  double gcon[16];
-  double gcov[16];
+  double gcon[4][4];
+  double gcov[4][4];
   double gdet;
   double ck[4];
-  double dxdxp[16];
+  double dxdxp[4][4];
 } Coord;
 
 typedef struct {
