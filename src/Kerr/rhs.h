@@ -106,23 +106,49 @@ static inline __device__ State rhs(const State &s, real t)
 
     const real rho = field[h3].rho;
 
-    // Vector u
-    real u1 = field[h3].v1;
-    real u2 = field[h3].v2;
-    real u3 = field[h3].v3;
-    real u0 = 1 / sqrt(-(coord[h2].gcov[0][0]           +
-                         coord[h2].gcov[1][1] * u1 * u1 +
-                         coord[h2].gcov[2][2] * u2 * u2 +
-                         coord[h2].gcov[3][3] * u3 * u3 +
-                         2 * (coord[h2].gcov[0][1] * u1      +
-                              coord[h2].gcov[0][2] * u2      +
-                              coord[h2].gcov[0][3] * u3      +
-                              coord[h2].gcov[1][2] * u1 * u2 +
-                              coord[h2].gcov[1][3] * u1 * u3 +
-                              coord[h2].gcov[2][3] * u2 * u3)));
-    u1 *= u0;
-    u2 *= u0;
-    u3 *= u0;
+    // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
+    real u0, u1, u2, u3, b0, b1, b2, b3;
+    {
+      const real gKSP00 = coord[h2].gcov[0][0];
+      const real gKSP11 = coord[h2].gcov[1][1];
+      const real gKSP22 = coord[h2].gcov[2][2];
+      const real gKSP33 = coord[h2].gcov[3][3];
+      const real gKSP01 = coord[h2].gcov[0][1];
+      const real gKSP02 = coord[h2].gcov[0][2];
+      const real gKSP03 = coord[h2].gcov[0][3];
+      const real gKSP12 = coord[h2].gcov[1][2];
+      const real gKSP13 = coord[h2].gcov[1][3];
+      const real gKSP23 = coord[h2].gcov[2][3];
+
+      // Vector u
+      u1 = field[h3].v1;
+      u2 = field[h3].v2;
+      u3 = field[h3].v3;
+      u0 = 1 / sqrt(-(gKSP00           +
+                      gKSP11 * u1 * u1 +
+                      gKSP22 * u2 * u2 +
+                      gKSP33 * u3 * u3 +
+                      2 * (gKSP01 * u1      +
+                           gKSP02 * u2      +
+                           gKSP03 * u3      +
+                           gKSP12 * u1 * u2 +
+                           gKSP13 * u1 * u3 +
+                           gKSP23 * u2 * u3)));
+      u1 *= u0;
+      u2 *= u0;
+      u3 *= u0;
+
+      // Vector B
+      b1 = field[h3].B1;
+      b2 = field[h3].B2;
+      b3 = field[h3].B3;
+      b0 = (b1 * (gKSP01 * u0 + gKSP11 * u1 + gKSP12 * u2 + gKSP13 * u3) +
+            b2 * (gKSP02 * u0 + gKSP12 * u1 + gKSP22 * u2 + gKSP23 * u3) +
+            b3 * (gKSP03 * u0 + gKSP13 * u1 + gKSP23 * u3 + gKSP33 * u3));
+      b1 += b0 * u1 / u0;
+      b2 += b0 * u2 / u0;
+      b3 += b0 * u3 / u0;
+    }
 
     // Transform vector u from KSP to KS coordinates
     {
