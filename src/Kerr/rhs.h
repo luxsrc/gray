@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#define FLOP_RHS 79 // assume outside torus
+#define FLOP_RHS 160
 #define R_SCHW   2
 
 static inline __device__ State rhs(const State &s, real t)
@@ -90,7 +90,7 @@ static inline __device__ State rhs(const State &s, real t)
   if(field) {
     int h2, h3;
     {
-      int ir = (logf((float)(s.r - 0.1)) - 0.4215) / 0.0320826 + 0.5;
+      int ir = (logf((real)(s.r - 0.1)) - 0.4215) / 0.0320826 + 0.5;
       if(ir < 0) ir = 0; else if(ir > 240) ir = 240;
 
       int itheta = s.theta / 0.0215945 - 10.2406 + 0.5;
@@ -149,7 +149,8 @@ static inline __device__ State rhs(const State &s, real t)
     nu = 4 * shift; src_R = 1000 * rho * nu / (exp(nu) - 1);
     nu = 5 * shift; src_G = 1000 * rho * nu / (exp(nu) - 1);
     nu = 6 * shift; src_B = 1000 * rho * nu / (exp(nu) - 1);
-  } else {
+  } // 86 FLOPS
+  else {
     const real dR = s.r * sin_theta - R_torus;
     if(dR * dR + r2 * c2 < 4) {
       const real shift = (1 - Omega * s.bimpact) /
@@ -160,7 +161,7 @@ static inline __device__ State rhs(const State &s, real t)
       nu = 0.5 * shift; src_G = 10 * nu / (exp(nu) - 1);
       nu = 0.6 * shift; src_B = 10 * nu / (exp(nu) - 1);
     }
-  } // 5 FLOP if outside torus; 16 FLOP if inside torus
+  } // 5 FLOP if outside torus; 31 FLOP if inside torus
 
   return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, // null geodesic
                  0,     0,     0,                      // constants of motion
