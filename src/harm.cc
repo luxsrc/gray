@@ -58,8 +58,20 @@ Coord *load_coord(const char *name)
       error("ERROR: fail to allocate device memory\n");
     } else {
       for(size_t i = 0; i < count; ++i) {
+        double in[16];
+
         fseek(file, 4, SEEK_CUR);
-        fread(host + i, sizeof(Coord), 1, file);
+
+        fseek(file, 3 * sizeof(size_t) + 22 * sizeof(double), SEEK_CUR);
+        fread(in, 16 * sizeof(double), 1, file);
+        for(size_t j = 0; j < 16; ++j)
+          (&(host[i].gcov[0][0]))[j] = in[j];
+
+        fseek(file, 5 * sizeof(double), SEEK_CUR);
+        fread(in, 16 * sizeof(double), 1, file);
+        for(size_t j = 0; j < 16; ++j)
+          (&(host[i].dxdxp[0][0]))[j] = in[j];
+
         fseek(file, 52, SEEK_CUR);
       }
 
