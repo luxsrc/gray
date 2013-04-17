@@ -186,8 +186,8 @@ static inline __device__ State rhs(const State &s, real t)
 
     // Transform vector u and b from KS to BL coordinates
     {
-      const real temp0 = R_SCHW * s.r / Dlt;
-      const real temp3 = a_spin       / Dlt;
+      const real temp0 = R_SCHW * s.r / Dlt; // Note that s.r and Dlt are
+      const real temp3 = a_spin       / Dlt; // evaluated at photon position
 
       ut   += ur * temp0;
       uphi += ur * temp3;
@@ -206,6 +206,9 @@ static inline __device__ State rhs(const State &s, real t)
 
       shift =-(k0 * ut + k1 * ur + k2 * utheta + k3 * uphi); // is positive
       bkcos = (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) / shift / sqrt(bb);
+
+      if(bkcos >  1) bkcos =  1;
+      if(bkcos < -1) bkcos = -1;
     }
 
     real nu;
@@ -220,9 +223,9 @@ static inline __device__ State rhs(const State &s, real t)
         sqrt(-g00 - 2 * g30 * Omega - g33 * Omega * Omega);
 
       real nu;
-      nu = 0.4 * shift; src_R = 10 * nu / (exp(nu) - 1);
-      nu = 0.5 * shift; src_G = 10 * nu / (exp(nu) - 1);
-      nu = 0.6 * shift; src_B = 10 * nu / (exp(nu) - 1);
+      nu = 4 * shift; src_R = nu / (exp(nu / 10) - 1);
+      nu = 5 * shift; src_G = nu / (exp(nu / 10) - 1);
+      nu = 6 * shift; src_B = nu / (exp(nu / 10) - 1);
     }
   } // 5 FLOP if outside torus; 31 FLOP if inside torus
 
