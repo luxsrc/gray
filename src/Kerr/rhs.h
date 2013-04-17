@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#define FLOP_RHS 252
+#define FLOP_RHS 256
 #define R_SCHW   2
 
 static inline __device__ State rhs(const State &s, real t)
@@ -107,7 +107,7 @@ static inline __device__ State rhs(const State &s, real t)
     }
 
     const real den = field[h3].rho;
-    const real eng = field[h3].u;
+    const real tmp = field[h3].u / den;
 
     // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
     real ut, ur, utheta, uphi, bt, br, btheta, bphi, bb;
@@ -217,10 +217,10 @@ static inline __device__ State rhs(const State &s, real t)
     }
 
     real nu;
-    nu = 4 * shift; src_R = 1000 * den * nu / (exp(nu) - 1);
-    nu = 5 * shift; src_G = 1000 * den * nu / (exp(nu) - 1);
-    nu = 6 * shift; src_B = 1000 * den * nu / (exp(nu) - 1);
-  } // 173 FLOPS
+    nu = 4 * shift; src_R = 10000 * den * nu / (exp(nu / tmp) - 1);
+    nu = 5 * shift; src_G = 10000 * den * nu / (exp(nu / tmp) - 1);
+    nu = 6 * shift; src_B = 10000 * den * nu / (exp(nu / tmp) - 1);
+  } // 177 FLOPS
   else {
     const real dR = s.r * sin_theta - R_torus;
     if(dR * dR + r2 * c2 < 4) {
