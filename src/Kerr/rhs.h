@@ -90,14 +90,16 @@ static inline __device__ State rhs(const State &s, real t)
   if(field) {
     int h2, h3;
     {
-      int ir = (logf((real)(s.r - 0.1)) - 0.4215) / 0.0320826 + 0.5;
+      int ir = (logf((real)(s.r - (real)0.1)) - (real)0.4215) /
+        (real)0.0320826 + (real)0.5;
       if(ir < 0) ir = 0; else if(ir > 240) ir = 240;
 
-      int itheta = s.theta / 0.0215945 - 10.2406 + 0.5;
+      int itheta = s.theta / (real)0.0215945 - (real)9.7406;
       if(itheta < 0) itheta = 0; else if(itheta > 125) itheta = 125;
 
-      int iphi = (s.phi >= 0) ? ((int)(60 * s.phi / (2 * M_PI) + 0.5) %  60):
-                                ((int)(60 * s.phi / (2 * M_PI) - 0.5) % -60);
+      int iphi = (s.phi >= 0) ?
+        ((int)(60 * s.phi / (2 * (real)M_PI) + (real)0.5) %  60):
+        ((int)(60 * s.phi / (2 * (real)M_PI) - (real)0.5) % -60);
       if(iphi < 0) iphi += 60;
 
       h2 = itheta * 264 + ir;
@@ -153,9 +155,9 @@ static inline __device__ State rhs(const State &s, real t)
       bphi   += bt * uphi   / ut;
 
       bb =
-        bt     * (gKSP00 * bt + gKSP01 * br + gKSP02 * btheta + gKSP03 * bphi) +
-        br     * (gKSP01 * bt + gKSP11 * br + gKSP12 * btheta + gKSP13 * bphi) +
-        btheta * (gKSP02 * bt + gKSP12 * br + gKSP22 * btheta + gKSP23 * bphi) +
+        bt     * (gKSP00 * bt + gKSP01 * br + gKSP02 * btheta + gKSP03 * bphi)+
+        br     * (gKSP01 * bt + gKSP11 * br + gKSP12 * btheta + gKSP13 * bphi)+
+        btheta * (gKSP02 * bt + gKSP12 * br + gKSP22 * btheta + gKSP23 * bphi)+
         bphi   * (gKSP03 * bt + gKSP13 * br + gKSP23 * btheta + gKSP33 * bphi);
     }
 
