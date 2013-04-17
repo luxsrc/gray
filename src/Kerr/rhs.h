@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#define FLOP_RHS 160
+#define FLOP_RHS 252
 #define R_SCHW   2
 
 static inline __device__ State rhs(const State &s, real t)
@@ -219,7 +219,7 @@ static inline __device__ State rhs(const State &s, real t)
     nu = 4 * shift; src_R = 1000 * rho * nu / (exp(nu) - 1);
     nu = 5 * shift; src_G = 1000 * rho * nu / (exp(nu) - 1);
     nu = 6 * shift; src_B = 1000 * rho * nu / (exp(nu) - 1);
-  } // 86 FLOPS
+  } // 173 FLOPS
   else {
     const real dR = s.r * sin_theta - R_torus;
     if(dR * dR + r2 * c2 < 4) {
