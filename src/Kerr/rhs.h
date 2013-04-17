@@ -107,7 +107,7 @@ static inline __device__ State rhs(const State &s, real t)
     const real rho = field[h3].rho;
 
     // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
-    real u0, u1, u2, u3, b0, b1, b2, b3;
+    real ut, ur, utheta, uphi, bt, br, btheta, bphi;
     {
       const real gKSP00 = coord[h2].gcov[0][0];
       const real gKSP11 = coord[h2].gcov[1][1];
@@ -121,33 +121,36 @@ static inline __device__ State rhs(const State &s, real t)
       const real gKSP23 = coord[h2].gcov[2][3];
 
       // Vector u
-      u1 = field[h3].v1;
-      u2 = field[h3].v2;
-      u3 = field[h3].v3;
-      u0 = 1 / sqrt(-(gKSP00           +
-                      gKSP11 * u1 * u1 +
-                      gKSP22 * u2 * u2 +
-                      gKSP33 * u3 * u3 +
-                      2 * (gKSP01 * u1      +
-                           gKSP02 * u2      +
-                           gKSP03 * u3      +
-                           gKSP12 * u1 * u2 +
-                           gKSP13 * u1 * u3 +
-                           gKSP23 * u2 * u3)));
-      u1 *= u0;
-      u2 *= u0;
-      u3 *= u0;
+      ur     = field[h3].v1;
+      utheta = field[h3].v2;
+      uphi   = field[h3].v3;
+      ut     = 1 / sqrt(-(gKSP00                   +
+                          gKSP11 * ur     * ur     +
+                          gKSP22 * utheta * utheta +
+                          gKSP33 * uphi   * uphi   +
+                          2 * (gKSP01 * ur              +
+                               gKSP02 * utheta          +
+                               gKSP03 * uphi            +
+                               gKSP12 * ur     * utheta +
+                               gKSP13 * ur     * uphi   +
+                               gKSP23 * utheta * uphi)));
+      ur     *= ut;
+      utheta *= ut;
+      uphi   *= ut;
 
       // Vector B
-      b1 = field[h3].B1;
-      b2 = field[h3].B2;
-      b3 = field[h3].B3;
-      b0 = (b1 * (gKSP01 * u0 + gKSP11 * u1 + gKSP12 * u2 + gKSP13 * u3) +
-            b2 * (gKSP02 * u0 + gKSP12 * u1 + gKSP22 * u2 + gKSP23 * u3) +
-            b3 * (gKSP03 * u0 + gKSP13 * u1 + gKSP23 * u3 + gKSP33 * u3));
-      b1 += b0 * u1 / u0;
-      b2 += b0 * u2 / u0;
-      b3 += b0 * u3 / u0;
+      br     = field[h3].B1;
+      btheta = field[h3].B2;
+      bphi   = field[h3].B3;
+      bt     = (br     * (gKSP01 * ut     + gKSP11 * ur    +
+                          gKSP12 * utheta + gKSP13 * uphi) +
+                btheta * (gKSP02 * ut     + gKSP12 * ur    +
+                          gKSP22 * utheta + gKSP23 * uphi) +
+                bphi   * (gKSP03 * ut     + gKSP13 * ur    +
+                          gKSP23 * uphi   + gKSP33 * uphi));
+      br     += bt * ur     / ut;
+      btheta += bt * utheta / ut;
+      bphi   += bt * uphi   / ut;
     }
 
     // Transform vector u and b from KSP to KS coordinates
@@ -156,23 +159,23 @@ static inline __device__ State rhs(const State &s, real t)
                        - coord[h2].dxdxp[1][2] * coord[h2].dxdxp[2][1];
       real temp1, temp2;
 
-      temp1 = u1;
-      temp2 = u2;
-      u0 /= coord[h2].dxdxp[0][0];
-      u1  = (temp1 * coord[h2].dxdxp[2][2] -
-             temp2 * coord[h2].dxdxp[1][2]) / det12;
-      u2  = (temp2 * coord[h2].dxdxp[1][1] -
-             temp1 * coord[h2].dxdxp[1][2]) / det12;
-      u3 /= coord[h2].dxdxp[3][3];
+      temp1  = ur;
+      temp2  = utheta;
+      ut    /= coord[h2].dxdxp[0][0];
+      ur     = (temp1 * coord[h2].dxdxp[2][2] -
+                temp2 * coord[h2].dxdxp[1][2]) / det12;
+      utheta = (temp2 * coord[h2].dxdxp[1][1] -
+                temp1 * coord[h2].dxdxp[1][2]) / det12;
+      uphi  /= coord[h2].dxdxp[3][3];
 
-      temp1 = b1;
-      temp2 = b2;
-      b0 /= coord[h2].dxdxp[0][0];
-      b1  = (temp1 * coord[h2].dxdxp[2][2] -
-             temp2 * coord[h2].dxdxp[1][2]) / det12;
-      b2  = (temp2 * coord[h2].dxdxp[1][1] -
-             temp1 * coord[h2].dxdxp[1][2]) / det12;
-      b3 /= coord[h2].dxdxp[3][3];
+      temp1  = br;
+      temp2  = btheta;
+      bt    /= coord[h2].dxdxp[0][0];
+      br     = (temp1 * coord[h2].dxdxp[2][2] -
+                temp2 * coord[h2].dxdxp[1][2]) / det12;
+      btheta = (temp2 * coord[h2].dxdxp[1][1] -
+                temp1 * coord[h2].dxdxp[1][2]) / det12;
+      bphi  /= coord[h2].dxdxp[3][3];
     }
 
     // Transform vector u and b from KS to BL coordinates
@@ -180,25 +183,26 @@ static inline __device__ State rhs(const State &s, real t)
       const real temp0 = R_SCHW * s.r / Dlt;
       const real temp3 = a_spin       / Dlt;
 
-      u0 += u1 * temp0;
-      u3 += u1 * temp3;
+      ut   += ur * temp0;
+      uphi += ur * temp3;
 
-      b0 += b1 * temp0;
-      b3 += b1 * temp3;
+      bt   += br * temp0;
+      bphi += br * temp3;
     }
 
     // Compute red shift and angle cosine between b and k
     real shift, bkcos;
     {
-      // const real k0 = -1;
+      const real k0 = -1;
       const real k1 = g11 * s.kr;
       const real k2 = g22 * s.ktheta;
-      // const real k3 = s.bimpact;
+      const real k3 = s.bimpact;
 
-      shift = -(- u0 + k1 * u1 + k2 * u2 + s.bimpact * u3); // is positive
-      bkcos =  (- b0 + k1 * b1 + k2 * b2 + s.bimpact * b3) / shift /
-        (g00 * b0 * b0 + g11 * b1 * b1 + g22 * b2 * b2 + g33 * b3 * b3 +
-         g30 * b0 * b3 * 2);
+      shift = -(k0 * ut + k1 * ur + k2 * utheta + k3 * uphi); // is positive
+      bkcos =  (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) / shift /
+        sqrt(g00 * bt     * bt     + g11 * br   * br   +
+             g22 * btheta * btheta + g33 * bphi * bphi +
+             g30 * bt     * bphi   * 2);
     }
 
     real nu;
