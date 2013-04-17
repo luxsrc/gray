@@ -187,9 +187,19 @@ static inline __device__ State rhs(const State &s, real t)
       b3 += b1 * temp3;
     }
 
-    // Compute red shift
-    const real shift =
-      -(-u0 + g11 * s.kr * u1 + g22 * s.ktheta * u2 + s.bimpact * u3);
+    // Compute red shift and angle cosine between b and k
+    real shift, bkcos;
+    {
+      // const real k0 = -1;
+      const real k1 = g11 * s.kr;
+      const real k2 = g22 * s.ktheta;
+      // const real k3 = s.bimpact;
+
+      shift = -(- u0 + k1 * u1 + k2 * u2 + s.bimpact * u3); // is positive
+      bkcos =  (- b0 + k1 * b1 + k2 * b2 + s.bimpact * b3) / shift /
+        (g00 * b0 * b0 + g11 * b1 * b1 + g22 * b2 * b2 + g33 * b3 * b3 +
+         g30 * b0 * b3 * 2);
+    }
 
     real nu;
     nu = 4 * shift; src_R = 1000 * rho * nu / (exp(nu) - 1);
