@@ -106,7 +106,8 @@ static inline __device__ State rhs(const State &s, real t)
       h3 = (iphi * 126 + itheta) * 264 + ir;
     }
 
-    const real rho = field[h3].rho;
+    const real den = field[h3].rho;
+    const real eng = field[h3].u;
 
     // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
     real ut, ur, utheta, uphi, bt, br, btheta, bphi, bb;
@@ -216,9 +217,9 @@ static inline __device__ State rhs(const State &s, real t)
     }
 
     real nu;
-    nu = 4 * shift; src_R = 1000 * rho * nu / (exp(nu) - 1);
-    nu = 5 * shift; src_G = 1000 * rho * nu / (exp(nu) - 1);
-    nu = 6 * shift; src_B = 1000 * rho * nu / (exp(nu) - 1);
+    nu = 4 * shift; src_R = 1000 * den * nu / (exp(nu) - 1);
+    nu = 5 * shift; src_G = 1000 * den * nu / (exp(nu) - 1);
+    nu = 6 * shift; src_B = 1000 * den * nu / (exp(nu) - 1);
   } // 173 FLOPS
   else {
     const real dR = s.r * sin_theta - R_torus;
