@@ -163,27 +163,29 @@ static inline __device__ State rhs(const State &s, real t)
 
     // Transform vector u and b from KSP to KS coordinates
     {
-      const real det12 = coord[h2].dxdxp[1][1] * coord[h2].dxdxp[2][2]
-                       - coord[h2].dxdxp[1][2] * coord[h2].dxdxp[2][1];
+      const real dxdxp00 = coord[h2].dxdxp[0][0];
+      const real dxdxp11 = coord[h2].dxdxp[1][1];
+      const real dxdxp12 = coord[h2].dxdxp[1][2];
+      const real dxdxp21 = coord[h2].dxdxp[2][1];
+      const real dxdxp22 = coord[h2].dxdxp[2][2];
+      const real dxdxp33 = coord[h2].dxdxp[3][3];
+
+      const real det12 = dxdxp11 * dxdxp22 - dxdxp12 * dxdxp21;
       real temp1, temp2;
 
       temp1  = ur;
       temp2  = utheta;
-      ut    /= coord[h2].dxdxp[0][0];
-      ur     = (temp1 * coord[h2].dxdxp[2][2] -
-                temp2 * coord[h2].dxdxp[1][2]) / det12;
-      utheta = (temp2 * coord[h2].dxdxp[1][1] -
-                temp1 * coord[h2].dxdxp[2][1]) / det12;
-      uphi  /= coord[h2].dxdxp[3][3];
+      ut    /= dxdxp00;
+      ur     = (temp1 * dxdxp22 - temp2 * dxdxp12) / det12;
+      utheta = (temp2 * dxdxp11 - temp1 * dxdxp21) / det12;
+      uphi  /= dxdxp33;
 
       temp1  = br;
       temp2  = btheta;
-      bt    /= coord[h2].dxdxp[0][0];
-      br     = (temp1 * coord[h2].dxdxp[2][2] -
-                temp2 * coord[h2].dxdxp[1][2]) / det12;
-      btheta = (temp2 * coord[h2].dxdxp[1][1] -
-                temp1 * coord[h2].dxdxp[2][1]) / det12;
-      bphi  /= coord[h2].dxdxp[3][3];
+      bt    /= dxdxp00;
+      br     = (temp1 * dxdxp22 - temp2 * dxdxp12) / det12;
+      btheta = (temp2 * dxdxp11 - temp1 * dxdxp21) / det12;
+      bphi  /= dxdxp33;
     }
 
     // Transform vector u and b from KS to BL coordinates
