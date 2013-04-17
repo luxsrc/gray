@@ -107,7 +107,7 @@ static inline __device__ State rhs(const State &s, real t)
     const real rho = field[h3].rho;
 
     // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
-    real ut, ur, utheta, uphi, bt, br, btheta, bphi;
+    real ut, ur, utheta, uphi, bt, br, btheta, bphi, bb;
     {
       const real gKSP00 = coord[h2].gcov[0][0];
       const real gKSP11 = coord[h2].gcov[1][1];
@@ -151,6 +151,12 @@ static inline __device__ State rhs(const State &s, real t)
       br     += bt * ur     / ut;
       btheta += bt * utheta / ut;
       bphi   += bt * uphi   / ut;
+
+      bb =
+        bt     * (gKSP00 * bt + gKSP01 * br + gKSP02 * btheta + gKSP03 * bphi) +
+        br     * (gKSP01 * bt + gKSP11 * br + gKSP12 * btheta + gKSP13 * bphi) +
+        btheta * (gKSP02 * bt + gKSP12 * br + gKSP22 * btheta + gKSP23 * bphi) +
+        bphi   * (gKSP03 * bt + gKSP13 * br + gKSP23 * btheta + gKSP33 * bphi);
     }
 
     // Transform vector u and b from KSP to KS coordinates
@@ -165,7 +171,7 @@ static inline __device__ State rhs(const State &s, real t)
       ur     = (temp1 * coord[h2].dxdxp[2][2] -
                 temp2 * coord[h2].dxdxp[1][2]) / det12;
       utheta = (temp2 * coord[h2].dxdxp[1][1] -
-                temp1 * coord[h2].dxdxp[1][2]) / det12;
+                temp1 * coord[h2].dxdxp[2][1]) / det12;
       uphi  /= coord[h2].dxdxp[3][3];
 
       temp1  = br;
@@ -174,7 +180,7 @@ static inline __device__ State rhs(const State &s, real t)
       br     = (temp1 * coord[h2].dxdxp[2][2] -
                 temp2 * coord[h2].dxdxp[1][2]) / det12;
       btheta = (temp2 * coord[h2].dxdxp[1][1] -
-                temp1 * coord[h2].dxdxp[1][2]) / det12;
+                temp1 * coord[h2].dxdxp[2][1]) / det12;
       bphi  /= coord[h2].dxdxp[3][3];
     }
 
@@ -198,11 +204,8 @@ static inline __device__ State rhs(const State &s, real t)
       const real k2 = g22 * s.ktheta;
       const real k3 = s.bimpact;
 
-      shift = -(k0 * ut + k1 * ur + k2 * utheta + k3 * uphi); // is positive
-      bkcos =  (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) / shift /
-        sqrt(g00 * bt     * bt     + g11 * br   * br   +
-             g22 * btheta * btheta + g33 * bphi * bphi +
-             g30 * bt     * bphi   * 2);
+      shift =-(k0 * ut + k1 * ur + k2 * utheta + k3 * uphi); // is positive
+      bkcos = (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) / shift / sqrt(bb);
     }
 
     real nu;
