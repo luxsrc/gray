@@ -16,8 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#define FLOP_RHS 256
+#define FLOP_RHS 259
 #define R_SCHW   2
+
+static inline __device__ real Bose(real x)
+{
+  return 1 / (exp(x) - 1); // 3 FLOP
+}
 
 static inline __device__ State rhs(const State &s, real t)
 {
@@ -217,10 +222,18 @@ static inline __device__ State rhs(const State &s, real t)
     }
 
     real nu;
-    nu = 4 * shift; src_R = 10000 * den * nu / (exp(nu / tmp) - 1);
-    nu = 5 * shift; src_G = 10000 * den * nu / (exp(nu / tmp) - 1);
-    nu = 6 * shift; src_B = 10000 * den * nu / (exp(nu / tmp) - 1);
-  } // 177 FLOPS
+    nu = 4 * shift;
+    src_R = 10000 * den * nu * (Bose(nu / tmp) - s.Fr);
+    if(src_R < 0) src_R = 0;
+
+    nu = 5 * shift;
+    src_G = 10000 * den * nu * (Bose(nu / tmp) - s.Fg);
+    if(src_G < 0) src_G = 0;
+
+    nu = 6 * shift;
+    src_B = 10000 * den * nu * (Bose(nu / tmp) - s.Fb);
+    if(src_B < 0) src_B = 0;
+  } // 180 FLOPS
   else {
     const real dR = s.r * sin_theta - R_torus;
     if(dR * dR + r2 * c2 < 4) {
