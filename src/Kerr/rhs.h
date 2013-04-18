@@ -115,7 +115,7 @@ static inline __device__ State rhs(const State &s, real t)
     const real tmp = field[h3].u / den;
 
     // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
-    real ut, ur, utheta, uphi, bt, br, btheta, bphi, bb;
+    real ut, ur, utheta, uphi, bt, br, btheta, bphi, b;
     {
       const real gKSP00 = coord[h2].gcov[0][0];
       const real gKSP11 = coord[h2].gcov[1][1];
@@ -160,11 +160,14 @@ static inline __device__ State rhs(const State &s, real t)
       btheta += bt * utheta / ut;
       bphi   += bt * uphi   / ut;
 
-      bb =
-        bt     * (gKSP00 * bt + gKSP01 * br + gKSP02 * btheta + gKSP03 * bphi)+
-        br     * (gKSP01 * bt + gKSP11 * br + gKSP12 * btheta + gKSP13 * bphi)+
-        btheta * (gKSP02 * bt + gKSP12 * br + gKSP22 * btheta + gKSP23 * bphi)+
-        bphi   * (gKSP03 * bt + gKSP13 * br + gKSP23 * btheta + gKSP33 * bphi);
+      b = sqrt(bt     * (gKSP00 * bt     + gKSP01 * br    +
+                         gKSP02 * btheta + gKSP03 * bphi) +
+               br     * (gKSP01 * bt     + gKSP11 * br    +
+                         gKSP12 * btheta + gKSP13 * bphi) +
+               btheta * (gKSP02 * bt     + gKSP12 * br    +
+                         gKSP22 * btheta + gKSP23 * bphi) +
+               bphi   * (gKSP03 * bt     + gKSP13 * br    +
+                         gKSP23 * btheta + gKSP33 * bphi));
     }
 
     // Transform vector u and b from KSP to KS coordinates
@@ -215,22 +218,22 @@ static inline __device__ State rhs(const State &s, real t)
       const real k3 = s.bimpact;
 
       shift =-(k0 * ut + k1 * ur + k2 * utheta + k3 * uphi); // is positive
-      bkcos = (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) / shift / sqrt(bb);
+      bkcos = (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) / shift / b;
 
       if(bkcos >  1) bkcos =  1;
       if(bkcos < -1) bkcos = -1;
     }
 
     real nu;
-    nu = 4 * shift;
+    nu    = 4 * shift;
     src_R = 10000 * den * nu * (Bose(nu / tmp) - s.Fr);
     if(src_R < 0) src_R = 0;
 
-    nu = 5 * shift;
+    nu    = 5 * shift;
     src_G = 10000 * den * nu * (Bose(nu / tmp) - s.Fg);
     if(src_G < 0) src_G = 0;
 
-    nu = 6 * shift;
+    nu    = 6 * shift;
     src_B = 10000 * den * nu * (Bose(nu / tmp) - s.Fb);
     if(src_B < 0) src_B = 0;
   } // 180 FLOPS
