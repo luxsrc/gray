@@ -37,7 +37,7 @@
   float G30 = - A * Tmp * S * S;                           \
   float G33 = (Sum - A * G30) * S * S;                     \
   float Kt  = - (G33 + B * G30) / (G33 * G00 - G30 * G30); \
-  gl_FrontColor.x = 0.0 + 0.1 * Kt;                        \
+  gl_FrontColor.x = 0.0 + 0.2 * Kt;                        \
   gl_FrontColor.y = 0.1 * abs(B);                          \
-  gl_FrontColor.z = 1.0 - 0.1 * Kt;                        \
+  gl_FrontColor.z = 1.0 - 0.2 * Kt;                        \
   gl_FrontColor.w = 1.0;
