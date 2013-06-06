@@ -26,5 +26,18 @@
   r.z = gl_Vertex.x * cos(gl_Vertex.y); \
   r.w = 1.0;
 
-#define C_MAP gl_FrontColor = 0.5 * abs(gl_Color);
-
+#define C_MAP                                              \
+  float A   = 0.999;                                       \
+  float S   = sin(gl_Vertex.y);                            \
+  float R   = gl_Vertex.x;                                 \
+  float B   = gl_Color.z;                                  \
+  float Sum = R * R + A * A;                               \
+  float Tmp = 2.0 * R / (Sum - A * A * S * S);             \
+  float G00 = Tmp - 1.0;                                   \
+  float G30 = - A * Tmp * S * S;                           \
+  float G33 = (Sum - A * G30) * S * S;                     \
+  float Kt  = - (G33 + B * G30) / (G33 * G00 - G30 * G30); \
+  gl_FrontColor.x = 0.0 + 0.2 * Kt;                        \
+  gl_FrontColor.y = 0.1 * abs(B);                          \
+  gl_FrontColor.z = 1.0 - 0.2 * Kt;                        \
+  gl_FrontColor.w = 1.0;
