@@ -110,8 +110,9 @@ static inline __device__ State rhs(const State &s, real t)
     const real tmp = field[h3].u / den; // in unit of c^2
 
     real ut, ur, utheta, uphi;
+    real bt, br, btheta, bphi, b;
 
-    // Construct the four vectors u^\mu in modified KS coordinates
+    // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
     {
       const real gKSP00 = coord[h2].gcov[0][0];
       const real gKSP11 = coord[h2].gcov[1][1];
@@ -124,6 +125,7 @@ static inline __device__ State rhs(const State &s, real t)
       const real gKSP13 = coord[h2].gcov[1][3];
       const real gKSP23 = coord[h2].gcov[2][3];
 
+      // Vector u
       ur     = field[h3].v1;
       utheta = field[h3].v2;
       uphi   = field[h3].v3;
@@ -140,9 +142,32 @@ static inline __device__ State rhs(const State &s, real t)
       ur     *= ut;
       utheta *= ut;
       uphi   *= ut;
+
+      // Vector B
+      br     = field[h3].B1;
+      btheta = field[h3].B2;
+      bphi   = field[h3].B3;
+      bt     = (br     * (gKSP01 * ut     + gKSP11 * ur    +
+                          gKSP12 * utheta + gKSP13 * uphi) +
+                btheta * (gKSP02 * ut     + gKSP12 * ur    +
+                          gKSP22 * utheta + gKSP23 * uphi) +
+                bphi   * (gKSP03 * ut     + gKSP13 * ur    +
+                          gKSP23 * uphi   + gKSP33 * uphi));
+      br     += bt * ur     / ut;
+      btheta += bt * utheta / ut;
+      bphi   += bt * uphi   / ut;
+
+      b = sqrt(bt     * (gKSP00 * bt     + gKSP01 * br    +
+                         gKSP02 * btheta + gKSP03 * bphi) +
+               br     * (gKSP01 * bt     + gKSP11 * br    +
+                         gKSP12 * btheta + gKSP13 * bphi) +
+               btheta * (gKSP02 * bt     + gKSP12 * br    +
+                         gKSP22 * btheta + gKSP23 * bphi) +
+               bphi   * (gKSP03 * bt     + gKSP13 * br    +
+                         gKSP23 * btheta + gKSP33 * bphi));
     }
 
-    // Transform vector u from KSP to KS coordinates
+    // Transform vector u and b from KSP to KS coordinates
     {
       const real dxdxp00 = coord[h2].dxdxp[0][0];
       const real dxdxp11 = coord[h2].dxdxp[1][1];
@@ -152,34 +177,52 @@ static inline __device__ State rhs(const State &s, real t)
       const real dxdxp33 = coord[h2].dxdxp[3][3];
 
       const real det12 = dxdxp11 * dxdxp22 - dxdxp12 * dxdxp21;
-      const real temp1 = ur;
-      const real temp2 = utheta;
+      real temp1, temp2;
 
+      temp1  = ur;
+      temp2  = utheta;
       ut    /= dxdxp00;
       ur     = (temp1 * dxdxp22 - temp2 * dxdxp12) / det12;
       utheta = (temp2 * dxdxp11 - temp1 * dxdxp21) / det12;
       uphi  /= dxdxp33;
+
+      temp1  = br;
+      temp2  = btheta;
+      bt    /= dxdxp00;
+      br     = (temp1 * dxdxp22 - temp2 * dxdxp12) / det12;
+      btheta = (temp2 * dxdxp11 - temp1 * dxdxp21) / det12;
+      bphi  /= dxdxp33;
     }
 
-    // Transform vector u from KS to BL coordinates
+    // Transform vector u and b from KS to BL coordinates
     {
       const real temp0 = R_SCHW * s.r / Dlt; // Note that s.r and Dlt are
       const real temp3 = a_spin       / Dlt; // evaluated at photon position
+
       ut   += ur * temp0;
       uphi += ur * temp3;
+
+      bt   += br * temp0;
+      bphi += br * temp3;
     }
 
-    // Compute red shift
-    real shift;
+    // Compute red shift and angle cosine between b and k
+    real shift, bkcos;
     {
       const real k0 = -1;             // k_t
       const real k1 = g11 * s.kr;     // k_r
       const real k2 = g22 * s.ktheta; // k_theta
       const real k3 = s.bimpact;      // k_phi
-      shift = -(k0 * ut + k1 * ur + k2 * utheta + k3 * uphi); // is positive
-    }
 
-    dtau = -shift * den;
+      shift = -(k0 * ut + k1 * ur + k2 * utheta + k3 * uphi); // is positive
+      bkcos =  (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) / shift / b;
+
+      if(bkcos >  1) bkcos =  1;
+      if(bkcos < -1) bkcos = -1;
+    }
+    const real nu = nu0 * shift;
+
+    dtau = -shift * den * bkcos * bkcos;
     df   = dtau / (exp(0.5 * shift / tmp) - 1) * exp(-s.tau) * 100;
   } else {
     const real dR = s.r * sin_theta - R_torus;
