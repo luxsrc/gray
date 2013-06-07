@@ -75,9 +75,8 @@ int solve(Data &data)
   do dump(data);
 #endif
   while(0 < evolve(data, global::dt_dump));
-#ifndef DUMP
+
   dump(data);
-#endif
 
   return 0;
 }
