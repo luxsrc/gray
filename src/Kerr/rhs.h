@@ -94,7 +94,7 @@ static inline __device__ State rhs(const State &s, real t)
         sqrt(-g00 - 2 * g30 * Omega - g33 * Omega * Omega);
 
       dtau = -shift;
-      df   = dtau / (exp(nu0) - 1) * exp(-s.tau);
+      df   = dtau / (exp(nu0 * shift) - 1) * exp(-s.tau);
     }
   } // 5 FLOP if outside torus; 31 FLOP if inside torus
 
