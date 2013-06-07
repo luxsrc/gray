@@ -87,5 +87,9 @@ static __device__ State ic(const size_t i, size_t n, const real t)
     bimpact = -(g33 * kphi + g30 * kt) / (g00 * kt + g30 * kphi);
   }
 
-  return (State){t, r, theta, phi, kr, ktheta, bimpact, alpha, beta, 0, 0, 0};
+  const real nu = 1;
+
+  return (State){t, r, theta, phi, kr, ktheta, // null geodesic
+                 bimpact, alpha, beta, nu,     // constants of motion
+                 0, 0, 0, 0, 0};               // radiative transfer variables
 }

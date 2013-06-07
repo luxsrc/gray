@@ -22,7 +22,7 @@
 #define WIDTH 1024
 #define HARM  1
 
-#ifndef __CUDACC__ // for src/main.cc
+#ifndef __CUDACC__ // for src/ctrl.cc, src/main.cc, and src/vis.cc
 #  define DT_DUMP (-1)
 #else // for src/init.cu and src/evolve.cu
 
