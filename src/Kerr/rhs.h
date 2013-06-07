@@ -87,7 +87,101 @@ static inline __device__ State rhs(const State &s, real t)
   } // 24 FLOP
 
   real dtau = 0, df = 0;
-  if(!field) {
+  if(field) {
+    int h2, h3;
+    {
+      int ir = (logf((real)(s.r - (real)0.1)) - (real)0.4215) /
+        (real)0.0320826 + (real)0.5;
+      if(ir < 0) ir = 0; else if(ir > 240) ir = 240;
+
+      int itheta = s.theta / (real)0.0215945 - (real)9.7406;
+      if(itheta < 0) itheta = 0; else if(itheta > 125) itheta = 125;
+
+      int iphi = (s.phi >= 0) ?
+        ((int)(60 * s.phi / (2 * (real)M_PI) + (real)0.5) %  60):
+        ((int)(60 * s.phi / (2 * (real)M_PI) - (real)0.5) % -60);
+      if(iphi < 0) iphi += 60;
+
+      h2 = itheta * 264 + ir;
+      h3 = (iphi * 126 + itheta) * 264 + ir;
+    }
+
+    const real den = field[h3].rho;
+    const real tmp = field[h3].u / den; // in unit of c^2
+
+    real ut, ur, utheta, uphi;
+
+    // Construct the four vectors u^\mu in modified KS coordinates
+    {
+      const real gKSP00 = coord[h2].gcov[0][0];
+      const real gKSP11 = coord[h2].gcov[1][1];
+      const real gKSP22 = coord[h2].gcov[2][2];
+      const real gKSP33 = coord[h2].gcov[3][3];
+      const real gKSP01 = coord[h2].gcov[0][1];
+      const real gKSP02 = coord[h2].gcov[0][2];
+      const real gKSP03 = coord[h2].gcov[0][3];
+      const real gKSP12 = coord[h2].gcov[1][2];
+      const real gKSP13 = coord[h2].gcov[1][3];
+      const real gKSP23 = coord[h2].gcov[2][3];
+
+      ur     = field[h3].v1;
+      utheta = field[h3].v2;
+      uphi   = field[h3].v3;
+      ut     = 1 / sqrt(-(gKSP00                   +
+                          gKSP11 * ur     * ur     +
+                          gKSP22 * utheta * utheta +
+                          gKSP33 * uphi   * uphi   +
+                          2 * (gKSP01 * ur              +
+                               gKSP02 * utheta          +
+                               gKSP03 * uphi            +
+                               gKSP12 * ur     * utheta +
+                               gKSP13 * ur     * uphi   +
+                               gKSP23 * utheta * uphi)));
+      ur     *= ut;
+      utheta *= ut;
+      uphi   *= ut;
+    }
+
+    // Transform vector u from KSP to KS coordinates
+    {
+      const real dxdxp00 = coord[h2].dxdxp[0][0];
+      const real dxdxp11 = coord[h2].dxdxp[1][1];
+      const real dxdxp12 = coord[h2].dxdxp[1][2];
+      const real dxdxp21 = coord[h2].dxdxp[2][1];
+      const real dxdxp22 = coord[h2].dxdxp[2][2];
+      const real dxdxp33 = coord[h2].dxdxp[3][3];
+
+      const real det12 = dxdxp11 * dxdxp22 - dxdxp12 * dxdxp21;
+      const real temp1 = ur;
+      const real temp2 = utheta;
+
+      ut    /= dxdxp00;
+      ur     = (temp1 * dxdxp22 - temp2 * dxdxp12) / det12;
+      utheta = (temp2 * dxdxp11 - temp1 * dxdxp21) / det12;
+      uphi  /= dxdxp33;
+    }
+
+    // Transform vector u from KS to BL coordinates
+    {
+      const real temp0 = R_SCHW * s.r / Dlt; // Note that s.r and Dlt are
+      const real temp3 = a_spin       / Dlt; // evaluated at photon position
+      ut   += ur * temp0;
+      uphi += ur * temp3;
+    }
+
+    // Compute red shift
+    real shift;
+    {
+      const real k0 = -1;             // k_t
+      const real k1 = g11 * s.kr;     // k_r
+      const real k2 = g22 * s.ktheta; // k_theta
+      const real k3 = s.bimpact;      // k_phi
+      shift = -(k0 * ut + k1 * ur + k2 * utheta + k3 * uphi); // is positive
+    }
+
+    dtau = -shift * den;
+    df   = dtau / (exp(0.5 * shift / tmp) - 1) * exp(-s.tau) * 100;
+  } else {
     const real dR = s.r * sin_theta - R_torus;
     if(dR * dR + r2 * c2 < 4) {
       const real shift = (1 - Omega * s.bimpact) /
