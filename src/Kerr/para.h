@@ -39,7 +39,7 @@ static __constant__ Coord *coord   = NULL;
 static __constant__ Field *field   = NULL;
 static __constant__ real   R_torus = 6;
 static __constant__ real   Omega   = 0.068;
-static __constant__ real   nu0     = 1;
+static __constant__ real   nu0     = 3.6e11; /* Hz, infrared */
 
 static inline bool config(const char c, const real v)
 {
