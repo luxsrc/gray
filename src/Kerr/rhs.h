@@ -49,8 +49,8 @@ static inline __device__ State rhs(const State &s, real t)
     g33    = g33_s2 * s2;
 
     tmp    = 1 / (g33 * g00 - g30 * g30);
-    kt     = -(g33 + s.bimpact * g30) * tmp;
-    kphi   =  (g30 + s.bimpact * g00) * tmp;
+    kt     = -(g33 + s.bimpact * g30) * tmp; // assume E = -k_t = 1, see ic.h
+    kphi   =  (g30 + s.bimpact * g00) * tmp; // assume E = -k_t = 1, see ic.h
   } // 25 FLOP
 
   real ar, atheta;

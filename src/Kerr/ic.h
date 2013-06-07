@@ -75,16 +75,20 @@ static __device__ State ic(const size_t i, size_t n, const real t)
       g33 = (sum - a_spin * g30) * s2;
     }
 
-    real kt;
+    real E, kt;
     {
       real g30_kphi = g30 * kphi;
       real Delta    = g30_kphi * g30_kphi - g00 * (g11 * kr     * kr     +
                                                    g22 * ktheta * ktheta +
                                                    g33 * kphi   * kphi  );
-      kt = -(g30_kphi + sqrt(Delta)) / g00;
+
+      E  = sqrt(Delta); // = -k_t
+      kt = -(g30_kphi + E) / g00;
     }
 
     bimpact = -(g33 * kphi + g30 * kt) / (g00 * kt + g30 * kphi);
+    kr     /= E; // so that E = 1
+    ktheta /= E; // so that E = 1
   }
 
   return (State){t, r, theta, phi, kr, ktheta, // null geodesic
