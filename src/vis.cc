@@ -96,6 +96,7 @@ static void display(void)
   glViewport(width / 2, 0, width / 2, height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
+  gluOrtho2D(-0.5, 0.5, -0.5 / global::ratio, 0.5 / global::ratio);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
