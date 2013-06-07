@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#define FLOP_RHS 79
+#define FLOP_RHS 84
 #define R_SCHW   2
 
 static inline __device__ State rhs(const State &s, real t)
@@ -86,7 +86,19 @@ static inline __device__ State rhs(const State &s, real t)
               + 2 * G130 *   kphi   *   kt    ) / g11;
   } // 24 FLOP
 
+  real dtau = 0, df = 0;
+  if(!field) {
+    const real dR = s.r * sin_theta - R_torus;
+    if(dR * dR + r2 * c2 < 4) {
+      const real shift = (1 - Omega * s.bimpact) /
+        sqrt(-g00 - 2 * g30 * Omega - g33 * Omega * Omega);
+
+      dtau = -shift;
+      df   = dtau / (exp(nu0) - 1) * exp(-s.tau);
+    }
+  } // 5 FLOP if outside torus; 31 FLOP if inside torus
+
   return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, // null geodesic
                  0, 0, 0,                              // constants of motion
-                 0, 0, 0, 0, 0};                       // radiative transfer
+                 df, 0, 0, 0, dtau};                   // radiative transfer
 }
