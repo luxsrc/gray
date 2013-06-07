@@ -26,7 +26,6 @@ typedef struct {
   real kr, ktheta;
   real bimpact;       // impact parameter defined as L / E, constant
   real alpha0, beta0; // initial location in the image plane
-  real nu0;           // initial photon frequency
   real I, Q, U, V;    // Stokes parameters
   real tau;           // optical depth
 } State;

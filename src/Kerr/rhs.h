@@ -87,6 +87,6 @@ static inline __device__ State rhs(const State &s, real t)
   } // 24 FLOP
 
   return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, // null geodesic
-                 0, 0, 0, 0,                           // constants of motion
+                 0, 0, 0,                              // constants of motion
                  0, 0, 0, 0, 0};                       // radiative transfer
 }
