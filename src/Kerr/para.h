@@ -61,9 +61,10 @@ static inline bool config(const char c, const real v)
   case 's': err = cudaMemcpyToSymbol(dt_scale,  &v, sizeof(real)); break;
   case 'e': err = cudaMemcpyToSymbol(epsilon,   &v, sizeof(real)); break;
   case 't': err = cudaMemcpyToSymbol(tolerance, &v, sizeof(real)); break;
-  case 'R': err = cudaMemcpyToSymbol(R_torus,   &v, sizeof(real)); break;
-  case 'O': err = cudaMemcpyToSymbol(Omega,     &v, sizeof(real)); break;
+  case 'G': err = cudaMemcpyToSymbol(Gamma,     &v, sizeof(real)); break;
   case 'n': err = cudaMemcpyToSymbol(nu0,       &v, sizeof(real)); break;
+  case 'R': err = cudaMemcpyToSymbol(Tp_Te,     &v, sizeof(real)); break;
+  case 'd': err = cudaMemcpyToSymbol(ne_rho,    &v, sizeof(real)); break;
   }
 
   return cudaSuccess == err;
