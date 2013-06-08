@@ -75,6 +75,39 @@ static inline __device__ real K2iT(real T)
   return exp((1 - d) * log_K2iT_tab[i] + d * log_K2iT_tab[i+1]);
 }
 
+static inline __device__ real j(real nu,
+                                real n_e, real T_e, real B,
+                                real cos_theta)
+{
+  if(T_e < T_MIN) return 0;
+
+  const real c   = 2.99792458e+10;
+  const real m_e = 9.10938291e-28;
+  const real e_e = 4.80320425e-10;
+  const real nus =
+    T_e * T_e * e_e * B * sqrt(1 - cos_theta*cos_theta) / (9 * M_PI * m_e * c);
+
+  if(nu > 1e12 * nus) return 0;
+
+  const real K2 = (T_e > T_MAX) ? 2 * T_e * T_e : K2iT(T_e);
+
+  const real x     = nu / nus;
+  const real cbrtx = cbrt(x);
+  const real xx    = sqrt(x) + 1.88774862536 * sqrt(cbrtx);
+
+  return xx * xx * exp(-cbrtx) *
+    (M_SQRT2 * M_PI * e_e * e_e * n_e * nus) / (3. * c * K2);
+}
+
+static inline __device__ real B(real nu, real T)
+{
+  const real c  = 2.99792458e+10;
+  const real h  = 6.62606957e-27;
+  const real kB = 1.38064881e-16;
+
+  return 2 * h * nu * nu * nu / (c * c * (exp(h * nu / (kB * T)) - 1));
+}
+
 static inline __device__ State rhs(const State &s, real t)
 {
   const real a2 = a_spin * a_spin;
