@@ -309,10 +309,12 @@ static inline __device__ State rhs(const State &s, real t)
       if(bkcos >  1) bkcos =  1;
       if(bkcos < -1) bkcos = -1;
     }
-    const real nu = nu0 * shift;
+    const real nu   = nu0 * shift;
+    const real j_nu = j(nu, den, tmp, b, bkcos);
+    const real B_nu = B(nu, tmp);
 
-    dtau = -shift * den * bkcos * bkcos;
-    df   = dtau / (exp(0.5 * shift / tmp) - 1) * exp(-s.tau) * 100;
+    dtau = -j_nu * shift / B_nu;
+    df   = -j_nu * exp(-s.tau) / (shift * shift);
   } else {
     const real dR = s.r * sin_theta - R_torus;
     if(dR * dR + r2 * c2 < 4) {
