@@ -19,11 +19,17 @@
 #define FLOP_RHS 84
 #define R_SCHW   2
 
+#define CONST_c  (2.99792458e+10)
+#define CONST_h  (6.62606957e-27)
+#define CONST_kB (1.38064881e-16)
+#define CONST_e  (4.80320425e-10)
+#define CONST_me (9.10938291e-28)
+
 #define T_MIN  0.3
 #define T_MAX  100
 #define T_GRID 200
 
-static __device__ __constant__ real log_K2iT_tab[] = {
+static __device__ __constant__ real log_K2it_tab[] = {
   -3.22106608, -3.09865291, -2.97870215, -2.86113209, -2.74586332,
   -2.63281867, -2.52192316, -2.41310394, -2.30629020, -2.20141320,
   -2.09840612, -1.99720410, -1.89774413, -1.79996503, -1.70380742,
@@ -67,45 +73,39 @@ static __device__ __constant__ real log_K2iT_tab[] = {
    9.90346256
 };
 
-static inline __device__ real K2iT(real T)
+static inline __device__ real K2it(real t_e)
 {
-  const real h = T_GRID * log(T / T_MIN) / log(T_MAX / T_MIN);
+  const real h = T_GRID * log(t_e / T_MIN) / log(T_MAX / T_MIN);
   const int  i = h;
   const real d = h - i;
-  return exp((1 - d) * log_K2iT_tab[i] + d * log_K2iT_tab[i+1]);
+
+  return exp((1 - d) * log_K2it_tab[i] + d * log_K2it_tab[i+1]);
 }
 
-static inline __device__ real j(real nu,
-                                real n_e, real T_e, real B,
-                                real cos_theta)
+static inline __device__ real j_synchr(real nu,
+                                       real t_e, real n_e, real B,
+                                       real cos_theta)
 {
-  if(T_e < T_MIN) return 0;
+  if(t_e < T_MIN) return 0;
 
-  const real c   = 2.99792458e+10;
-  const real m_e = 9.10938291e-28;
-  const real e_e = 4.80320425e-10;
-  const real nus =
-    T_e * T_e * e_e * B * sqrt(1 - cos_theta*cos_theta) / (9 * M_PI * m_e * c);
+  const real nus = CONST_e / (9 * M_PI * CONST_me * CONST_c) *
+    t_e * t_e * B * sqrt(1 - cos_theta * cos_theta);
 
   if(nu > 1e12 * nus) return 0;
 
-  const real K2 = (T_e > T_MAX) ? 2 * T_e * T_e : K2iT(T_e);
-
+  const real K2    = (t_e > T_MAX) ? 2 * t_e * t_e : K2it(t_e);
   const real x     = nu / nus;
   const real cbrtx = cbrt(x);
   const real xx    = sqrt(x) + 1.88774862536 * sqrt(cbrtx);
 
-  return xx * xx * exp(-cbrtx) *
-    (M_SQRT2 * M_PI * e_e * e_e * n_e * nus) / (3. * c * K2);
+  return M_SQRT2 * M_PI * CONST_e * CONST_e / (3 * CONST_c) *
+    n_e * nus * xx * xx * exp(-cbrtx) / K2;
 }
 
-static inline __device__ real B(real nu, real T)
+static inline __device__ real B_Planck(real nu, real T)
 {
-  const real c  = 2.99792458e+10;
-  const real h  = 6.62606957e-27;
-  const real kB = 1.38064881e-16;
-
-  return 2 * h * nu * nu * nu / (c * c * (exp(h * nu / (kB * T)) - 1));
+  return 2 * CONST_h / (CONST_c * CONST_c) *
+    nu * nu * nu / (exp((CONST_h / CONST_kB) * (nu / T)) - 1);
 }
 
 static inline __device__ State rhs(const State &s, real t)
@@ -310,8 +310,8 @@ static inline __device__ State rhs(const State &s, real t)
       if(bkcos < -1) bkcos = -1;
     }
     const real nu   = nu0 * shift;
-    const real j_nu = j(nu, den, tmp, b, bkcos);
-    const real B_nu = B(nu, tmp);
+    const real j_nu = j_synchr(nu, tmp, den, b, bkcos);
+    const real B_nu = B_Planck(nu, tmp);
 
     dtau = -j_nu * shift / B_nu;
     df   = -j_nu * exp(-s.tau) / (shift * shift);
