@@ -103,10 +103,10 @@ static inline __device__ real j_synchr(real nu,
     n_e * nus * xx * xx * exp(-cbrtx) / K2;
 }
 
-static inline __device__ real B_Planck(real nu, real T)
+static inline __device__ real B_Planck(real nu, real te)
 {
-  return 2 * CONST_h / (CONST_c * CONST_c) *
-    nu * nu * nu / (exp((CONST_h / CONST_kB) * (nu / T)) - 1);
+  return 2 * CONST_h / (CONST_c * CONST_c) * nu * nu * nu /
+    (exp(CONST_h / (CONST_me * CONST_c * CONST_c) * (nu / te)) - 1);
 }
 
 static inline __device__ State rhs(const State &s, real t)
