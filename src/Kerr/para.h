@@ -37,9 +37,14 @@ static __constant__ real tolerance = 1e-1;     // if xi+1 > tolerance, fall
 // Parameters for radiative transfer
 static __constant__ Coord *coord   = NULL;
 static __constant__ Field *field   = NULL;
+
 static __constant__ real   R_torus = 6;
 static __constant__ real   Omega   = 0.068;
+
+static __constant__ real   Gamma   = 1.333;
 static __constant__ real   nu0     = 3.6e11; /* Hz, infrared */
+static __constant__ real   Tp_Te   = 10;
+static __constant__ real   ne_rho  = 1e6;
 
 static inline bool config(const char c, const real v)
 {

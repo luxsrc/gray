@@ -19,11 +19,12 @@
 #define FLOP_RHS 84
 #define R_SCHW   2
 
-#define CONST_c  (2.99792458e+10)
-#define CONST_h  (6.62606957e-27)
-#define CONST_kB (1.38064881e-16)
-#define CONST_e  (4.80320425e-10)
-#define CONST_me (9.10938291e-28)
+#define CONST_c     (2.99792458e+10)
+#define CONST_h     (6.62606957e-27)
+#define CONST_kB    (1.38064881e-16)
+#define CONST_e     (4.80320425e-10)
+#define CONST_me    (9.10938291e-28)
+#define CONST_mp_me (1836.15267245 )
 
 #define T_MIN  0.3
 #define T_MAX  100
@@ -195,8 +196,9 @@ static inline __device__ State rhs(const State &s, real t)
       h3 = (iphi * 126 + itheta) * 264 + ir;
     }
 
-    const real den = field[h3].rho;
-    const real tmp = field[h3].u / den; // in unit of c^2
+    const real ne = ne_rho      * field[h3].rho;
+    const real te = field[h3].u / field[h3].rho * CONST_mp_me *
+      ((2 / 3) * (Tp_Te + 1) / (Tp_Te + 2) + Gamma - 1) / (Tp_Te + 1) / 2;
 
     real ut, ur, utheta, uphi;
     real bt, br, btheta, bphi, b;
@@ -310,8 +312,8 @@ static inline __device__ State rhs(const State &s, real t)
       if(bkcos < -1) bkcos = -1;
     }
     const real nu   = nu0 * shift;
-    const real j_nu = j_synchr(nu, tmp, den, b, bkcos);
-    const real B_nu = B_Planck(nu, tmp);
+    const real j_nu = j_synchr(nu, te, ne, b, bkcos);
+    const real B_nu = B_Planck(nu, te);
 
     dtau = -j_nu * shift / B_nu;
     df   = -j_nu * exp(-s.tau) / (shift * shift);
