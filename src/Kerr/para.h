@@ -41,7 +41,7 @@ static __constant__ Field *field   = NULL;
 static __constant__ real   R_torus = 6;
 static __constant__ real   Omega   = 0.068;
 
-static __constant__ real   Gamma   = 1.66666666666667;
+static __constant__ real   Gamma   = 4.0 / 3.0;
 static __constant__ real   nu0     = 3.6e11; /* Hz, infrared */
 static __constant__ real   Tp_Te   = 3;
 static __constant__ real   ne_rho  = 1e6;

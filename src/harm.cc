@@ -32,9 +32,10 @@ Coord *load_coord(const char *name)
 {
   using namespace harm;
 
-  double a    = 0;
-  Coord *data = NULL;
-  FILE  *file = fopen(name, "r");
+  double Gamma  = 4.0 / 3.0;
+  double a_spin = 0;
+  Coord *data   = NULL;
+  FILE  *file   = fopen(name, "r");
 
   if(!file)
     error("ERROR: fail to open file \"%s\".\n", name);
@@ -44,9 +45,10 @@ Coord *load_coord(const char *name)
     fread(&n1, sizeof(size_t), 1, file);
     fread(&n2, sizeof(size_t), 1, file);
     fread(&n3, sizeof(size_t), 1, file);
-    fseek(file, 64, SEEK_CUR);
-    fread(&a,  sizeof(double), 1, file);
-    fread(&R0, sizeof(double), 1, file);
+    fseek(file, 56, SEEK_CUR);
+    fread(&Gamma,  sizeof(double), 1, file);
+    fread(&a_spin, sizeof(double), 1, file);
+    fread(&R0,     sizeof(double), 1, file);
     fseek(file, 44, SEEK_CUR);
 
     size_t count = n1 * n2;
@@ -90,9 +92,12 @@ Coord *load_coord(const char *name)
     fclose(file);
   }
 
-  print("Spin parameter a = %g, R0 = %g\n", a, R0);
+  print("Gamma = %g, spin parameter a = %g, R0 = %g\n", Gamma, a_spin, R0);
+
+  if(!init_config('G', Gamma) || !prob_config('G', Gamma))
+    error("load_coord(): fail to set Gamma\n");
   /*
-  if(!init_config('a', a) || !prob_config('a', a))
+  if(!init_config('a', a_spin) || !prob_config('a', a_spin))
     error("load_coord(): fail to set spin parameter\n");
   */
   return data;
