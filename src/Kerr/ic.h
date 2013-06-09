@@ -30,7 +30,7 @@ static __device__ State ic(const size_t i, size_t n, const real t)
     const real deg2rad = M_PI / 180;
     const real cos_obs = cos(deg2rad * i_obs);
     const real sin_obs = sin(deg2rad * i_obs);
-    const real scale   = 20;
+    const real scale   = 100;
     const real half    = .5;
 
     real x, y, z;

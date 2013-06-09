@@ -27,7 +27,7 @@
 #else // for src/init.cu and src/evolve.cu
 
 // Parameters for geodesic integration
-static __constant__ real r_obs     = 30;       // observer radius in GM/c^2
+static __constant__ real r_obs     = 1000;     // observer radius in GM/c^2
 static __constant__ real i_obs     = 30;       // observer theta in degrees
 static __constant__ real a_spin    = 0.999;    // dimensionless spin j/mc
 static __constant__ real dt_scale  = 1.0 / 32; // typical step size
