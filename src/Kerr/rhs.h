@@ -200,10 +200,6 @@ static inline __device__ State rhs(const State &s, real t)
       h3 = (iphi * 126 + itheta) * 264 + ir;
     }
 
-    const real ne = ne_rho      * field[h3].rho;
-    const real te = field[h3].u / field[h3].rho * CONST_mp_me *
-      ((2 / 3) * (Tp_Te + 1) / (Tp_Te + 2) + Gamma - 1) / (Tp_Te + 1) / 2;
-
     real ut, ur, utheta, uphi;
     real bt, br, btheta, bphi, b;
 
@@ -301,8 +297,8 @@ static inline __device__ State rhs(const State &s, real t)
       bphi += br * temp3;
     }
 
-    // Compute red shift and angle cosine between b and k
-    real shift, bkcos;
+    // Compute red shift, angle cosine between b and k, etc
+    real shift, bkcos, B_nu, j_nu;
     {
       const real k0 = -1;             // k_t
       const real k1 = g11 * s.kr;     // k_r
@@ -311,14 +307,20 @@ static inline __device__ State rhs(const State &s, real t)
 
       shift = -(k0 * ut + k1 * ur + k2 * utheta + k3 * uphi); // is positive
       bkcos =  (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) / shift / b;
-
       if(bkcos >  1) bkcos =  1;
       if(bkcos < -1) bkcos = -1;
+
+      b *= CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me) *
+        sqrt(ne_rho);
+      const real ne = ne_rho      * field[h3].rho;
+      const real te = field[h3].u / field[h3].rho * CONST_mp_me *
+        ((2 / 3) * (Tp_Te + 1) / (Tp_Te + 2) + Gamma - 1) / (Tp_Te + 1) / 2;
+
+      const real nu = nu0 * shift;
+      B_nu = B_Planck(nu, te);
+      j_nu = j_synchr(nu, te, ne, b, bkcos) * m_BH *
+        (CONST_G * CONST_mSun ) / (CONST_c * CONST_c);
     }
-    const real nu   = nu0 * shift;
-    const real B_nu = B_Planck(nu, te);
-    const real j_nu = j_synchr(nu, te, ne, b, bkcos) * m_BH *
-      (CONST_G * CONST_mSun) / (CONST_c * CONST_c);
 
     dtau = -j_nu * shift / B_nu;
     df   = -j_nu * exp(-s.tau) / (shift * shift);
