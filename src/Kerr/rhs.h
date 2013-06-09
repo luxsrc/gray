@@ -21,10 +21,12 @@
 
 #define CONST_c     (2.99792458e+10)
 #define CONST_h     (6.62606957e-27)
+#define CONST_G     (6.67384800e-08)
 #define CONST_kB    (1.38064881e-16)
 #define CONST_e     (4.80320425e-10)
 #define CONST_me    (9.10938291e-28)
-#define CONST_mp_me (1836.15267245 )
+#define CONST_mp_me (1836.152672450)
+#define CONST_mSun  (1.98910000e+33)
 
 #define T_MIN  0.3
 #define T_MAX  100
@@ -83,6 +85,14 @@ static inline __device__ real K2it(real t_e)
   return exp((1 - d) * log_K2it_tab[i] + d * log_K2it_tab[i+1]);
 }
 
+static inline __device__ real B_Planck(real nu, real te)
+{
+  nu /= CONST_c;
+
+  return 2 * CONST_h * CONST_c * nu * nu * nu /
+    (exp(CONST_h / (CONST_me * CONST_c) * (nu / te)) - 1);
+}
+
 static inline __device__ real j_synchr(real nu,
                                        real t_e, real n_e, real B,
                                        real cos_theta)
@@ -101,14 +111,6 @@ static inline __device__ real j_synchr(real nu,
 
   return M_SQRT2 * M_PI * CONST_e * CONST_e / (3 * CONST_c) *
     n_e * nus * xx * xx * exp(-cbrtx) / K2;
-}
-
-static inline __device__ real B_Planck(real nu, real te)
-{
-  nu /= CONST_c;
-
-  return 2 * CONST_h * CONST_c * nu * nu * nu /
-    (exp(CONST_h / (CONST_me * CONST_c) * (nu / te)) - 1);
 }
 
 static inline __device__ State rhs(const State &s, real t)
@@ -314,8 +316,9 @@ static inline __device__ State rhs(const State &s, real t)
       if(bkcos < -1) bkcos = -1;
     }
     const real nu   = nu0 * shift;
-    const real j_nu = j_synchr(nu, te, ne, b, bkcos);
     const real B_nu = B_Planck(nu, te);
+    const real j_nu = j_synchr(nu, te, ne, b, bkcos) *
+      (4.3e6 * CONST_G * CONST_mSun ) / (CONST_c * CONST_c);
 
     dtau = -j_nu * shift / B_nu;
     df   = -j_nu * exp(-s.tau) / (shift * shift);
