@@ -42,9 +42,10 @@ static __constant__ real   R_torus = 6;
 static __constant__ real   Omega   = 0.068;
 
 static __constant__ real   Gamma   = 4.0 / 3.0;
-static __constant__ real   nu0     = 3.6e11; /* Hz, infrared */
 static __constant__ real   Tp_Te   = 3;
 static __constant__ real   ne_rho  = 1e6;
+static __constant__ real   m_BH    = 4.3e6;  /* in unit of solar mass */
+static __constant__ real   nu0     = 3.6e11; /* Hz, infrared */
 
 static inline bool config(const char c, const real v)
 {

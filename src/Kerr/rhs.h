@@ -317,8 +317,8 @@ static inline __device__ State rhs(const State &s, real t)
     }
     const real nu   = nu0 * shift;
     const real B_nu = B_Planck(nu, te);
-    const real j_nu = j_synchr(nu, te, ne, b, bkcos) *
-      (4.3e6 * CONST_G * CONST_mSun ) / (CONST_c * CONST_c);
+    const real j_nu = j_synchr(nu, te, ne, b, bkcos) * m_BH *
+      (CONST_G * CONST_mSun) / (CONST_c * CONST_c);
 
     dtau = -j_nu * shift / B_nu;
     df   = -j_nu * exp(-s.tau) / (shift * shift);
