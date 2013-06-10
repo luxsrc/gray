@@ -127,7 +127,7 @@ static inline __device__ State rhs(const State &s, real t)
     const real G230 = -a_spin * ar * (g22 + a2 * s2);
     const real G233 = -a_spin * G230 * s2 + g33_s2 * cs;
 
-    ar = G222 / Dlt; // use ar as tmp, will be used in the next block
+    ar = G222 / Dlt; // use ar as tmp, will be reused in the next block
 
     atheta = (+     G200 *   kt     *   kt
               +     ar   * s.kr     * s.kr
@@ -147,24 +147,24 @@ static inline __device__ State rhs(const State &s, real t)
               -     G111 * s.kr     * s.kr
               +     s.r  * s.ktheta * s.ktheta
               +     G133 *   kphi   *   kphi
-              - 2 * ar   * s.kr     * s.ktheta // ar is from the atheta block
+              - 2 * ar   * s.kr     * s.ktheta // tmp ar from the atheta block
               + 2 * G130 *   kphi   *   kt    ) / g11;
   } // 24 FLOP
 
   real dtau = 0, df = 0;
-  if(field) {
+
+  if(field) { // loaded HARM data
     int h2, h3;
     {
-      int ir = (logf((real)(s.r - (real)0.1)) - (real)0.4215) /
-        (real)0.0320826 + (real)0.5;
-      if(ir < 0) ir = 0; else if(ir > 240) ir = 240;
+      int ir = logf(s.r - (real)0.1) / (real)0.0320826 - (real)12.637962634;
+      if(ir < 0) ir = 0; else if(ir > 220) ir = 220;
 
-      int itheta = s.theta / (real)0.0215945 - (real)9.7406;
+      int itheta = s.theta / (real)0.021594524 - (real)9.7404968;
       if(itheta < 0) itheta = 0; else if(itheta > 125) itheta = 125;
 
       int iphi = (s.phi >= 0) ?
-        ((int)(60 * s.phi / (2 * (real)M_PI) + (real)0.5) %  60):
-        ((int)(60 * s.phi / (2 * (real)M_PI) - (real)0.5) % -60);
+        ((int)(60 * s.phi / (2 * (real)M_PI) + (real)0.5) % ( 60)):
+        ((int)(60 * s.phi / (2 * (real)M_PI) - (real)0.5) % (-60));
       if(iphi < 0) iphi += 60;
 
       h2 = itheta * 264 + ir;
