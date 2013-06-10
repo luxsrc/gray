@@ -19,6 +19,7 @@
 #include "gray.h"
 #include "harm.h"
 #include <cstdlib>
+#include <cmath>
 
 namespace harm {
   double t  = 0, R0 = 2;
@@ -107,7 +108,7 @@ Field *load_field(const char *name)
 {
   using namespace harm;
 
-  real max_den = 0, max_eng = 0;
+  real max_den = 0, max_eng = 0, max_T = 0, max_v = 0, max_B = 0;
 
   Field *data = NULL;
   FILE  *file = fopen(name, "r");
@@ -129,8 +130,19 @@ Field *load_field(const char *name)
       fread(host, sizeof(Field), count, file);
 
       for(size_t i = 0; i < count; ++i) {
+        const real v = sqrt(host[i].v1 * host[i].v1 +
+                            host[i].v2 * host[i].v2 +
+                            host[i].v3 * host[i].v3);
+        const real B = sqrt(host[i].B1 * host[i].B1 +
+                            host[i].B2 * host[i].B2 +
+                            host[i].B3 * host[i].B3);
+        const real T = host[i].u / host[i].rho;
+
         if(max_den < host[i].rho) max_den = host[i].rho;
         if(max_eng < host[i].u  ) max_eng = host[i].u;
+        if(max_T   < T          ) max_T   = T;
+        if(max_v   < v          ) max_v   = v;
+        if(max_B   < B          ) max_B   = B;
       }
 
       cudaError_t err =
@@ -149,8 +161,12 @@ Field *load_field(const char *name)
   }
 
   print("Data size = %zu x %zu x %zu\n", n1, n2, n3);
-  print("Maximum density = %g\n"
-        "Maximum energy  = %g\n", max_den, max_eng);
+  print("Maximum density        = %g\n"
+        "Maximum energy         = %g\n"
+        "Maximum temperature    = %g\n"
+        "Maximum speed          = %g\n"
+        "Maximum magnetic field = %g\n",
+        max_den, max_eng, max_T, max_v, max_B);
 
   return data;
 }
