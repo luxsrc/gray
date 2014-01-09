@@ -43,7 +43,8 @@ void init(Data &data)
   data.deactivate();
 
   if(cudaSuccess != err)
-    error("init(): fail to launch kernel; %s\n", cudaGetErrorString(err));
+    error("init(): fail to launch kernel [%s]\n",
+          cudaGetErrorString(err));
 }
 
 bool init_config(const char *arg)

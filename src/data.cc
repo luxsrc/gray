@@ -44,7 +44,8 @@ Data::Data(size_t n_input)
   mapped = true; // hence, there's no need to map between OpenGL and CUDA
 #endif
   if(cudaSuccess != err)
-    error("Data::Data(): fail to allocate device memory\n");
+    error("Data::Data(): fail to allocate device memory [%s]\n",
+          cudaGetErrorString(err));
 
   if(!(buf = (State *)malloc(sz)))
     error("Data::Data(): fail to allocate host memory\n");
@@ -70,5 +71,6 @@ Data::~Data()
 #else
   if(cudaSuccess != err)
 #endif
-    error("Data::~Data(): fail to free device memory\n");
+    error("Data::~Data(): fail to free device memory [%s]\n",
+          cudaGetErrorString(err));
 }
