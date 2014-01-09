@@ -155,12 +155,12 @@ static inline __device__ State rhs(const State &s, real t)
 
   if(field) { // loaded HARM data
     int h2, h3;
+
+    int itheta = s.theta / (real)0.021594524 - (real)9.7404968;
+    if(itheta < 0) itheta = 0; else if(itheta > 125) itheta = 125;
     {
       int ir = logf(s.r - (real)0.1) / (real)0.0320826 - (real)12.637962634;
       if(ir < 0) ir = 0; else if(ir > 220) ir = 220;
-
-      int itheta = s.theta / (real)0.021594524 - (real)9.7404968;
-      if(itheta < 0) itheta = 0; else if(itheta > 125) itheta = 125;
 
       int iphi = (s.phi >= 0) ?
         ((int)(60 * s.phi / (2 * (real)M_PI) + (real)0.5) % ( 60)):
@@ -283,9 +283,11 @@ static inline __device__ State rhs(const State &s, real t)
 
       b *= CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me) *
         sqrt(ne_rho);
-      const real ne = ne_rho      * field[h3].rho;
-      const real te = field[h3].u / field[h3].rho * CONST_mp_me *
+      real ne = ne_rho      * field[h3].rho;
+      real te = field[h3].u / field[h3].rho * CONST_mp_me *
         ((Tp_Te + 1) / (Tp_Te + 2) / 1.5 + Gamma - 1) / (Tp_Te + 1) / 2;
+      if(itheta < 0 + 8 || itheta > 125 - 8)
+	ne = 0.0;
 
       const real nu = nu0 * shift;
       B_nu = B_Planck(nu, te);
