@@ -19,6 +19,7 @@
 #include "gray.h"
 #include "harm.h"
 #include <cstdlib>
+#include <cstring>
 #include <cmath>
 
 namespace harm {
@@ -37,6 +38,11 @@ Coord *load_coord(const char *name)
   double a_spin = 0;
   Coord *data   = NULL;
   FILE  *file   = fopen(name, "r");
+  if(!file) {
+    char upname[256] = "../";
+    strcat(upname, name);
+    file = fopen(upname, "r");
+  }
 
   if(!file)
     error("ERROR: fail to open file \"%s\".\n", name);
