@@ -101,7 +101,8 @@ double evolve(Data &data, double dt)
   if(cudaSuccess != cudaEventRecord(time1, 0))
     error("evolve(): fail to record event\n");
   if(cudaSuccess != err)
-    error("evolve(): fail to launch kernel; %s\n", cudaGetErrorString(err));
+    error("evolve(): fail to launch kernel [%s]\n",
+          cudaGetErrorString(err));
 
   float ms;
   if(cudaSuccess != cudaEventSynchronize(time1) ||
