@@ -69,13 +69,14 @@ int main(int argc, char **argv)
     error("main(): fail to initialize GLUT/OpenGL\n");
 #endif
 
-  size_t n = 0;
+  size_t n = 0, device = 0;
   for(int i = 1; i < argc; ++i) {
     const char *arg = argv[i];
     if(arg[1] != '=')
       error("Unknown flag ""%s""\n", arg);
     else {
       switch(arg[0]) {
+      case 'I': device          = atoi(arg + 2); break;
       case 'N': n               = atoi(arg + 2); break;
       case 'T': global::t       = atof(arg + 2); break;
       case 'D': global::dt_dump = atof(arg + 2); break;
@@ -87,6 +88,23 @@ int main(int argc, char **argv)
       }
       print("Set parameter ""%s""\n", arg);
     }
+  }
+
+  if(device > 0) {
+    int n_devices;
+    cudaGetDeviceCount(&n_devices);
+
+    if(n_devices < 1)
+      error("No GPU is found on this machine\n");
+    else
+      print("%d GPU%s found\n", n_devices, n_devices == 1 ? " is" : "s are");
+
+    if(n_devices <= device)
+      error("%u is an invalid GPU id");
+    else
+      print("Run on GPU %u", device);
+
+    cudaSetDevice(device);
   }
 
   if(name) {
