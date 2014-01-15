@@ -286,8 +286,8 @@ static inline __device__ State rhs(const State &s, real t)
       real ne = ne_rho      * field[h3].rho;
       real te = field[h3].u / field[h3].rho * CONST_mp_me *
         ((Tp_Te + 1) / (Tp_Te + 2) / 1.5 + Gamma - 1) / (Tp_Te + 1) / 2;
-      if(itheta < 0 + 8 || itheta > 125 - 8)
-	ne = 0.0;
+      if(itheta < n_pole || itheta > 125 - n_pole)
+	ne *= ne_pole;
 
       const real nu = nu0 * shift;
       B_nu = B_Planck(nu, te);
