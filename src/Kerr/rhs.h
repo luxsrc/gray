@@ -68,14 +68,15 @@ static inline __device__ real B_Planck(real nu, real te)
 static inline __device__ real j_synchr(real nu, real te, real ne,
                                        real B,  real cos_theta)
 {
-  if(te <= T_MIN) return 0;
-
   const real nus = CONST_e / (9 * M_PI * CONST_me * CONST_c) *
     te * te * B * sqrt(1 - cos_theta * cos_theta);
+  const real x   = nu / nus;
 
-  if(nu > 1e12 * nus) return 0;
+  if(te        <= T_MIN ||
+     cos_theta <=  -1.0 ||
+     cos_theta >=   1.0 ||
+     x         <=   0.0) return 0;
 
-  const real x     = nu / nus;
   const real cbrtx = cbrt(x);
   const real xx    = sqrt(x) + 1.88774862536 * sqrt(cbrtx);
   const real K2    = (te > T_MAX) ? 2 * te * te - 0.5 : K2it(te);
@@ -269,7 +270,7 @@ static inline __device__ State rhs(const State &s, real t)
     }
 
     // Compute red shift, angle cosine between b and k, etc
-    real shift, bkcos, B_nu, j_nu;
+    real shift, B_nu, j_nu;
     {
       const real k0 = -1;             // k_t
       const real k1 = g11 * s.kr;     // k_r
@@ -277,12 +278,10 @@ static inline __device__ State rhs(const State &s, real t)
       const real k3 = s.bimpact;      // k_phi
 
       shift = -(k0 * ut + k1 * ur + k2 * utheta + k3 * uphi); // is positive
-      bkcos =  (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) / shift / b;
-      if(bkcos >  1) bkcos =  1;
-      if(bkcos < -1) bkcos = -1;
+      const real bkcos =
+        (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) / shift / b;
 
-      b *= CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me) *
-        sqrt(ne_rho);
+      b *= CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me * ne_rho);
       real ne = ne_rho      * field[h3].rho;
       real te = field[h3].u / field[h3].rho * CONST_mp_me *
         ((Tp_Te + 1) / (Tp_Te + 2) / 1.5 + Gamma - 1) / (Tp_Te + 1) / 2;
@@ -295,8 +294,10 @@ static inline __device__ State rhs(const State &s, real t)
         (CONST_G * CONST_mSun ) / (CONST_c * CONST_c);
     }
 
-    dtau = -j_nu * shift / B_nu;
-    df   = -j_nu * exp(-s.tau) / (shift * shift);
+    if(j_nu > 0.0) {
+      dtau = -j_nu * shift / B_nu;
+      df   = -j_nu * exp(-s.tau) / (shift * shift);
+    }
   } else {
     const real dR = s.r * sin_theta - R_torus;
     if(dR * dR + r2 * c2 < 4) {
