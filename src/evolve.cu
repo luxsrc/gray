@@ -98,7 +98,7 @@ double evolve(Data &data, double dt)
     error("evolve(): fail to record event\n");
 
   State *s = data.device();
-  driver<<<gsz, bsz, sizeof(State) * bsz>>>(s, count, n, t, global::t += dt);
+  driver<<<gsz, bsz, sizeof(State) * bsz>>>(s, count, n, t, (real)(global::t += dt));
   cudaError_t err = cudaDeviceSynchronize();
   data.deactivate();
 
