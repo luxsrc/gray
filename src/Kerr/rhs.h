@@ -152,7 +152,7 @@ static inline __device__ State rhs(const State &s, real t)
               + 2 * G130 *   kphi   *   kt    ) / g11;
   } // 24 FLOP
 
-  real dtau = 0, df = 0;
+  real dtau = 0, dI = 0;
 
   if(field) { // loaded HARM data
     int h2, h3;
@@ -270,7 +270,7 @@ static inline __device__ State rhs(const State &s, real t)
     }
 
     // Compute red shift, angle cosine between b and k, etc
-    real shift, B_nu, j_nu;
+    real shift, B_nu, L_j_nu;
     {
       const real k0 = -1;             // k_t
       const real k1 = g11 * s.kr;     // k_r
@@ -289,14 +289,14 @@ static inline __device__ State rhs(const State &s, real t)
 	ne *= ne_pole;
 
       const real nu = nu0 * shift;
-      B_nu = B_Planck(nu, te);
-      j_nu = j_synchr(nu, te, ne, b, bkcos) * m_BH *
-        (CONST_G * CONST_mSun ) / (CONST_c * CONST_c);
+      B_nu   = B_Planck(nu, te);
+      L_j_nu = j_synchr(nu, te, ne, b, bkcos) *
+        m_BH * (CONST_G * CONST_mSun ) / (CONST_c * CONST_c); // length scale
     }
 
-    if(j_nu > 0) {
-      dtau = -j_nu * shift / B_nu;
-      df   = -j_nu * exp(-s.tau) / (shift * shift);
+    if(L_j_nu > 0) {
+      dtau = -L_j_nu * shift / B_nu;
+      dI   = -L_j_nu * exp(-s.tau) / (shift * shift);
     }
   } else {
     const real dR = s.r * sin_theta - R_torus;
@@ -305,11 +305,11 @@ static inline __device__ State rhs(const State &s, real t)
         sqrt(-g00 - 2 * g30 * Omega - g33 * Omega * Omega);
 
       dtau = -shift;
-      df   = dtau / (exp(shift) - 1) * exp(-s.tau); // always assume nu0 == 1
+      dI   = dtau / (exp(shift) - 1) * exp(-s.tau); // always assume nu0 == 1
     }
   } // 5 FLOP if outside torus; 31 FLOP if inside torus
 
   return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, // null geodesic
                  0, 0, 0,                              // constants of motion
-                 df, 0, 0, 0, dtau};                   // radiative transfer
+                 dI, 0, 0, 0, dtau};                   // radiative transfer
 }
