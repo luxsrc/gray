@@ -60,11 +60,6 @@ static inline bool config(const char c, const real v)
   switch(c) {
   case 'r': err = cudaMemcpyToSymbol(r_obs,     &v, sizeof(real)); break;
   case 'i': err = cudaMemcpyToSymbol(i_obs,     &v, sizeof(real)); break;
-  case 'a': err = cudaMemcpyToSymbol(a_spin,    &v, sizeof(real));
-#ifndef DISABLE_GL
-    global::a_spin = v;
-#endif
-    break;
   case 's': err = cudaMemcpyToSymbol(dt_scale,  &v, sizeof(real)); break;
   case 'e': err = cudaMemcpyToSymbol(epsilon,   &v, sizeof(real)); break;
   case 't': err = cudaMemcpyToSymbol(tolerance, &v, sizeof(real)); break;
@@ -75,6 +70,8 @@ static inline bool config(const char c, const real v)
   case 'd': err = cudaMemcpyToSymbol(ne_rho,    &v, sizeof(real)); break;
   case 'p': err = cudaMemcpyToSymbol(n_pole,    &i, sizeof(int )); break;
   case 'P': err = cudaMemcpyToSymbol(ne_pole,   &v, sizeof(real)); break;
+
+  case 'a': err = cudaSuccess; global::a_spin = v;                 break;
   }
 
   return cudaSuccess == err;

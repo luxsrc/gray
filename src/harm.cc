@@ -101,12 +101,10 @@ Coord *load_coord(const char *name)
 
   print("Gamma = %g, spin parameter a = %g, R0 = %g\n", Gamma, a_spin, R0);
 
+  global::a_spin = a_spin;
   if(!init_config('G', Gamma) || !prob_config('G', Gamma))
     error("load_coord(): fail to set Gamma\n");
-  /*
-  if(!init_config('a', a_spin) || !prob_config('a', a_spin))
-    error("load_coord(): fail to set spin parameter\n");
-  */
+
   return data;
 }
 

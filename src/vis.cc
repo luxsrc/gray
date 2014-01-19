@@ -42,8 +42,7 @@
 #define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
 
 namespace global {
-  float ratio  = 1;
-  float a_spin = 0.999;
+  float ratio = 1;
 }
 
 static size_t  n;
