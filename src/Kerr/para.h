@@ -37,17 +37,20 @@ static __constant__ real tolerance = 1e-1;     // if xi+1 > tolerance, fall
 // Parameters for radiative transfer
 static __constant__ Coord *coord   = NULL;
 static __constant__ Field *field   = NULL;
+static __constant__ int    nr      = 0;
+static __constant__ int    ntheta  = 0;
+static __constant__ int    nphi    = 0;
 
 static __constant__ real   R_torus = 6;
 static __constant__ real   Omega   = 0.068;
+static __constant__ real   m_BH    = 4.3e6;  /* in unit of solar mass */
 
 static __constant__ real   Gamma   = 4.0 / 3.0;
+static __constant__ real   nu0     = 3.6e11; /* Hz, infrared */
 static __constant__ real   Tp_Te   = 3;
 static __constant__ real   ne_rho  = 1e6;
 static __constant__ int    n_pole  = 0;
 static __constant__ real   ne_pole = 1.0;
-static __constant__ real   m_BH    = 4.3e6;  /* in unit of solar mass */
-static __constant__ real   nu0     = 3.6e11; /* Hz, infrared */
 
 static inline bool config(const char c, const real v)
 {
@@ -65,6 +68,7 @@ static inline bool config(const char c, const real v)
   case 's': err = cudaMemcpyToSymbol(dt_scale,  &v, sizeof(real)); break;
   case 'e': err = cudaMemcpyToSymbol(epsilon,   &v, sizeof(real)); break;
   case 't': err = cudaMemcpyToSymbol(tolerance, &v, sizeof(real)); break;
+
   case 'G': err = cudaMemcpyToSymbol(Gamma,     &v, sizeof(real)); break;
   case 'n': err = cudaMemcpyToSymbol(nu0,       &v, sizeof(real)); break;
   case 'R': err = cudaMemcpyToSymbol(Tp_Te,     &v, sizeof(real)); break;

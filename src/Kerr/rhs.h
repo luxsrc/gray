@@ -158,18 +158,18 @@ static inline __device__ State rhs(const State &s, real t)
     int h2, h3;
 
     int itheta = s.theta / (real)0.021594524 - (real)9.7404968;
-    if(itheta < 0) itheta = 0; else if(itheta > 125) itheta = 125;
+    if(itheta < 0) itheta = 0; else if(itheta > ntheta-1) itheta = ntheta-1;
     {
       int ir = logf(s.r - (real)0.1) / (real)0.0320826 - (real)12.637962634;
       if(ir < 0) ir = 0; else if(ir > 220) ir = 220;
 
       int iphi = (s.phi >= 0) ?
-        ((int)(60 * s.phi / (2 * (real)M_PI) + (real)0.5) % ( 60)):
-        ((int)(60 * s.phi / (2 * (real)M_PI) - (real)0.5) % (-60));
-      if(iphi < 0) iphi += 60;
+        ((int)(nphi * s.phi / (2 * (real)M_PI) + (real)0.5) % ( nphi)):
+        ((int)(nphi * s.phi / (2 * (real)M_PI) - (real)0.5) % (-nphi));
+      if(iphi < 0) iphi += nphi;
 
-      h2 = itheta * 264 + ir;
-      h3 = (iphi * 126 + itheta) * 264 + ir;
+      h2 = itheta * nr + ir;
+      h3 = (iphi * ntheta + itheta) * nr + ir;
     }
 
     real ut, ur, utheta, uphi;
