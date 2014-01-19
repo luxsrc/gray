@@ -85,20 +85,21 @@ double evolve(Data &data, double dt)
   const size_t gsz = (n - 1) / bsz + 1;
 
 #ifdef HARM
-  if(cudaSuccess!=cudaMemcpyToSymbol(coord, &harm::coord,   sizeof(Coord*)) ||
-     cudaSuccess!=cudaMemcpyToSymbol(field, &harm::field,   sizeof(Field*)) ||
-     cudaSuccess!=cudaMemcpyToSymbol(nr,    &harm::n1,      sizeof(int   )) ||
-     cudaSuccess!=cudaMemcpyToSymbol(ntheta,&harm::n2,      sizeof(int   )) ||
-     cudaSuccess!=cudaMemcpyToSymbol(nphi,  &harm::n3,      sizeof(int   )) ||
-     cudaSuccess!=cudaMemcpyToSymbol(a_spin,&global::a_spin,sizeof(real  )))
+  if(cudaSuccess != cudaMemcpyToSymbol(coord,  &harm::coord, sizeof(Coord*)) ||
+     cudaSuccess != cudaMemcpyToSymbol(field,  &harm::field, sizeof(Field*)) ||
+     cudaSuccess != cudaMemcpyToSymbol(nr,     &harm::n1,    sizeof(int   )) ||
+     cudaSuccess != cudaMemcpyToSymbol(ntheta, &harm::n2,    sizeof(int   )) ||
+     cudaSuccess != cudaMemcpyToSymbol(nphi,   &harm::n3,    sizeof(int   )))
     error("evolve(): fail to copy pointer(s) to device\n");
 #endif
+  if(cudaSuccess != cudaMemcpyToSymbol(a_spin, &global::a_spin, sizeof(real)))
+    error("evolve(): fail to copy pointer(s) to device\n");
 
   if(cudaSuccess != cudaEventRecord(time0, 0))
     error("evolve(): fail to record event\n");
 
   State *s = data.device();
-  driver<<<gsz, bsz, sizeof(State) * bsz>>>(s, count, n, t, (real)(global::t += dt));
+  driver<<<gsz, bsz, sizeof(State) * bsz>>>(s, count, n, t, global::t += dt);
   cudaError_t err = cudaDeviceSynchronize();
   data.deactivate();
 
