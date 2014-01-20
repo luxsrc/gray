@@ -50,6 +50,17 @@ static void setup(size_t n)
   if(NULL == (temp = (size_t *)malloc(sizeof(size_t) * n)))
     error("evolve(): fail to allocate host memory\n");
 
+#ifdef HARM
+  if(cudaSuccess != cudaMemcpyToSymbol(coord,  &harm::coord, sizeof(Coord*)) ||
+     cudaSuccess != cudaMemcpyToSymbol(field,  &harm::field, sizeof(Field*)) ||
+     cudaSuccess != cudaMemcpyToSymbol(rmin,   &harm::rmin,  sizeof(real  )) ||
+     cudaSuccess != cudaMemcpyToSymbol(rmax,   &harm::rmax,  sizeof(real  )) ||
+     cudaSuccess != cudaMemcpyToSymbol(nr,     &harm::n1,    sizeof(int   )) ||
+     cudaSuccess != cudaMemcpyToSymbol(ntheta, &harm::n2,    sizeof(int   )) ||
+     cudaSuccess != cudaMemcpyToSymbol(nphi,   &harm::n3,    sizeof(int   )))
+    error("evolve(): fail to copy pointer(s) to device\n");
+#endif
+
   if(cudaSuccess != cudaEventCreate(&time0) ||
      cudaSuccess != cudaEventCreate(&time1))
     error("evolve(): fail to create timer\n");
@@ -83,15 +94,6 @@ double evolve(Data &data, double dt)
 
   const size_t bsz = 64;
   const size_t gsz = (n - 1) / bsz + 1;
-
-#ifdef HARM
-  if(cudaSuccess != cudaMemcpyToSymbol(coord,  &harm::coord, sizeof(Coord*)) ||
-     cudaSuccess != cudaMemcpyToSymbol(field,  &harm::field, sizeof(Field*)) ||
-     cudaSuccess != cudaMemcpyToSymbol(nr,     &harm::n1,    sizeof(int   )) ||
-     cudaSuccess != cudaMemcpyToSymbol(ntheta, &harm::n2,    sizeof(int   )) ||
-     cudaSuccess != cudaMemcpyToSymbol(nphi,   &harm::n3,    sizeof(int   )))
-    error("evolve(): fail to copy pointer(s) to device\n");
-#endif
 
   if(cudaSuccess != cudaEventRecord(time0, 0))
     error("evolve(): fail to record event\n");

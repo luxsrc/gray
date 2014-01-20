@@ -23,8 +23,9 @@
 #include <cmath>
 
 namespace harm {
-  double t  = 0, R0 = 2;
-  size_t n1 = 0, n2 = 0, n3 = 0;
+  double t    = 0, R0   = 2;
+  real   rmin = 0, rmax = 0;
+  size_t n1   = 0, n2   = 0, n3   = 0;
 
   Coord *coord = NULL;
   Field *field = NULL;
@@ -47,7 +48,6 @@ Coord *load_coord(const char *name)
   if(!file)
     error("ERROR: fail to open file \"%s\".\n", name);
   else {
-
     fseek(file, 12, SEEK_CUR);
     fread(&n1, sizeof(size_t), 1, file);
     fread(&n2, sizeof(size_t), 1, file);
@@ -71,7 +71,21 @@ Coord *load_coord(const char *name)
 
         fseek(file, 4, SEEK_CUR);
 
-        fseek(file, 3 * sizeof(size_t) + 22 * sizeof(double), SEEK_CUR);
+        if(i == 0) {
+	  double temp;
+	  fseek(file, 3  * sizeof(size_t), SEEK_CUR);
+	  fread(&temp, sizeof(double), 1, file);
+	  fseek(file, 21 * sizeof(double), SEEK_CUR);
+	  harm::rmin = temp;
+        } else if(i == count-1) {
+	  double temp;
+	  fseek(file, 3  * sizeof(size_t), SEEK_CUR);
+	  fread(&temp, sizeof(double), 1, file);
+	  fseek(file, 21 * sizeof(double), SEEK_CUR);
+	  harm::rmax = temp;
+        } else
+	  fseek(file, 3 * sizeof(size_t) + 22 * sizeof(double), SEEK_CUR);
+
         fread(in, 16 * sizeof(double), 1, file);
         for(size_t j = 0; j < 16; ++j)
           (&(host[i].gcov[0][0]))[j] = in[j];
@@ -103,7 +117,9 @@ Coord *load_coord(const char *name)
     error("load_coord(): fail to set Gamma\n");
   if(!init_config('a', a_spin) || !prob_config('a', a_spin))
     error("load_coord(): fail to set a_spin\n");
-  print("Gamma = %g, spin parameter a = %g, R0 = %g\n", Gamma, a_spin, R0);
+
+  print("Gamma = %g, spin parameter a = %g, rmin = %g, rmax = %g\n",
+        Gamma, a_spin, harm::rmin, harm::rmax);
 
   return data;
 }
