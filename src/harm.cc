@@ -23,10 +23,9 @@
 #include <cmath>
 
 namespace harm {
-  double t    = 0, R0   = 2;
-  real   rmin = 0, rmax = 0;
-  size_t n1   = 0, n2   = 0, n3   = 0;
-
+  double t = 0, R0 = 2;
+  size_t n1 = 0, n2 = 0, n3 = 0;
+  real   lnrmin = 0, lnrmax = 0;
   Coord *coord = NULL;
   Field *field = NULL;
 }
@@ -76,13 +75,13 @@ Coord *load_coord(const char *name)
 	  fseek(file, 3  * sizeof(size_t), SEEK_CUR);
 	  fread(&temp, sizeof(double), 1, file);
 	  fseek(file, 21 * sizeof(double), SEEK_CUR);
-	  harm::rmin = temp;
+	  harm::lnrmin = temp;
         } else if(i == count-1) {
 	  double temp;
 	  fseek(file, 3  * sizeof(size_t), SEEK_CUR);
 	  fread(&temp, sizeof(double), 1, file);
 	  fseek(file, 21 * sizeof(double), SEEK_CUR);
-	  harm::rmax = temp;
+	  harm::lnrmax = temp;
         } else
 	  fseek(file, 3 * sizeof(size_t) + 22 * sizeof(double), SEEK_CUR);
 
@@ -119,7 +118,7 @@ Coord *load_coord(const char *name)
     error("load_coord(): fail to set a_spin\n");
 
   print("Gamma = %g, spin parameter a = %g, rmin = %g, rmax = %g\n",
-        Gamma, a_spin, harm::rmin, harm::rmax);
+        Gamma, a_spin, exp(harm::lnrmin), exp(harm::lnrmax));
 
   return data;
 }

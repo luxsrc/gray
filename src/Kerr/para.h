@@ -37,8 +37,8 @@ static __constant__ real tolerance = 1e-1;     // if xi+1 > tolerance, fall
 // Parameters for radiative transfer
 static __constant__ Coord *coord   = NULL;
 static __constant__ Field *field   = NULL;
-static __constant__ real   rmin    = 0;
-static __constant__ real   rmax    = 0;
+static __constant__ real   lnrmin  = 0;
+static __constant__ real   lnrmax  = 0;
 static __constant__ int    nr      = 0;
 static __constant__ int    ntheta  = 0;
 static __constant__ int    nphi    = 0;

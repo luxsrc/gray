@@ -46,8 +46,8 @@ typedef struct {
 
 namespace harm {
   extern double t,  R0;
-  extern real   rmin, rmax;
   extern size_t n1, n2, n3;
+  extern real   lnrmin, lnrmax;
   extern Coord *coord;
   extern Field *field;
 }

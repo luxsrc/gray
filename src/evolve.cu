@@ -51,13 +51,13 @@ static void setup(size_t n)
     error("evolve(): fail to allocate host memory\n");
 
 #ifdef HARM
-  if(cudaSuccess != cudaMemcpyToSymbol(coord,  &harm::coord, sizeof(Coord*)) ||
-     cudaSuccess != cudaMemcpyToSymbol(field,  &harm::field, sizeof(Field*)) ||
-     cudaSuccess != cudaMemcpyToSymbol(rmin,   &harm::rmin,  sizeof(real  )) ||
-     cudaSuccess != cudaMemcpyToSymbol(rmax,   &harm::rmax,  sizeof(real  )) ||
-     cudaSuccess != cudaMemcpyToSymbol(nr,     &harm::n1,    sizeof(int   )) ||
-     cudaSuccess != cudaMemcpyToSymbol(ntheta, &harm::n2,    sizeof(int   )) ||
-     cudaSuccess != cudaMemcpyToSymbol(nphi,   &harm::n3,    sizeof(int   )))
+  if(cudaSuccess != cudaMemcpyToSymbol(coord, &harm::coord, sizeof(Coord*)) ||
+     cudaSuccess != cudaMemcpyToSymbol(field, &harm::field, sizeof(Field*)) ||
+     cudaSuccess != cudaMemcpyToSymbol(lnrmin,&harm::lnrmin,sizeof(real  )) ||
+     cudaSuccess != cudaMemcpyToSymbol(lnrmax,&harm::lnrmax,sizeof(real  )) ||
+     cudaSuccess != cudaMemcpyToSymbol(nr,    &harm::n1,    sizeof(int   )) ||
+     cudaSuccess != cudaMemcpyToSymbol(ntheta,&harm::n2,    sizeof(int   )) ||
+     cudaSuccess != cudaMemcpyToSymbol(nphi,  &harm::n3,    sizeof(int   )))
     error("evolve(): fail to copy pointer(s) to device\n");
 #endif
 
