@@ -71,19 +71,19 @@ Coord *load_coord(const char *name)
         fseek(file, 4, SEEK_CUR);
 
         if(i == 0) {
-	  double temp;
-	  fseek(file, 3  * sizeof(size_t), SEEK_CUR);
-	  fread(&temp, sizeof(double), 1, file);
-	  fseek(file, 21 * sizeof(double), SEEK_CUR);
-	  harm::lnrmin = temp;
+          double temp;
+          fseek(file, 3  * sizeof(size_t), SEEK_CUR);
+          fread(&temp, sizeof(double), 1, file);
+          fseek(file, 21 * sizeof(double), SEEK_CUR);
+          harm::lnrmin = temp;
         } else if(i == count-1) {
-	  double temp;
-	  fseek(file, 3  * sizeof(size_t), SEEK_CUR);
-	  fread(&temp, sizeof(double), 1, file);
-	  fseek(file, 21 * sizeof(double), SEEK_CUR);
-	  harm::lnrmax = temp;
+          double temp;
+          fseek(file, 3  * sizeof(size_t), SEEK_CUR);
+          fread(&temp, sizeof(double), 1, file);
+          fseek(file, 21 * sizeof(double), SEEK_CUR);
+          harm::lnrmax = temp;
         } else
-	  fseek(file, 3 * sizeof(size_t) + 22 * sizeof(double), SEEK_CUR);
+          fseek(file, 3 * sizeof(size_t) + 22 * sizeof(double), SEEK_CUR);
 
         fread(in, 16 * sizeof(double), 1, file);
         for(size_t j = 0; j < 16; ++j)

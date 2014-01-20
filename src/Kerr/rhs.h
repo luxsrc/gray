@@ -157,11 +157,11 @@ static inline __device__ State rhs(const State &s, real t)
   if(field) { // loaded HARM data
     int h2, h3;
 
-    int itheta = s.theta / (real)0.021594524 - (real)9.7404968;
+    int itheta = ntheta * s.theta / (real)M_PI; // we want floor() here
     if(itheta < 0) itheta = 0; else if(itheta > ntheta-1) itheta = ntheta-1;
     {
-      int ir = logf(s.r - (real)0.1) / (real)0.0320826 - (real)12.637962634;
-      if(ir < 0) ir = 0; else if(ir > 220) ir = 220;
+      int ir = round(nr * (log(s.r) - lnrmin) / (lnrmax - lnrmin));
+      if(ir < 0) ir = 0; else if(ir > nr-1) ir = nr-1;
 
       int iphi = (s.phi >= 0) ?
         ((int)(nphi * s.phi / (2 * (real)M_PI) + (real)0.5) % ( nphi)):
