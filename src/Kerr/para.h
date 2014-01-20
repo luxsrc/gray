@@ -71,7 +71,11 @@ static inline bool config(const char c, const real v)
   case 'p': err = cudaMemcpyToSymbol(n_pole,    &i, sizeof(int )); break;
   case 'P': err = cudaMemcpyToSymbol(ne_pole,   &v, sizeof(real)); break;
 
-  case 'a': err = cudaSuccess; global::a_spin = v;                 break;
+  case 'a': err = cudaMemcpyToSymbol(a_spin,    &v, sizeof(real));
+#ifndef DISABLE_GL
+            global::a_spin = v;
+#endif
+            break;
   }
 
   return cudaSuccess == err;

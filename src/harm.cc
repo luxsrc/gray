@@ -35,7 +35,7 @@ Coord *load_coord(const char *name)
   using namespace harm;
 
   double Gamma  = 4.0 / 3.0;
-  double a_spin = 0;
+  double a_spin = 0.999;
   Coord *data   = NULL;
   FILE  *file   = fopen(name, "r");
   if(!file) {
@@ -99,11 +99,11 @@ Coord *load_coord(const char *name)
     fclose(file);
   }
 
-  print("Gamma = %g, spin parameter a = %g, R0 = %g\n", Gamma, a_spin, R0);
-
-  global::a_spin = a_spin;
   if(!init_config('G', Gamma) || !prob_config('G', Gamma))
     error("load_coord(): fail to set Gamma\n");
+  if(!init_config('a', a_spin) || !prob_config('a', a_spin))
+    error("load_coord(): fail to set a_spin\n");
+  print("Gamma = %g, spin parameter a = %g, R0 = %g\n", Gamma, a_spin, R0);
 
   return data;
 }

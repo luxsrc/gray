@@ -16,10 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace global {
-  real a_spin = 0.999;
-}
-
 #define FLOP_GETDT 12
 
 static __device__ real getdt(const State &s, real t,

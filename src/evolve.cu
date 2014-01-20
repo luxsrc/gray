@@ -92,8 +92,6 @@ double evolve(Data &data, double dt)
      cudaSuccess != cudaMemcpyToSymbol(nphi,   &harm::n3,    sizeof(int   )))
     error("evolve(): fail to copy pointer(s) to device\n");
 #endif
-  if(cudaSuccess != cudaMemcpyToSymbol(a_spin, &global::a_spin, sizeof(real)))
-    error("evolve(): fail to copy pointer(s) to device\n");
 
   if(cudaSuccess != cudaEventRecord(time0, 0))
     error("evolve(): fail to record event\n");
