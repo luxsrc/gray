@@ -31,7 +31,7 @@ void dump(Data &data)
   const void  *h = data.host();
 
   char name[256];
-  snprintf(name, sizeof(name), "%04zu.raw", frame++);
+  snprintf(name, sizeof(name), global::format, (int)(frame++));
 
   FILE *file = fopen(name, "wb");
   fwrite(&t, sizeof(double), 1, file);

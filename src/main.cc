@@ -45,6 +45,7 @@ namespace global {
   double t        = T_START;
   double dt_dump  = DT_DUMP;
   double dt_saved = 0;
+  const char *format = "%04d.raw";
 }
 
 static void cleanup()
@@ -103,6 +104,7 @@ int main(int argc, char **argv)
       case 'N': n               = atoi(arg + 2); break;
       case 'T': global::t       = atof(arg + 2); break;
       case 'D': global::dt_dump = atof(arg + 2); break;
+      case 'O': global::format  =      arg + 2 ; break;
       case 'H': name            =      arg + 2 ; break;
       default :
         if(!init_config(arg) || !prob_config(arg))
