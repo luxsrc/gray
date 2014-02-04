@@ -17,6 +17,7 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
+#include <cstdlib>
 #include <cstdio>
 
 void dump(Data &data)
@@ -39,4 +40,36 @@ void dump(Data &data)
   fwrite(&n, sizeof(size_t), 1, file);
   fwrite( h, sizeof(State),  n, file);
   fclose(file);
+}
+
+void spec(Data &data)
+{
+  debug("spec(*%p)\n", &data);
+
+  const size_t n = data;
+  const State *h = data.host();
+
+  float *I = (float *)malloc(sizeof(float) * n);
+  if(!I)
+    error("ERROR: fail to allocate buffer\n");
+  else
+    for(size_t i = 0; i < n; ++i) I[i] = h[i].I;
+
+  float *tau = (float *)malloc(sizeof(float) * n);
+  if(!tau)
+    error("ERROR: fail to allocate buffer\n");
+  else
+    for(size_t i = 0; i < n; ++i) tau[i] = h[i].tau;
+
+  char name[256];
+  snprintf(name, sizeof(name), global::format, -1);
+
+  FILE *file = fopen(name, "wb");
+  fwrite(&n,   sizeof(size_t), 1, file);
+  fwrite( I,   sizeof(float),  n, file);
+  fwrite( tau, sizeof(float),  n, file);
+  fclose(file);
+
+  free(tau);
+  free(I);
 }

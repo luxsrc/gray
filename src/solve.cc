@@ -64,6 +64,8 @@ int solve(Data &data)
 #endif
   glutMainLoop();
 
+  spec(data); // TODO: check if glutMainLoop() actually exit...
+
   return 0;
 }
 #else
@@ -75,8 +77,10 @@ int solve(Data &data)
   do dump(data);
 #endif
   while(0 < evolve(data, global::dt_dump));
-
+#ifdef DUMP
   dump(data);
+#endif
+  spec(data);
 
   return 0;
 }
