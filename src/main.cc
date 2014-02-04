@@ -123,7 +123,7 @@ int main(int argc, char **argv)
     strcpy(grid, name);
     p = grid + strlen(grid);
     while(p > grid && *p != '/') --p;
-    strcpy(p+1, "usgdump2d");
+    strcpy(*p == '/' ? p + 1 : p, "usgdump2d");
 
     coord = load_coord(grid);
     field = load_field(name);
