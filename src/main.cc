@@ -19,6 +19,7 @@
 #include "gray.h"
 #include "harm.h"
 #include <cstdlib>
+#include <cstring>
 #include <para.h>
 
 #ifndef T_START
@@ -117,7 +118,14 @@ int main(int argc, char **argv)
 
   if(name) {
     using namespace harm;
-    coord = load_coord("usgdump2d");
+
+    char grid[256], *p;
+    strcpy(grid, name);
+    p = grid + strlen(grid);
+    while(p > grid && *p != '/') --p;
+    strcpy(p+1, "usgdump2d");
+
+    coord = load_coord(grid);
     field = load_field(name);
     if(coord && field && !atexit(cleanup))
       print("Loaded harm data from \"%s\"\n", name);
