@@ -173,7 +173,7 @@ static inline __device__ State rhs(const State &s, real t)
     }
 
     real ut, ur, utheta, uphi;
-    real bt, br, btheta, bphi, b;
+    real bt, br, btheta, bphi, b, Tp_Te;
 
     // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
     {
@@ -220,14 +220,17 @@ static inline __device__ State rhs(const State &s, real t)
       btheta += bt * utheta / ut;
       bphi   += bt * uphi   / ut;
 
-      b = sqrt(bt     * (gKSP00 * bt     + gKSP01 * br    +
-                         gKSP02 * btheta + gKSP03 * bphi) +
-               br     * (gKSP01 * bt     + gKSP11 * br    +
-                         gKSP12 * btheta + gKSP13 * bphi) +
-               btheta * (gKSP02 * bt     + gKSP12 * br    +
-                         gKSP22 * btheta + gKSP23 * bphi) +
-               bphi   * (gKSP03 * bt     + gKSP13 * br    +
-                         gKSP23 * btheta + gKSP33 * bphi));
+      const real bb = (bt     * (gKSP00 * bt     + gKSP01 * br    +
+				 gKSP02 * btheta + gKSP03 * bphi) +
+		       br     * (gKSP01 * bt     + gKSP11 * br    +
+				 gKSP12 * btheta + gKSP13 * bphi) +
+		       btheta * (gKSP02 * bt     + gKSP12 * br    +
+				 gKSP22 * btheta + gKSP23 * bphi) +
+		       bphi   * (gKSP03 * bt     + gKSP13 * br    +
+				 gKSP23 * btheta + gKSP33 * bphi));
+      const real ibeta = bb / (2 * (Gamma - 1) * field[h3].u);
+      Tp_Te = (ibeta > 5) ? Tp_Te_w : Tp_Te_d;
+      b = sqrt(bb);
     }
 
     // Transform vector u and b from KSP to KS coordinates
@@ -285,8 +288,6 @@ static inline __device__ State rhs(const State &s, real t)
       real ne = ne_rho      * field[h3].rho;
       real te = field[h3].u / field[h3].rho * CONST_mp_me *
         ((Tp_Te + 1) / (Tp_Te + 2) / (real)1.5 + Gamma - 1) / (Tp_Te + 1) / 2;
-      if(itheta < n_pole || itheta > ntheta-1 - n_pole)
-	ne *= ne_pole;
 
       const real nu = nu0 * shift;
       B_nu   = B_Planck(nu, te);

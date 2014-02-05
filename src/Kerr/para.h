@@ -49,15 +49,13 @@ static __constant__ real   m_BH    = 4.3e6;  /* in unit of solar mass */
 
 static __constant__ real   Gamma   = 4.0 / 3.0;
 static __constant__ real   nu0     = 3.6e11; /* Hz, infrared */
-static __constant__ real   Tp_Te   = 3;
+static __constant__ real   Tp_Te_d = 3;
+static __constant__ real   Tp_Te_w = 3;
 static __constant__ real   ne_rho  = 1e6;
-static __constant__ int    n_pole  = 0;
-static __constant__ real   ne_pole = 1.0;
 
 static inline bool config(const char c, const real v)
 {
   cudaError_t err = cudaErrorInvalidSymbol;
-  const int i = round(v);
 
   switch(c) {
   case 'r': err = cudaMemcpyToSymbol(r_obs,     &v, sizeof(real)); break;
@@ -68,10 +66,9 @@ static inline bool config(const char c, const real v)
 
   case 'G': err = cudaMemcpyToSymbol(Gamma,     &v, sizeof(real)); break;
   case 'n': err = cudaMemcpyToSymbol(nu0,       &v, sizeof(real)); break;
-  case 'R': err = cudaMemcpyToSymbol(Tp_Te,     &v, sizeof(real)); break;
+  case 'Q': err = cudaMemcpyToSymbol(Tp_Te_d,   &v, sizeof(real)); break;
+  case 'R': err = cudaMemcpyToSymbol(Tp_Te_w,   &v, sizeof(real)); break;
   case 'd': err = cudaMemcpyToSymbol(ne_rho,    &v, sizeof(real)); break;
-  case 'p': err = cudaMemcpyToSymbol(n_pole,    &i, sizeof(int )); break;
-  case 'P': err = cudaMemcpyToSymbol(ne_pole,   &v, sizeof(real)); break;
 
   case 'a': err = cudaMemcpyToSymbol(a_spin,    &v, sizeof(real));
 #ifndef DISABLE_GL
