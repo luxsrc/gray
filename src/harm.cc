@@ -80,12 +80,12 @@ Coord *load_coord(const char *name)
         } else
           fseek(file, 3 * sizeof(size_t) + 22 * sizeof(double), SEEK_CUR);
 
-        fread(in, 16 * sizeof(double), 1, file);
+        fread(in, sizeof(double), 16, file);
         for(size_t j = 0; j < 16; ++j)
           (&(host[i].gcov[0][0]))[j] = in[j];
 
         fseek(file, 5 * sizeof(double), SEEK_CUR);
-        fread(in, 16 * sizeof(double), 1, file);
+        fread(in, sizeof(double), 16, file);
         for(size_t j = 0; j < 16; ++j)
           (&(host[i].dxdxp[0][0]))[j] = in[j];
 
