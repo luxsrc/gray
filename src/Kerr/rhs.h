@@ -216,9 +216,9 @@ static inline __device__ State rhs(const State &s, real t)
                           gKSP22 * utheta + gKSP23 * uphi) +
                 bphi   * (gKSP03 * ut     + gKSP13 * ur    +
                           gKSP23 * uphi   + gKSP33 * uphi));
-      br     += bt * ur     / ut;
-      btheta += bt * utheta / ut;
-      bphi   += bt * uphi   / ut;
+      br     = (br     + bt * ur    ) / ut;
+      btheta = (btheta + bt * utheta) / ut;
+      bphi   = (bphi   + bt * uphi  ) / ut;
 
       const real bb = (bt     * (gKSP00 * bt     + gKSP01 * br    +
 				 gKSP02 * btheta + gKSP03 * bphi) +
