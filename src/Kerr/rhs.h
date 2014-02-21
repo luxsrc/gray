@@ -242,28 +242,27 @@ static inline __device__ State rhs(const State &s, real t)
       const real dxdxp22 = coord[h2].dxdxp[2][2];
       const real dxdxp33 = coord[h2].dxdxp[3][3];
 
-      const real det12 = dxdxp11 * dxdxp22 - dxdxp12 * dxdxp21;
       real temp1, temp2;
 
       temp1  = ur;
       temp2  = utheta;
-      ut    /= dxdxp00;
-      ur     = (temp1 * dxdxp22 - temp2 * dxdxp12) / det12;
-      utheta = (temp2 * dxdxp11 - temp1 * dxdxp21) / det12;
-      uphi  /= dxdxp33;
+      ut    *= dxdxp00;
+      ur     = (dxdxp11 * temp1 + dxdxp12 * temp2);
+      utheta = (dxdxp21 * temp1 + dxdxp22 * temp2);
+      uphi  *= dxdxp33;
 
       temp1  = br;
       temp2  = btheta;
-      bt    /= dxdxp00;
-      br     = (temp1 * dxdxp22 - temp2 * dxdxp12) / det12;
-      btheta = (temp2 * dxdxp11 - temp1 * dxdxp21) / det12;
-      bphi  /= dxdxp33;
+      bt    *= dxdxp00;
+      br     = (dxdxp11 * temp1 + dxdxp12 * temp2);
+      btheta = (dxdxp21 * temp1 + dxdxp22 * temp2);
+      bphi  *= dxdxp33;
     }
 
     // Transform vector u and b from KS to BL coordinates
     {
-      const real temp0 = R_SCHW * s.r / Dlt; // Note that s.r and Dlt are
-      const real temp3 = a_spin       / Dlt; // evaluated at photon position
+      const real temp0 = -R_SCHW * s.r / Dlt; // Note that s.r and Dlt are
+      const real temp3 = -a_spin       / Dlt; // evaluated at photon position
 
       ut   += ur * temp0;
       uphi += ur * temp3;
