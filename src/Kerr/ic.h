@@ -92,6 +92,6 @@ static __device__ State ic(const size_t i, size_t n, const real t)
   }
 
   return (State){t, r, theta, phi, kr, ktheta, // null geodesic
-                 bimpact, alpha, beta,         // constants of motion
-                 0, 0, 0, 0, 0};               // radiative transfer variables
+                 bimpact,                      // constants of motion
+                 0, 0};                        // radiative transfer variables
 }

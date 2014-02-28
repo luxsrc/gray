@@ -344,6 +344,6 @@ static inline __device__ State rhs(const State &s, real t)
   } // 5 FLOP if outside torus; 31 FLOP if inside torus
 
   return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, // null geodesic
-                 0, 0, 0,                              // constants of motion
-                 dI, 0, 0, 0, dtau};                   // radiative transfer
+                 0,                                    // constants of motion
+                 dI, dtau};                            // radiative transfer
 }
