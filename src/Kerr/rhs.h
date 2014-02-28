@@ -1,5 +1,5 @@
-// Copyright (C) 2012,2013 Chi-kwan Chan
-// Copyright (C) 2012,2013 Steward Observatory
+// Copyright (C) 2012--2014 Chi-kwan Chan
+// Copyright (C) 2012--2014 Steward Observatory
 //
 // This file is part of GRay.
 //
