@@ -332,16 +332,7 @@ static inline __device__ State rhs(const State &s, real t)
       dtau = -L_j_nu * shift / B_nu;
       dI   = -L_j_nu * exp(-s.tau) / (shift * shift);
     }
-  } else {
-    const real dR = s.r * sin_theta - R_torus;
-    if(dR * dR + r2 * c2 < 4) {
-      const real shift = (1 - Omega * s.bimpact) /
-        sqrt(-g00 - 2 * g30 * Omega - g33 * Omega * Omega);
-
-      dtau = -shift;
-      dI   = dtau / (exp(shift) - 1) * exp(-s.tau); // always assume nu0 == 1
-    }
-  } // 5 FLOP if outside torus; 31 FLOP if inside torus
+  }
 
   return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, // null geodesic
                  0,                                    // constants of motion
