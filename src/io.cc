@@ -53,23 +53,20 @@ void spec(Data &data)
   if(!I)
     error("ERROR: fail to allocate buffer\n");
   else
-    for(size_t i = 0; i < n; ++i) I[i] = h[i].I;
+    for(size_t i = 0; i < n; ++i) I[i] = h[i].I; // real to float
 
-  float *tau = (float *)malloc(sizeof(float) * n);
-  if(!tau)
-    error("ERROR: fail to allocate buffer\n");
-  else
-    for(size_t i = 0; i < n; ++i) tau[i] = h[i].tau;
+  double mean = 0.0;
+  for(size_t i = 0; i < n; ++i) mean += I[i];
+  mean /= n;
 
   char name[256];
   snprintf(name, sizeof(name), global::format, -1);
 
   FILE *file = fopen(name, "wb");
-  fwrite(&n,   sizeof(size_t), 1, file);
-  fwrite( I,   sizeof(float),  n, file);
-  fwrite( tau, sizeof(float),  n, file);
+  fwrite(&n,    sizeof(size_t), 1, file);
+  fwrite(&mean, sizeof(double), 1, file);
+  fwrite( I,    sizeof(float),  n, file);
   fclose(file);
 
-  free(tau);
   free(I);
 }
