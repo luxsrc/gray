@@ -67,24 +67,6 @@ void mkshaders(GLuint shader[3])
   ), GL_FRAGMENT_SHADER));
   glLinkProgram(shader[1]);
 
-  shader[2] = glCreateProgram();
-  glAttachShader(shader[2], compile(STRING(
-    void main()
-    {
-      vec4 r;
-      r.x = gl_Vertex.y;
-      r.y = gl_Vertex.z;
-      r.z = 0.0;
-      r.w = 1.0;
-      gl_FrontColor.x = gl_Color.x;
-      gl_FrontColor.y = gl_Color.x;
-      gl_FrontColor.z = gl_Color.x;
-      gl_FrontColor.w = 1.0;
-      gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * r;
-    }
-  ), GL_VERTEX_SHADER));
-  glLinkProgram(shader[2]);
-
   if(GL_NO_ERROR != glGetError())
     error("mkshaders(): fail to compile shader\n");
 }

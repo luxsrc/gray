@@ -19,8 +19,7 @@
 #ifndef PARA_H
 #define PARA_H
 
-#define WIDTH 1024
-#define HARM  1
+#define HARM 1
 
 #ifndef __CUDACC__ // for src/ctrl.cc, src/main.cc, and src/vis.cc
 #  define DT_DUMP (-100)

@@ -46,6 +46,7 @@ void spec(Data &data)
 {
   debug("spec(*%p)\n", &data);
 
+#ifdef HARM
   const size_t n = data;
   const State *h = data.host();
 
@@ -70,4 +71,5 @@ void spec(Data &data)
   fclose(file);
 
   free(I);
+#endif
 }

@@ -47,17 +47,12 @@ namespace global {
 
 static size_t  n;
 static GLuint  vbo; // OpenGL Vertex Buffer Object
-static GLuint  shader[3], texture;
+static GLuint  shader[2], texture;
 static GLfloat width, height;
 
 static void display(void)
 {
-  // LEFT VIEW PORT
-#if WIDTH > HEIGHT
-    glViewport(0, 0, width / 2, height);
-#else
-    glViewport(0, 0, width,     height);
-#endif
+  glViewport(0, 0, width, height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(27.0, global::ratio, 1.0, 2500.0);
@@ -90,30 +85,6 @@ static void display(void)
   glDisable(GL_BLEND);
   glDisable(GL_POINT_SPRITE_ARB);
 
-  // RIGHT VIEW PORT
-#if WIDTH > HEIGHT
-  glViewport(width / 2, 0, width / 2, height);
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluOrtho2D(-0.5, 0.5, -0.5 / global::ratio, 0.5 / global::ratio);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-
-  // Draw traced image by shader; TODO: we should use glTexSubImage2D()
-  glUseProgram(shader[2]);
-
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glEnableClientState(GL_COLOR_ARRAY);
-
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glVertexPointer(3, GL_REAL, sizeof(State), (char *)(6 * sizeof(real)));
-  glColorPointer (3, GL_REAL, sizeof(State), (char *)(9 * sizeof(real)));
-  glDrawArrays(GL_POINTS, 0, n);
-
-  glDisableClientState(GL_COLOR_ARRAY);
-  glDisableClientState(GL_VERTEX_ARRAY);
-#endif
-
   // DONE
   glUseProgram(0);
   if(GL_NO_ERROR != glGetError())
@@ -123,11 +94,7 @@ static void display(void)
 
 static void reshape(int w, int h)
 {
-#if WIDTH > HEIGHT
-  global::ratio = (width = w) / (height = h) / 2;
-#else
   global::ratio = (width = w) / (height = h);
-#endif
 }
 
 void vis(GLuint vbo_in, size_t n_in)
