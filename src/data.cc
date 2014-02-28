@@ -18,7 +18,10 @@
 
 #include "gray.h"
 #include <cstdlib>
-#include <cuda_gl_interop.h> // OpenGL interoperability runtime API
+
+#ifndef DISABLE_GL
+#  include <cuda_gl_interop.h> // OpenGL interoperability runtime API
+#endif
 
 Data::Data(size_t n_input)
 {

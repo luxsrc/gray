@@ -25,23 +25,23 @@ static __device__ State ic(const size_t i, size_t n, const real t)
   n /= m;
 
   // Photon position and momentum in spherical coordinates
-  real r, theta, phi, kr, ktheta, kphi;
+  real r, theta, phi, kr, ktheta, kphi, alpha, beta;
   {
     const real deg2rad = M_PI / 180;
     const real cos_obs = cos(deg2rad * i_obs);
     const real sin_obs = sin(deg2rad * i_obs);
-    const real scale   = 20;
+    const real scale   = 100;
     const real half    = .5;
 
     real x, y, z;
-    {
-      real alpha =  (i % n + half) / n - half;
-      real beta  = ((i / n + half) / m - half) * m / n;
 
-      x  = r_obs * sin_obs - scale * beta * cos_obs;
-      y  =                   scale * alpha         ;
-      z  = r_obs * cos_obs + scale * beta * sin_obs;
-    }
+    alpha =  (i % n + half) / n - half;
+    beta  = ((i / n + half) / m - half) * m / n;
+
+    x  = r_obs * sin_obs - scale * beta * cos_obs;
+    y  =                   scale * alpha         ;
+    z  = r_obs * cos_obs + scale * beta * sin_obs;
+
     const real R2 = x * x + y * y;
 
     r     = sqrt(R2 + z * z);
@@ -75,17 +75,23 @@ static __device__ State ic(const size_t i, size_t n, const real t)
       g33 = (sum - a_spin * g30) * s2;
     }
 
-    real kt;
+    real E, kt;
     {
       real g30_kphi = g30 * kphi;
       real Delta    = g30_kphi * g30_kphi - g00 * (g11 * kr     * kr     +
                                                    g22 * ktheta * ktheta +
                                                    g33 * kphi   * kphi  );
-      kt = -(g30_kphi + sqrt(Delta)) / g00;
+
+      E  = sqrt(Delta); // = -k_t
+      kt = -(g30_kphi + E) / g00;
     }
 
     bimpact = -(g33 * kphi + g30 * kt) / (g00 * kt + g30 * kphi);
+    kr     /= E; // so that E = 1
+    ktheta /= E; // so that E = 1
   }
 
-  return (State){t, r, theta, phi, kr, ktheta, bimpact};
+  return (State){t, r, theta, phi, kr, ktheta, // null geodesic
+                 bimpact,                      // constants of motion
+                 0, 0};                        // radiative transfer variables
 }

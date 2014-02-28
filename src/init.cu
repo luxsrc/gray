@@ -17,6 +17,7 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
+#include "harm.h"
 #include <cstdlib>
 #include <para.h>
 #include <ic.h>
@@ -52,4 +53,11 @@ bool init_config(const char *arg)
   debug("init_config(""%s"")\n", arg);
 
   return config(arg[0], atof(arg + 2));
+}
+
+bool init_config(char flag, real val)
+{
+  debug("init_config(""%c=%d"")\n", flag, val);
+
+  return config(flag, val);
 }

@@ -32,7 +32,7 @@ static GLuint compile(const char *src, GLenum type)
   return s;
 }
 
-void mkshaders(GLuint shader[2])
+void mkshaders(GLuint shader[3])
 {
   shader[0] = glCreateProgram();
   glAttachShader(shader[0], compile(STRING(

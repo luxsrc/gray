@@ -17,7 +17,9 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
+#include "harm.h"
 #include <cstdlib>
+#include <cstring>
 #include <para.h>
 
 #ifndef T_START
@@ -32,29 +34,69 @@
 #define N_DEFAULT (512 * 512)
 #endif
 
+#ifndef WIDTH
+#define WIDTH 512
+#endif
+
+#ifndef HEIGHT
+#define HEIGHT 512
+#endif
+
 namespace global {
   double t        = T_START;
   double dt_dump  = DT_DUMP;
   double dt_saved = 0;
-  float  ratio    = 1;
+  const char *format = "%04d.raw";
+}
+
+static void cleanup()
+{
+  if(harm::field) cudaFree(harm::field);
+  if(harm::coord) cudaFree(harm::coord);
 }
 
 int main(int argc, char **argv)
 {
+  const char *name = NULL;
+
   print("GRay: a massive parallel GRaysic integrator\n");
   debug("Debugging is turned on\n");
 
 #ifndef DISABLE_GL
   glutInit(&argc, argv);
-  glutInitWindowSize(512, 512);
+  glutInitWindowSize(WIDTH, HEIGHT);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
   glutCreateWindow(argv[0]);
   if(GL_NO_ERROR != glGetError())
     error("main(): fail to initialize GLUT/OpenGL\n");
 #endif
 
+  int i = 1;
+  if(argc > i && argv[1][0] == '-') { // `./gray -2` use the second device
+    int n_devices;
+    cudaGetDeviceCount(&n_devices);
+
+    if(n_devices < 1)
+      error("No GPU is found on this machine\n");
+    else
+      print("%d GPU%s found\n", n_devices, n_devices == 1 ? " is" : "s are");
+
+    int device = atoi(argv[1] + 1);
+    if(n_devices <= device)
+      error("%u is an invalid GPU id\n");
+    else
+      print("Run on GPU %u\n", device);
+
+    cudaError_t err = cudaSetDevice(device);
+    if(cudaSuccess != err)
+      error("init(): fail to switch to device %d [%s]\n",
+            device, cudaGetErrorString(err));
+
+    ++i;
+  }
+
   size_t n = 0;
-  for(int i = 1; i < argc; ++i) {
+  for(; i < argc; ++i) {
     const char *arg = argv[i];
     if(arg[1] != '=')
       error("Unknown flag ""%s""\n", arg);
@@ -63,12 +105,34 @@ int main(int argc, char **argv)
       case 'N': n               = atoi(arg + 2); break;
       case 'T': global::t       = atof(arg + 2); break;
       case 'D': global::dt_dump = atof(arg + 2); break;
+      case 'O': global::format  =      arg + 2 ; break;
+      case 'H': name            =      arg + 2 ; break;
       default :
         if(!init_config(arg) || !prob_config(arg))
           error("Unknown parameter ""%s""\n", arg);
         break;
       }
       print("Set parameter ""%s""\n", arg);
+    }
+  }
+
+  if(name) {
+    using namespace harm;
+
+    char grid[256], *p;
+    strcpy(grid, name);
+    p = grid + strlen(grid);
+    while(p > grid && *p != '/') --p;
+    strcpy(*p == '/' ? p + 1 : p, "usgdump2d");
+
+    coord = load_coord(grid);
+    field = load_field(name);
+    if(coord && field && !atexit(cleanup))
+      print("Loaded harm data from \"%s\"\n", name);
+    else {
+      if(field) cudaFree(field);
+      if(coord) cudaFree(coord);
+      error("Fail to load harm data from \"%s\"", name);
     }
   }
 

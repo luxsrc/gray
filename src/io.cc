@@ -17,13 +17,13 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
+#include <cstdlib>
 #include <cstdio>
 
 void dump(Data &data)
 {
   debug("dump(*%p)\n", &data);
 
-#ifdef DUMP
   static size_t frame = 0;
 
   const double t = global::t;
@@ -32,7 +32,7 @@ void dump(Data &data)
   const void  *h = data.host();
 
   char name[256];
-  snprintf(name, sizeof(name), "%04zu.raw", frame++);
+  snprintf(name, sizeof(name), global::format, (int)(frame++));
 
   FILE *file = fopen(name, "wb");
   fwrite(&t, sizeof(double), 1, file);
@@ -40,5 +40,36 @@ void dump(Data &data)
   fwrite(&n, sizeof(size_t), 1, file);
   fwrite( h, sizeof(State),  n, file);
   fclose(file);
+}
+
+void spec(Data &data)
+{
+  debug("spec(*%p)\n", &data);
+
+#ifdef HARM
+  const size_t n = data;
+  const State *h = data.host();
+
+  float *I = (float *)malloc(sizeof(float) * n);
+  double total = 0.0;
+  if(!I)
+    error("ERROR: fail to allocate buffer\n");
+  else
+    for(size_t i = 0; i < n; ++i) {
+      const real tmp = h[i].I;
+      I[i]   = tmp; // real to float
+      total += tmp;
+    }
+
+  char name[256];
+  snprintf(name, sizeof(name), global::format, -1);
+
+  FILE *file = fopen(name, "w");
+  fprintf(file, "%15e\n", total / n); // fixed at 16 bytes
+  fwrite(&n, sizeof(size_t), 1, file);
+  fwrite( I, sizeof(float),  n, file);
+  fclose(file);
+
+  free(I);
 #endif
 }

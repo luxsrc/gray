@@ -17,6 +17,7 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
+#include "harm.h"
 #include <cstdlib>
 #include <para.h>
 #include <rhs.h>
@@ -48,6 +49,17 @@ static void setup(size_t n)
 
   if(NULL == (temp = (size_t *)malloc(sizeof(size_t) * n)))
     error("evolve(): fail to allocate host memory\n");
+
+#ifdef HARM
+  if(cudaSuccess != cudaMemcpyToSymbol(coord, &harm::coord, sizeof(Coord*)) ||
+     cudaSuccess != cudaMemcpyToSymbol(field, &harm::field, sizeof(Field*)) ||
+     cudaSuccess != cudaMemcpyToSymbol(lnrmin,&harm::lnrmin,sizeof(real  )) ||
+     cudaSuccess != cudaMemcpyToSymbol(lnrmax,&harm::lnrmax,sizeof(real  )) ||
+     cudaSuccess != cudaMemcpyToSymbol(nr,    &harm::n1,    sizeof(int   )) ||
+     cudaSuccess != cudaMemcpyToSymbol(ntheta,&harm::n2,    sizeof(int   )) ||
+     cudaSuccess != cudaMemcpyToSymbol(nphi,  &harm::n3,    sizeof(int   )))
+    error("evolve(): fail to copy pointer(s) to device\n");
+#endif
 
   if(cudaSuccess != cudaEventCreate(&time0) ||
      cudaSuccess != cudaEventCreate(&time1))
@@ -121,7 +133,8 @@ double evolve(Data &data, double dt)
   if(actual) {
     print("t =%7.2f; %.0f ms/%.0f steps ~%7.2f Gflops (%.2f%%),%7.2fGB/s\n",
           global::t, ms, actual, 1e-6 * flop() * actual / ms,
-          100 * actual / peak,   1e-6 * rwsz() * n      / ms); // read + write
+          100 * actual / peak,   1e-6 * (24 * sizeof(real) * actual +
+                                         rwsz() * n) / ms); // read + write
     return ms;
   } else
     return 0;
@@ -132,4 +145,11 @@ bool prob_config(const char *arg)
   debug("prob_config(""%s"")\n", arg);
 
   return config(arg[0], atof(arg + 2));
+}
+
+bool prob_config(char flag, real val)
+{
+  debug("prob_config(""%c=%d"")\n", flag, val);
+
+  return config(flag, val);
 }

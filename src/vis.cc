@@ -20,7 +20,16 @@
 
 #ifndef DISABLE_GL
 #include <cmath>
+#include <para.h>
 #include <shader.h> // to get vertex and color pointer offsets
+
+#ifndef WIDTH
+#define WIDTH 512
+#endif
+
+#ifndef HEIGHT
+#define HEIGHT 512
+#endif
 
 #ifndef VERTEX_POINTER_OFFSET
 #define VERTEX_POINTER_OFFSET 0
@@ -33,16 +42,21 @@
 #define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
 
 namespace global {
-  float a_spin = 0.999;
+  float ratio = 1, a_spin = 0.999;
 }
 
-static size_t n;
-static GLuint vbo; // OpenGL Vertex Buffer Object
-static GLuint shader[2];
-static GLuint texture;
+static size_t  n;
+static GLuint  vbo; // OpenGL Vertex Buffer Object
+static GLuint  shader[2], texture;
+static GLfloat width, height;
 
 static void display(void)
 {
+  glViewport(0, 0, width, height);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluPerspective(27.0, global::ratio, 1.0, 2500.0);
+  glMatrixMode(GL_MODELVIEW);
   const int i = getctrl();
 
   // Draw wire sphere, i.e., the "black hole"
@@ -71,23 +85,16 @@ static void display(void)
   glDisable(GL_BLEND);
   glDisable(GL_POINT_SPRITE_ARB);
 
+  // DONE
   glUseProgram(0);
-
   if(GL_NO_ERROR != glGetError())
     error("callback: display(): fail to visualize simulation\n");
-
   glutSwapBuffers();
 }
 
 static void reshape(int w, int h)
 {
-  global::ratio = (float)w / h;
-
-  glViewport(0, 0, w, h);
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(27.0, global::ratio, 1.0, 2500.0);
-  glMatrixMode(GL_MODELVIEW);
+  global::ratio = (width = w) / (height = h);
 }
 
 void vis(GLuint vbo_in, size_t n_in)

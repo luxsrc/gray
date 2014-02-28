@@ -17,7 +17,10 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
-#include <cuda_gl_interop.h> // OpenGL interoperability runtime API
+
+#ifndef DISABLE_GL
+#  include <cuda_gl_interop.h> // OpenGL interoperability runtime API
+#endif
 
 State *Data::device()
 {
