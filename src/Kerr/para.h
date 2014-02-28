@@ -19,8 +19,6 @@
 #ifndef PARA_H
 #define PARA_H
 
-#define HARM 1
-
 #ifndef __CUDACC__ // for src/ctrl.cc, src/main.cc, and src/vis.cc
 #  define DT_DUMP (-100)
 #else // for src/init.cu and src/evolve.cu
