@@ -23,6 +23,7 @@
 #define CONST_h     ((real)6.62606957e-27)
 #define CONST_G     ((real)6.67384800e-08)
 #define CONST_kB    ((real)1.38064881e-16)
+#define CONST_Ry    ((real)2.17987197e-11)
 #define CONST_e     ((real)4.80320425e-10)
 #define CONST_me    ((real)9.10938291e-28)
 #define CONST_mp_me ((real)1836.152672450)
@@ -59,10 +60,40 @@ static inline __device__ real K2it(real te)
 
 static inline __device__ real B_Planck(real nu, real te)
 {
-  nu /= CONST_c;
+  const real f1 = 2 * CONST_h * CONST_c;
+  const real f2 = CONST_h / (CONST_me * CONST_c);
 
-  return 2 * CONST_h * CONST_c * nu * nu * nu /
-    (exp(CONST_h / (CONST_me * CONST_c) * (nu / te)) - 1);
+  nu /= CONST_c;
+  return f1 * nu * nu * nu / (exp(f2 * (nu / te)) - 1);
+}
+
+static inline __device__ real j_ff(real nu, real te, real ne)
+{
+  // Assume Z == 1 and ni == ne
+
+  const real f1 = 6.8e-38 / sqrt(CONST_me * CONST_c * CONST_c / CONST_kB);
+  const real x  = (CONST_me * CONST_c * CONST_c / CONST_Ry) * te;
+  const real y  = (CONST_h / (CONST_me * CONST_c * CONST_c)) * nu / te;
+
+  real g = 1;
+  if(x > 1) {
+    if(y > 1)
+      g = sqrt(3.0 / M_PI) / sqrt(y);
+    else
+      g = (sqrt(3.0) / M_PI) * (log(4.0 / 1.78107241799) - log(y));
+  } else {
+    if(y > 1 / x)
+      g = sqrt(12.0) / sqrt(x * y);
+    else if(y < sqrt(x))
+      // The "small-angle classical region" formulae in Rybicki &
+      // Lightman (1979) and Novikov & Thorne (1973) are inconsistent;
+      // it seems that both versions contain typos.
+      // TODO: double-check the following formula
+      g = (sqrt(3.0) / M_PI) *
+          (log(4.0 / pow(1.78107241799, 2.5)) + log(sqrt(x) / y));
+  }
+
+  return g * f1 * ne * ne * exp(-y) / sqrt(te);
 }
 
 static inline __device__ real j_synchr(real nu, real te, real ne,
@@ -290,7 +321,7 @@ static inline __device__ State rhs(const State &s, real t)
 
       const real nu = nu0 * shift;
       B_nu   = B_Planck(nu, te);
-      L_j_nu = j_synchr(nu, te, ne, b, bkcos) *
+      L_j_nu = (j_synchr(nu, te, ne, b, bkcos) + j_ff(nu, te, ne)) *
         m_BH * (CONST_G * CONST_mSun ) / (CONST_c * CONST_c); // length scale
     }
 
