@@ -85,13 +85,15 @@ static inline __device__ real j_ff(real nu, real te, real ne)
   } else {
     if(y > 1 / x)
       g = sqrt((real)12.0) / sqrt(x * y);
-    else if(y < sqrt(x))
+    else if(y < sqrt(x)) {
       // The "small-angle classical region" formulae in Rybicki &
       // Lightman (1979) and Novikov & Thorne (1973) are inconsistent;
       // it seems that both versions contain typos.
       // TODO: double-check the following formula
       g = sqrt((real)3.0) / (real)M_PI *
           (log(4 / pow((real)1.78107241799, (real)2.5)) + log(sqrt(x) / y));
+      if(g < 0) g = 0;
+    }
   }
 
   return g * f * ne * ne * exp(-y) / sqrt(te);
