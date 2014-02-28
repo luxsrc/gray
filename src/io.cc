@@ -50,22 +50,23 @@ void spec(Data &data)
   const State *h = data.host();
 
   float *I = (float *)malloc(sizeof(float) * n);
+  double total = 0.0;
   if(!I)
     error("ERROR: fail to allocate buffer\n");
   else
-    for(size_t i = 0; i < n; ++i) I[i] = h[i].I; // real to float
-
-  double mean = 0.0;
-  for(size_t i = 0; i < n; ++i) mean += I[i];
-  mean /= n;
+    for(size_t i = 0; i < n; ++i) {
+      const real tmp = h[i].I;
+      I[i]   = tmp; // real to float
+      total += tmp;
+    }
 
   char name[256];
   snprintf(name, sizeof(name), global::format, -1);
 
-  FILE *file = fopen(name, "wb");
-  fwrite(&n,    sizeof(size_t), 1, file);
-  fwrite(&mean, sizeof(double), 1, file);
-  fwrite( I,    sizeof(float),  n, file);
+  FILE *file = fopen(name, "w");
+  fprintf(file, "%15e\n", total / n); // fixed at 16 bytes
+  fwrite(&n, sizeof(size_t), 1, file);
+  fwrite( I, sizeof(float),  n, file);
   fclose(file);
 
   free(I);
