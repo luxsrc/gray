@@ -19,14 +19,14 @@
 #define FLOP_RHS 84
 #define R_SCHW   2
 
-#define CONST_c     ((real)2.99792458e+10)
-#define CONST_h     ((real)6.62606957e-27)
+#define CONST_c     (2.99792458e+10)
+#define CONST_h     (6.62606957e-27)
 #define CONST_G     (6.67384800e-08)
 #define CONST_kB    (1.38064881e-16)
 #define CONST_Ry    (2.17987197e-11)
-#define CONST_e     ((real)4.80320425e-10)
-#define CONST_me    ((real)9.10938291e-28)
-#define CONST_mp_me ((real)1836.152672450)
+#define CONST_e     (4.80320425e-10)
+#define CONST_me    (9.10938291e-28)
+#define CONST_mp_me (1836.152672450)
 #define CONST_mSun  (1.98910000e+33)
 
 #define T_MIN  (1e-1)
@@ -63,7 +63,7 @@ static inline __device__ real B_Planck(real nu, real te)
   const real f1 = 2 * CONST_h * CONST_c;
   const real f2 = CONST_h / (CONST_me * CONST_c);
 
-  nu /= CONST_c;
+  nu /= (real)CONST_c;
   return f1 * nu * nu * nu / (exp(f2 * (nu / te)) - 1);
 }
 
@@ -102,8 +102,8 @@ static inline __device__ real j_ff(real nu, real te, real ne)
 static inline __device__ real j_synchr(real nu, real te, real ne,
                                        real B,  real cos_theta)
 {
-  const real nus = CONST_e / (9 * (real)M_PI * CONST_me * CONST_c) *
-    te * te * B * sqrt(1 - cos_theta * cos_theta);
+  const real nus = te * te * B * sqrt(1 - cos_theta * cos_theta) *
+                   (real)(CONST_e / (9 * M_PI * CONST_me * CONST_c));
   const real x   = nu / nus;
 
   if(te        <= (real)T_MIN ||
@@ -115,8 +115,8 @@ static inline __device__ real j_synchr(real nu, real te, real ne,
   const real xx    = sqrt(x) + (real)1.88774862536 * sqrt(cbrtx);
   const real K2    = (te > (real)T_MAX) ? 2 * te * te - (real)0.5 : K2it(te);
 
-  return (real)M_SQRT2 * (real)M_PI * CONST_e * CONST_e / (3 * CONST_c) *
-    ne * nus * xx * xx * exp(-cbrtx) / K2;
+  return (ne * nus * xx * xx * exp(-cbrtx) / K2) *
+         (real)(M_SQRT2 * M_PI * CONST_e * CONST_e / (3 * CONST_c));
 }
 
 static inline __device__ State rhs(const State &s, real t)
@@ -317,9 +317,10 @@ static inline __device__ State rhs(const State &s, real t)
       const real bkcos =
         (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) / shift / b;
 
-      b *= CONST_c * sqrt(4 * (real)M_PI * (CONST_mp_me + 1) * CONST_me * ne_rho);
+      b *= sqrt(ne_rho) *
+           (real)(CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me));
       real ne = ne_rho      * field[h3].rho;
-      real te = field[h3].u / field[h3].rho * CONST_mp_me *
+      real te = field[h3].u / field[h3].rho * (real)CONST_mp_me *
         ((Tp_Te + 1) / (Tp_Te + 2) / (real)1.5 + Gamma - 1) / (Tp_Te + 1) / 2;
 
       const real nu = nu0 * shift;
