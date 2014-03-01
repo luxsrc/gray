@@ -78,20 +78,19 @@ static inline __device__ real j_ff(real nu, real te, real ne)
   real g = 1;
   if(x > 1) {
     if(y > 1)
-      g = sqrt((real)3.0 / (real)M_PI) / sqrt(y);
+      g = (real)sqrt(3.0 / M_PI) / sqrt(y);
     else
-      g = sqrt((real)3.0) / (real)M_PI *
-          (log(4 / (real)1.78107241799) - log(y));
+      g = ((real)log(4 / 1.78107241799) - log(y)) * (real)(sqrt(3.0) / M_PI);
   } else {
     if(y > 1 / x)
-      g = sqrt((real)12.0) / sqrt(x * y);
+      g = (real)sqrt(12.0) / sqrt(x * y);
     else if(y < sqrt(x)) {
       // The "small-angle classical region" formulae in Rybicki &
       // Lightman (1979) and Novikov & Thorne (1973) are inconsistent;
       // it seems that both versions contain typos.
       // TODO: double-check the following formula
-      g = sqrt((real)3.0) / (real)M_PI *
-          (log(4 / pow((real)1.78107241799, (real)2.5)) + log(sqrt(x) / y));
+      g = ((real)log(4.0 / pow(1.78107241799, 2.5)) + log(sqrt(x) / y)) *
+          (real)(sqrt(3.0) / M_PI);
       if(g < 0) g = 0;
     }
   }
@@ -198,8 +197,8 @@ static inline __device__ State rhs(const State &s, real t)
       if(ir < 0) ir = 0; else if(ir > nr-1) ir = nr-1;
 
       int iphi = (s.phi >= 0) ?
-        ((int)(nphi * s.phi / (2 * (real)M_PI) + (real)0.5) % ( nphi)):
-        ((int)(nphi * s.phi / (2 * (real)M_PI) - (real)0.5) % (-nphi));
+        ((int)(nphi * s.phi / (real)(2 * M_PI) + (real)0.5) % ( nphi)):
+        ((int)(nphi * s.phi / (real)(2 * M_PI) - (real)0.5) % (-nphi));
       if(iphi < 0) iphi += nphi;
 
       h2 = itheta * nr + ir;
