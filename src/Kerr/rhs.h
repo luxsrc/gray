@@ -29,8 +29,8 @@
 #define CONST_mp_me ((real)1836.152672450)
 #define CONST_mSun  ((real)1.98910000e+33)
 
-#define T_MIN  ((real)1e-1)
-#define T_MAX  ((real)1e+2)
+#define T_MIN  (1e-1)
+#define T_MAX  (1e+2)
 #define T_GRID (60)
 
 static __device__ __constant__ real log_K2it_tab[] = {
@@ -51,7 +51,7 @@ static __device__ __constant__ real log_K2it_tab[] = {
 
 static inline __device__ real K2it(real te)
 {
-  const real h = T_GRID * log(te / T_MIN) / log(T_MAX / T_MIN);
+  const real h = log(te / (real)T_MIN) * (real)(T_GRID / log(T_MAX / T_MIN));
   const int  i = h;
   const real d = h - i;
 
@@ -106,14 +106,14 @@ static inline __device__ real j_synchr(real nu, real te, real ne,
     te * te * B * sqrt(1 - cos_theta * cos_theta);
   const real x   = nu / nus;
 
-  if(te        <= T_MIN ||
-     cos_theta <=    -1 ||
-     cos_theta >=     1 ||
-     x         <=     0) return 0;
+  if(te        <= (real)T_MIN ||
+     cos_theta <=          -1 ||
+     cos_theta >=           1 ||
+     x         <=           0) return 0;
 
   const real cbrtx = cbrt(x);
   const real xx    = sqrt(x) + (real)1.88774862536 * sqrt(cbrtx);
-  const real K2    = (te > T_MAX) ? 2 * te * te - (real)0.5 : K2it(te);
+  const real K2    = (te > (real)T_MAX) ? 2 * te * te - (real)0.5 : K2it(te);
 
   return (real)M_SQRT2 * (real)M_PI * CONST_e * CONST_e / (3 * CONST_c) *
     ne * nus * xx * xx * exp(-cbrtx) / K2;
