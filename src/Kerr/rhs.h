@@ -21,13 +21,13 @@
 
 #define CONST_c     ((real)2.99792458e+10)
 #define CONST_h     ((real)6.62606957e-27)
-#define CONST_G     ((real)6.67384800e-08)
-#define CONST_kB    ((real)1.38064881e-16)
-#define CONST_Ry    ((real)2.17987197e-11)
+#define CONST_G     (6.67384800e-08)
+#define CONST_kB    (1.38064881e-16)
+#define CONST_Ry    (2.17987197e-11)
 #define CONST_e     ((real)4.80320425e-10)
 #define CONST_me    ((real)9.10938291e-28)
 #define CONST_mp_me ((real)1836.152672450)
-#define CONST_mSun  ((real)1.98910000e+33)
+#define CONST_mSun  (1.98910000e+33)
 
 #define T_MIN  (1e-1)
 #define T_MAX  (1e+2)
@@ -71,9 +71,9 @@ static inline __device__ real j_ff(real nu, real te, real ne)
 {
   // Assume Z == 1 and ni == ne
 
-  const real f = (real)6.8e-38 / sqrt(CONST_me * CONST_c * CONST_c / CONST_kB);
-  const real x = (CONST_me * CONST_c * CONST_c / CONST_Ry) * te;
-  const real y = (CONST_h / (CONST_me * CONST_c * CONST_c)) * nu / te;
+  const real f = (real)(6.8e-38 / sqrt(CONST_me * CONST_c * CONST_c / CONST_kB));
+  const real x = te * (real)(CONST_me * CONST_c * CONST_c / CONST_Ry);
+  const real y = (nu / te) * (real)(CONST_h / (CONST_me * CONST_c * CONST_c));
 
   real g = 1;
   if(x > 1) {
@@ -255,13 +255,13 @@ static inline __device__ State rhs(const State &s, real t)
       bphi   = (bphi   + bt * uphi  ) / ut;
 
       const real bb = (bt     * (gKSP00 * bt     + gKSP01 * br    +
-				 gKSP02 * btheta + gKSP03 * bphi) +
-		       br     * (gKSP01 * bt     + gKSP11 * br    +
-				 gKSP12 * btheta + gKSP13 * bphi) +
-		       btheta * (gKSP02 * bt     + gKSP12 * br    +
-				 gKSP22 * btheta + gKSP23 * bphi) +
-		       bphi   * (gKSP03 * bt     + gKSP13 * br    +
-				 gKSP23 * btheta + gKSP33 * bphi));
+                                 gKSP02 * btheta + gKSP03 * bphi) +
+                       br     * (gKSP01 * bt     + gKSP11 * br    +
+                                 gKSP12 * btheta + gKSP13 * bphi) +
+                       btheta * (gKSP02 * bt     + gKSP12 * br    +
+                                 gKSP22 * btheta + gKSP23 * bphi) +
+                       bphi   * (gKSP03 * bt     + gKSP13 * br    +
+                                 gKSP23 * btheta + gKSP33 * bphi));
       const real ibeta = bb / (2 * (Gamma - 1) * field[h3].u);
       Tp_Te = (ibeta > 5) ? Tp_Te_w : Tp_Te_d;
       b = sqrt(bb);
@@ -324,8 +324,8 @@ static inline __device__ State rhs(const State &s, real t)
 
       const real nu = nu0 * shift;
       B_nu   = B_Planck(nu, te);
-      L_j_nu = (j_synchr(nu, te, ne, b, bkcos) + j_ff(nu, te, ne)) *
-        m_BH * (CONST_G * CONST_mSun ) / (CONST_c * CONST_c); // length scale
+      L_j_nu = (j_synchr(nu, te, ne, b, bkcos) + j_ff(nu, te, ne)) * m_BH *
+        (real)(CONST_G * CONST_mSun / (CONST_c * CONST_c)); // length scale
     }
 
     if(L_j_nu > 0) {
