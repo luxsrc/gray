@@ -32,6 +32,10 @@
 #  define DISABLE_NITE
 #  undef   ISABLE_NITE
 #endif
+#ifdef ISABLE_LEAP
+#  define DISABLE_LEAP
+#  undef   ISABLE_LEAP
+#endif
 #ifdef OUBLE
 #  define DOUBLE
 #  undef   OUBLE
@@ -85,10 +89,14 @@ extern void error(const char *, ...);
 #  define debug(...) // do nothing
 #endif
 
-// NiTE and OpenNI related functions for natural interactions
+// NiTE+OpenNI or Leap Motion related functions for natural interactions
 #ifndef DISABLE_NITE
 extern void sense();
 extern void track();
+#endif
+
+#ifndef DISABLE_LEAP
+extern void sense();
 #endif
 
 // OpenGL/GLUT functions

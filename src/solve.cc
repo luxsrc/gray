@@ -49,6 +49,10 @@ static void idle(void)
   sense();
 #endif
 
+#ifndef DISABLE_LEAP
+  sense();
+#endif
+
   glutPostRedisplay();
 }
 

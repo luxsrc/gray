@@ -37,6 +37,13 @@ else
 	LDFLAGS  += -L. -lNiTE2 -lOpenNI2
 endif
 
+ifneq ($(LEAP),1) # use `make <prob> LEAP=1 to enable natural interaction
+	CPPFLAGS += -DISABLE_LEAP
+else
+	CPPFLAGS += -I/usr/local/LeapSDK/include
+	LDFLAGS  += -L. -lLeap
+endif
+
 ifeq ($(wildcard $(CUDA)/lib64/libcuda*),)
 	LDFLAGS += $(addprefix -Xlinker ,-rpath $(CUDA)/lib)
 else
@@ -61,9 +68,10 @@ Use \`make <prob> [DEBUG=1] [DETAILS=1] [DOUBLE=1] [GL=0] [IO=0]\` and\n\
 debugging messages, DETAILS=1 prints ptxas information, DOUBLE=1 enforces\n\
 double-precision, while GL=0 disables OpenGL and IO=0 disables IO.\n\
 \n\
-To compile and link with OpenNI and NiTE, one needs to set the paths for\n\
-them at the beginning of the \"Makefile\" and copy the files in Redist/ to\n\
-the working directory."
+To compile and link with OpenNI and NiTE, one needs to manually set the\n\
+header and library search paths in \"Makefile\" and copy the files in\n\
+Redist/to the working directory.  Similar procedure is needed to enable\n\
+support for Leap Motion."
 
 %:
 	@if [ ! -d src/$@ ]; then                                \
