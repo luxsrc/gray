@@ -81,18 +81,35 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
       break;
     }
   } else if (!hands.isEmpty()) {
+    static int   left = 0, right = 0;
+    static float d_old, x_old, z_old, ax_old, ly_old, az_old;
+
     if (hands.count() == 1) {
       const Leap::FingerList fingers = hands[0].fingers();
       if (fingers.count() == 1) {
         print("Rotating\n");
-      }
-    } else (hands.count() == 2) {
+        Leap::Vector pos = fingers[0].tipPosition();
+        if (!right) {
+          ax_old = global::ax;
+          az_old = global::az;
+          x_old = -pos.x;
+          z_old =  pos.y;
+        }
+        global::ax = ax_old + (-pos.x - x_old) / 2;
+        global::az = az_old + ( pos.y - z_old) / 2;
+        right = 1;
+      } else
+        left = right = 0;
+    } else if(hands.count() == 2) {
       const Leap::FingerList lfingers = hands[0].fingers();
       const Leap::FingerList rfingers = hands[1].fingers();
       if (lfingers.count() == 1 && rfingers.count() == 1) {
         print("Zooming\n");
-      }
-    }
+        left = right = 1;
+      } else
+        left = right = 0;
+    } else
+      left = right = 0;
   }
 }
 
