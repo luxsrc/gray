@@ -29,7 +29,6 @@ class GRayLeapListener : public Leap::Listener {
 
 void GRayLeapListener::onConnect(const Leap::Controller& controller)
 {
-  controller.enableGesture(Leap::Gesture::TYPE_KEY_TAP);
   controller.enableGesture(Leap::Gesture::TYPE_CIRCLE);
 }
 
@@ -45,14 +44,6 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
     Leap::Gesture gesture = gestures[gestures.count()-1];
 
     switch (gesture.type()) {
-    case Leap::Gesture::TYPE_KEY_TAP:
-      print("Key tap gesture\n");
-      {
-        const double temp = global::dt_saved;
-        global::dt_saved = global::dt_dump;
-        global::dt_dump = temp;
-      }
-      break;
     case Leap::Gesture::TYPE_CIRCLE:
       print("Circle gesture\n");
       {
@@ -86,7 +77,14 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
 
     if (hands.count() == 1) {
       const Leap::FingerList fingers = hands[0].fingers();
-      if (fingers.count() == 1) {
+      if (fingers.count() == 5) {
+	print("Pause\n");
+	if (global::dt_dump != 0.0) {
+          global::dt_saved = global::dt_dump;
+          global::dt_dump  = 0.0;
+	}
+        left = right = 0;
+      } else if (fingers.count() == 1) {
         print("Rotating\n");
         Leap::Vector pos = fingers[0].tipPosition();
         if (!right) {
