@@ -30,6 +30,7 @@ class GRayLeapListener : public Leap::Listener {
 void GRayLeapListener::onConnect(const Leap::Controller& controller)
 {
   controller.enableGesture(Leap::Gesture::TYPE_KEY_TAP);
+  controller.enableGesture(Leap::Gesture::TYPE_CIRCLE);
 }
 
 void GRayLeapListener::onFrame(const Leap::Controller& controller)
@@ -49,6 +50,27 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
         global::dt_saved = global::dt_dump;
         global::dt_dump = temp;
         break;
+      }
+    case Leap::Gesture::TYPE_CIRCLE:
+      {
+	Leap::CircleGesture circle = gesture;
+
+        if (circle.pointable().direction().angleTo(circle.normal())
+            <= Leap::PI/4) {
+          if (global::dt_dump != 0.0)
+            global::dt_dump  = -fabs(global::dt_dump);
+          else {
+            global::dt_dump  = -fabs(global::dt_saved);
+            global::dt_saved = 0.0;
+	  }
+        } else {
+          if (global::dt_dump != 0.0)
+            global::dt_dump  = +fabs(global::dt_dump);
+          else {
+            global::dt_dump  = +fabs(global::dt_saved);
+            global::dt_saved = 0.0;
+	  }
+        }
       }
     default:
         print("Unknown gesture type.\n");
