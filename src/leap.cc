@@ -40,18 +40,20 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
 
   // Get gestures
   const Leap::GestureList gestures = frame.gestures();
-  for (int g = 0; g < gestures.count(); ++g) {
-    Leap::Gesture gesture = gestures[g];
+  if (!gestures.isEmpty()) {
+    Leap::Gesture gesture = gestures[gestures.count()-1];
 
     switch (gesture.type()) {
     case Leap::Gesture::TYPE_KEY_TAP:
+      print("Key tap gesture\n");
       {
         const double temp = global::dt_saved;
         global::dt_saved = global::dt_dump;
         global::dt_dump = temp;
-        break;
       }
+      break;
     case Leap::Gesture::TYPE_CIRCLE:
+      print("Circle gesture\n");
       {
 	Leap::CircleGesture circle = gesture;
 
@@ -72,9 +74,10 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
 	  }
         }
       }
+      break;
     default:
-        print("Unknown gesture type.\n");
-        break;
+      print("Unknown gesture type.\n");
+      break;
     }
   }
 }
