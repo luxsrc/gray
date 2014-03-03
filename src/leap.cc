@@ -105,6 +105,13 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
       const Leap::FingerList rfingers = hands[1].fingers();
       if (lfingers.count() == 1 && rfingers.count() == 1) {
         print("Zooming\n");
+        const float d =
+          lfingers[0].tipPosition().distanceTo(rfingers[0].tipPosition());
+        if (!left || !right) {
+          d_old  = d;
+          ly_old = global::ly;
+        }
+        global::ly = ly_old * d_old / d;
         left = right = 1;
       } else
         left = right = 0;
