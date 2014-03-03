@@ -38,8 +38,9 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
   // Get the most recent frame and report some basic information
   const Leap::Frame frame = controller.frame();
 
-  // Get gestures
   const Leap::GestureList gestures = frame.gestures();
+  const Leap::HandList    hands    = frame.hands();
+
   if (!gestures.isEmpty()) {
     Leap::Gesture gesture = gestures[gestures.count()-1];
 
@@ -76,8 +77,21 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
       }
       break;
     default:
-      print("Unknown gesture type.\n");
+      print("Unknown gesture type\n");
       break;
+    }
+  } else if (!hands.isEmpty()) {
+    if (hands.count() == 1) {
+      const Leap::FingerList fingers = hands[0].fingers();
+      if (fingers.count() == 1) {
+        print("Rotating\n");
+      }
+    } else (hands.count() == 2) {
+      const Leap::FingerList lfingers = hands[0].fingers();
+      const Leap::FingerList rfingers = hands[1].fingers();
+      if (lfingers.count() == 1 && rfingers.count() == 1) {
+        print("Zooming\n");
+      }
     }
   }
 }
