@@ -55,7 +55,7 @@ static void display(void)
   glViewport(0, 0, width, height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(27.0, global::ratio, 1.0, 2500.0);
+  gluPerspective(27.0, global::ratio, 1.0, 1.0e6);
   glMatrixMode(GL_MODELVIEW);
   const int i = getctrl();
 

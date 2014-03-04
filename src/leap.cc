@@ -40,7 +40,9 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
   const Leap::Frame    frame = controller.frame();
   const Leap::HandList hands = frame.hands();
 
-  if(hands.count() == 2) {
+  if(hands.count()              == 2 &&
+     hands[0].fingers().count() >= 1 &&
+     hands[1].fingers().count() >= 1) {
     const Leap::FingerList lfingers = hands[0].fingers();
     const Leap::FingerList rfingers = hands[1].fingers();
     Leap::Vector lpos, rpos;

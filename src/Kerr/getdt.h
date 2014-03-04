@@ -24,7 +24,9 @@ static __device__ real getdt(const State &s, real t,
   const real r_bh = 1 + sqrt(1 - a_spin * a_spin);
 
   if(s.r   < r_bh + epsilon    ||
+#ifdef DISABLE_LEAP
      s.r   > (real)1.2 * r_obs ||
+#endif
      s.tau > (real)6.90775527898)
     return 0; // 0 stops the integration
   else
