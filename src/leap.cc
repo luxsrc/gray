@@ -30,17 +30,20 @@ class GRayLeapListener : public Leap::Listener {
 void GRayLeapListener::onConnect(const Leap::Controller& controller)
 {
   controller.enableGesture(Leap::Gesture::TYPE_CIRCLE);
+  controller.enableGesture(Leap::Gesture::TYPE_KEY_TAP);
 }
 
 void GRayLeapListener::onFrame(const Leap::Controller& controller)
 {
-  static int type = 0;
+  static int type = 0, direction = 1, direction_old = 0;
   static float d_old, x_old, z_old, ax_old, ly_old, az_old;
 
   const Leap::Frame    frame = controller.frame();
   const Leap::HandList hands = frame.hands();
 
-  if(hands.count() == 2) {
+  if(hands.count()              == 2 &&
+     hands[0].fingers().count() >= 1 &&
+     hands[1].fingers().count() >= 1) {
     const Leap::FingerList lfingers = hands[0].fingers();
     const Leap::FingerList rfingers = hands[1].fingers();
     Leap::Vector lpos, rpos;
@@ -82,12 +85,20 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
   } else if(hands.count() == 1 && hands[0].fingers().count() <= 1) {
     // Pause or run the simulation
     const Leap::GestureList gestures = frame.gestures();
-    int direction = 0;
 
-    for(int i = 0; i< gestures.count(); ++i)
+    for(int i = 0; i < gestures.count(); ++i)
+      if(gestures[i].type() == Leap::Gesture::TYPE_KEY_TAP) {
+        int tmp = direction_old;
+        direction_old = direction;
+        direction = tmp;
+	break;
+      }
+
+    for(int i = 0; i < gestures.count(); ++i)
       if(gestures[i].type() == Leap::Gesture::TYPE_CIRCLE) {
+        if(direction == 0) direction_old = 0;
 	Leap::CircleGesture circle = gestures[i];
-	direction = circle.pointable().direction().angleTo(circle.normal())
+        direction = circle.pointable().direction().angleTo(circle.normal())
                  <= Leap::PI/4 ? 1 : -1;
 	break;
       }

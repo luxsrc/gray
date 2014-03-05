@@ -1,5 +1,9 @@
-CUDA = $(subst /bin/nvcc,,$(shell which nvcc))
-NVCC = $(CUDA)/bin/nvcc
+CUDA_PATH = $(subst /bin/nvcc,,$(shell which nvcc))
+NITE_PATH = /usr/local/NiTE/2.2
+OPNI_PATH = /usr/local/OpenNI/2.2
+LEAP_PATH = /usr/local/LeapSDK
+
+NVCC = $(CUDA_PATH)/bin/nvcc
 
 ifeq ($(DEBUG),1) # use `make <prob> DEBUG=1` to enable debug messages
 	CPPFLAGS += -DEBUG
@@ -32,16 +36,18 @@ endif
 ifneq ($(NITE),1) # use `make <prob> NITE=1 to enable natural interaction
 	CPPFLAGS += -DISABLE_NITE
 else
-	CPPFLAGS += -I/usr/local/NiTE/NiTE-2.0.0/Include \
-	            -I/usr/local/OpenNI/OpenNI-2.1.0/Include
-	LDFLAGS  += -L. -lNiTE2 -lOpenNI2
+	CPPFLAGS += -I$(NITE_PATH)/Include \
+	            -I$(OPNI_PATH)/Include
+	LDFLAGS  += -L$(NITE_PATH)/Redist  \
+	            -L$(OPNI_PATH)/Redist  \
+	            -lNiTE2 -lOpenNI2
 endif
 
 ifneq ($(LEAP),1) # use `make <prob> LEAP=1 to enable natural interaction
 	CPPFLAGS += -DISABLE_LEAP
 else
-	CPPFLAGS += -I/usr/local/LeapSDK/include
-	LDFLAGS  += -L. -lLeap
+	CPPFLAGS += -I$(LEAP_PATH)/include
+	LDFLAGS  += -L$(LEAP_PATH)/lib -lLeap
 endif
 
 ifeq ($(wildcard $(CUDA)/lib64/libcuda*),)
@@ -68,10 +74,9 @@ Use \`make <prob> [DEBUG=1] [DETAILS=1] [DOUBLE=1] [GL=0] [IO=0]\` and\n\
 debugging messages, DETAILS=1 prints ptxas information, DOUBLE=1 enforces\n\
 double-precision, while GL=0 disables OpenGL and IO=0 disables IO.\n\
 \n\
-To compile and link with OpenNI and NiTE, one needs to manually set the\n\
-header and library search paths in \"Makefile\" and copy the files in\n\
-Redist/to the working directory.  Similar procedure is needed to enable\n\
-support for Leap Motion."
+To enable PrimeSense or LeapMotion sensor, one needs to pass in the flag\n\
+NITE=1 or LEAP=1 and manually set the header and library search paths at\n\
+the beginning of this \"Makefile\"."
 
 %:
 	@if [ ! -d src/$@ ]; then                                \
@@ -83,6 +88,22 @@ support for Leap Motion."
 	@mkdir -p bin
 	@echo -n 'Compiling $@... '
 	@$(NVCC) src/*.{cu,cc} $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/GRay-$@
+
+ifeq ($(NITE),1)
+	@install_name_tool -change libNiTE2.dylib \
+	       $(NITE_PATH)/Redist/libNiTE2.dylib \
+	       bin/GRay-Kerr
+	@install_name_tool -change libOpenNI2.dylib \
+	       $(OPNI_PATH)/Redist/libOpenNI2.dylib \
+	       bin/GRay-Kerr
+endif
+
+ifeq ($(LEAP),1)
+	@install_name_tool -change @loader_path/libLeap.dylib \
+	                       $(LEAP_PATH)/lib/libLeap.dylib \
+	                       bin/GRay-Kerr
+endif
+
 	@if [ -f bin/GRay-$@ ]; then                     \
 	   echo 'DONE.  Use `bin/GRay-$@` to run GRay.'; \
 	 else                                            \
