@@ -49,13 +49,13 @@ static __device__ __constant__ real log_K2it_tab[] = {
   +9.9034625556
 };
 
-static inline __device__ real K2it(real te)
+static inline __device__ real log_K2it(real te)
 {
   const real h = log(te / (real)T_MIN) * (real)(T_GRID / log(T_MAX / T_MIN));
   const int  i = h;
   const real d = h - i;
 
-  return exp((1 - d) * log_K2it_tab[i] + d * log_K2it_tab[i+1]);
+  return (1 - d) * log_K2it_tab[i] + d * log_K2it_tab[i+1];
 }
 
 static inline __device__ real B_Planck(real nu, real te)
@@ -114,20 +114,22 @@ static inline __device__ real j_synchr(real nu, real te, real ne,
                                        real B,  real cos_theta)
 {
   const real nus = te * te * B * sqrt(1 - cos_theta * cos_theta) *
-                   (real)(CONST_e / (9 * M_PI * CONST_me * CONST_c));
-  const real x   = nu / nus;
+                   (real)(CONST_e / (9 * M_PI * CONST_me * CONST_c)); // ~ 1e5
+  const real x   = nu / nus; // 1e6 -- 1e18
 
   if(te        <= (real)T_MIN ||
      cos_theta <=          -1 ||
      cos_theta >=           1 ||
      x         <=           0) return 0;
 
-  const real cbrtx = cbrt(x);
-  const real xx    = sqrt(x) + (real)1.88774862536 * sqrt(cbrtx);
-  const real K2    = (te > (real)T_MAX) ? 2 * te * te - (real)0.5 : K2it(te);
+  const real f      = log(M_SQRT2 * M_PI * CONST_e * CONST_e / (3 * CONST_c));
+  const real cbrtx  = cbrt(x);                                    // 1e2 -- 1e6
+  const real xx     = sqrt(x) + (real)1.88774862536 * sqrt(cbrtx);// 1e3 -- 1e9
+  const real log_K2 = (te > (real)T_MAX) ?
+                      log(2 * te * te - (real)0.5) :
+                      log_K2it(te);
 
-  return (ne * nus * xx * xx * exp(-cbrtx) / K2) *
-         (real)(M_SQRT2 * M_PI * CONST_e * CONST_e / (3 * CONST_c));
+  return exp(f - cbrtx - log_K2) * xx * xx * ne * nus;
 }
 
 static inline __device__ State rhs(const State &s, real t)
