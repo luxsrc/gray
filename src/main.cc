@@ -74,6 +74,8 @@ int main(int argc, char **argv)
   int i = 1;
   if(argc > i && argv[i][0] == '-') // `./gray -2` use the second device
     optimize(atoi(argv[i++] + 1));
+  else
+    optimize(0);
 
   size_t n = 0;
   for(; i < argc; ++i) {

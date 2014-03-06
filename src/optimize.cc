@@ -24,17 +24,23 @@ void optimize(int device)
   cudaGetDeviceCount(&n_devices);
 
   if(n_devices < 1)
-    error("No GPU is found on this machine\n");
-  else
-    print("%d GPU%s found\n", n_devices, n_devices == 1 ? " is" : "s are");
-
+    error("optimize(): no GPU is found on this machine\n");
   if(n_devices <= device)
-    error("%u is an invalid GPU id\n");
-  else
-    print("Run on GPU %u\n", device);
+    error("optimize(): %u is an invalid GPU id\n");
+
+  print("%d GPU%s found --- running on GPU %u\n",
+        n_devices, n_devices == 1 ? " is" : "s are", device);
 
   cudaError_t err = cudaSetDevice(device);
   if(cudaSuccess != err)
-    error("init(): fail to switch to device %d [%s]\n",
+    error("optimize(): fail to switch to device %d [%s]\n",
           device, cudaGetErrorString(err));
+
+  double gsz, ssz;
+  cudaDeviceProp prop;
+  cudaGetDeviceProperties(&prop, device);
+  gsz = prop.totalGlobalMem;
+  ssz = prop.sharedMemPerBlock;
+  print("\"%s\" with %gMiB global and %gKiB shared memory\n",
+        prop.name, gsz / 1048576.0, ssz / 1024.0);
 }
