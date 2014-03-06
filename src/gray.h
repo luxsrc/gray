@@ -26,8 +26,14 @@
 #endif
 
 #ifdef OUBLE
-#  define DOUBLE 1
-#  undef   OUBLE
+#  if OUBLE == 1
+#    define DOUBLE 1
+#  else
+#    define SINGLE 1
+#  endif
+#  undef OUBLE
+#else
+#  define MIXED 1
 #endif
 
 #ifdef ISABLE_NITE
@@ -59,12 +65,21 @@
 #endif
 
 // Typedef real to make the source code precision independent
-#ifdef DOUBLE
-  typedef double real;
-# define GL_REAL GL_DOUBLE
-#else
-  typedef float real;
-# define GL_REAL GL_FLOAT
+#if defined(DOUBLE)
+  typedef double  real;
+  typedef double xreal;
+# define GL_REAL  GL_DOUBLE
+# define GL_XREAL GL_DOUBLE
+#elif defined(MIXED)
+  typedef float   real;
+  typedef double xreal;
+# define GL_REAL  GL_FLOAT
+# define GL_XREAL GL_DOUBLE
+#elif defined(SINGLE)
+  typedef float   real;
+  typedef float  xreal;
+# define GL_REAL  GL_FLOAT
+# define GL_XREAL GL_FLOAT
 #endif
 
 // Include problem specific headers
