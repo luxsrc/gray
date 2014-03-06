@@ -63,42 +63,46 @@ static inline __device__ real B_Planck(real nu, real te)
   real f1 = 2 * CONST_h * CONST_c;          // ~ 4e-16
   real f2 = CONST_h / (CONST_me * CONST_c); // ~ 2e-10
 
-  nu /= (real)CONST_c; // rescale nu ~ 1e20 to ~ 1e10
+  nu /= (real)CONST_c; // rescale nu <~ 1e20 to <~ 1e10
   f1 *= nu * nu;       // <~ 4e4
   f2 *= nu;            // <~ 2
 
   return f1 * nu / (exp(f2 / te) - 1);
 }
 
+static inline __device__ real Gaunt(real x, real y)
+{
+  const real sqrt_x = sqrt(x);
+  const real sqrt_y = sqrt(y);
+
+  if(x > 1)
+    return y > 1 ?
+           (real)sqrt(3.0 / M_PI) / sqrt_y :
+           (real)(sqrt(3.0) / M_PI) * ((real)log(4 / 1.78107241799) - log(y));
+  else if(x * y > 1)
+    return (real)sqrt(12.0) / (sqrt_x * sqrt_y);
+  else if(y > sqrt_x)
+    return 1;
+  else {
+    // The "small-angle classical region" formulae in Rybicki &
+    // Lightman (1979) and Novikov & Thorne (1973) are inconsistent;
+    // it seems that both versions contain typos.
+    // TODO: double-check the following formula
+    const real g = (real)(sqrt(3.0) / M_PI) *
+      ((real)log(4.0 / pow(1.78107241799, 2.5)) + log(sqrt_x / y));
+    return g > 0 ? g : 0;
+  }
+}
+
 static inline __device__ real j_ff(real nu, real te, real ne)
 {
   // Assume Z == 1 and ni == ne
 
-  const real f = (real)(6.8e-38 / sqrt(CONST_me * CONST_c * CONST_c / CONST_kB));
+  const real f = 6.8e-38 / sqrt(CONST_me * CONST_c * CONST_c / CONST_kB);
   const real x = te * (real)(CONST_me * CONST_c * CONST_c / CONST_Ry);
   const real y = (nu / te) * (real)(CONST_h / (CONST_me * CONST_c * CONST_c));
 
-  real g = 1;
-  if(x > 1) {
-    if(y > 1)
-      g = (real)sqrt(3.0 / M_PI) / sqrt(y);
-    else
-      g = ((real)log(4 / 1.78107241799) - log(y)) * (real)(sqrt(3.0) / M_PI);
-  } else {
-    if(y > 1 / x)
-      g = (real)sqrt(12.0) / sqrt(x * y);
-    else if(y < sqrt(x)) {
-      // The "small-angle classical region" formulae in Rybicki &
-      // Lightman (1979) and Novikov & Thorne (1973) are inconsistent;
-      // it seems that both versions contain typos.
-      // TODO: double-check the following formula
-      g = ((real)log(4.0 / pow(1.78107241799, 2.5)) + log(sqrt(x) / y)) *
-          (real)(sqrt(3.0) / M_PI);
-      if(g < 0) g = 0;
-    }
-  }
-
-  return g * f * ne * ne * exp(-y) / sqrt(te);
+  return Gaunt(x, y) * f * ne * ne * exp(-y) / sqrt(te);
 }
 
 static inline __device__ real j_synchr(real nu, real te, real ne,
