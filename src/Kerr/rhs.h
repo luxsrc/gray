@@ -60,11 +60,14 @@ static inline __device__ real K2it(real te)
 
 static inline __device__ real B_Planck(real nu, real te)
 {
-  const real f1 = 2 * CONST_h * CONST_c;
-  const real f2 = CONST_h / (CONST_me * CONST_c);
+  real f1 = 2 * CONST_h * CONST_c;          // ~ 4e-16
+  real f2 = CONST_h / (CONST_me * CONST_c); // ~ 2e-10
 
-  nu /= (real)CONST_c;
-  return f1 * nu * nu * nu / (exp(f2 * (nu / te)) - 1);
+  nu /= (real)CONST_c; // rescale nu ~ 1e20 to ~ 1e10
+  f1 *= nu * nu;       // <~ 4e4
+  f2 *= nu;            // <~ 2
+
+  return f1 * nu / (exp(f2 / te) - 1);
 }
 
 static inline __device__ real j_ff(real nu, real te, real ne)
