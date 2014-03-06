@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
+#define EPSILON  1e-32
 #define FLOP_RHS 84
 #define R_SCHW   2
 
@@ -67,7 +68,7 @@ static inline __device__ real B_Planck(real nu, real te)
   f1 *= nu * nu;       // <~ 4e4
   f2 *= nu;            // <~ 2
 
-  return f1 * nu / (exp(f2 / te) - 1);
+  return f1 * nu / (exp(f2 / (te + (real)EPSILON)) - 1);
 }
 
 static inline __device__ real Gaunt(real x, real y)
@@ -78,7 +79,8 @@ static inline __device__ real Gaunt(real x, real y)
   if(x > 1)
     return y > 1 ?
            (real)sqrt(3.0 / M_PI) / sqrt_y :
-           (real)(sqrt(3.0) / M_PI) * ((real)log(4 / 1.78107241799) - log(y));
+           (real)(sqrt(3.0) / M_PI) * ((real)log(4 / 1.78107241799) -
+                                       log(y + (real)EPSILON));
   else if(x * y > 1)
     return (real)sqrt(12.0) / (sqrt_x * sqrt_y);
   else if(y > sqrt_x)
@@ -89,8 +91,9 @@ static inline __device__ real Gaunt(real x, real y)
     // it seems that both versions contain typos.
     // TODO: double-check the following formula
     const real g = (real)(sqrt(3.0) / M_PI) *
-      ((real)log(4.0 / pow(1.78107241799, 2.5)) + log(sqrt_x / y));
-    return g > 0 ? g : 0;
+                   ((real)log(4.0 / pow(1.78107241799, 2.5)) +
+                    log(sqrt_x / (y + (real)EPSILON)));
+    return g > (real)EPSILON ? g : (real)EPSILON;
   }
 }
 
@@ -107,7 +110,7 @@ static inline __device__ real L_j_ff(real nu, real te, real ne)
   y *= nu / te; // ~ 1e-10
   f *= ne;      // ~ 1e-15
 
-  return (m_BH * f * Gaunt(x, y)) * (f / (sqrt(te) * exp(y)));
+  return (m_BH * f * Gaunt(x, y)) * (f / (sqrt(te) * exp(y) + (real)EPSILON));
 }
 
 static inline __device__ real L_j_synchr(real nu, real te, real ne,
@@ -115,7 +118,7 @@ static inline __device__ real L_j_synchr(real nu, real te, real ne,
 {
   const real nus = te * te * B * sqrt(1 - cos_theta * cos_theta) *
                    (real)(CONST_e / (9 * M_PI * CONST_me * CONST_c)); // ~ 1e5
-  const real x   = nu / nus; // 1e6 -- 1e18
+  const real x   = nu / (nus + (real)EPSILON); // 1e6 -- 1e18
 
   if(te        <= (real)T_MIN ||
      cos_theta <=          -1 ||
