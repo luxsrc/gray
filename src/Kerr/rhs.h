@@ -94,23 +94,23 @@ static inline __device__ real Gaunt(real x, real y)
   }
 }
 
-static inline __device__ real j_ff(real nu, real te, real ne)
+static inline __device__ real L_j_ff(real nu, real te, real ne)
 {
   // Assume Z == 1 and ni == ne
 
   real x = CONST_me * CONST_c * CONST_c / CONST_Ry;    // ~ 4e4
   real y = (CONST_h / (CONST_me * CONST_c * CONST_c)); // ~ 3e-21
-  real f = sqrt(6.8e-38 /
-                sqrt(CONST_me * CONST_c * CONST_c / CONST_kB)); // ~ 9e-22
+  real f = sqrt(CONST_G * CONST_mSun / (CONST_c * CONST_c) *
+                6.8e-38 / sqrt(CONST_me * CONST_c * CONST_c / CONST_kB));
 
   x *= te;      // ~ 1e+04
   y *= nu / te; // ~ 1e-10
   f *= ne;      // ~ 1e-15
 
-  return (f * Gaunt(x, y)) * (f / (sqrt(te) * exp(y)));
+  return (m_BH * f * Gaunt(x, y)) * (f / (sqrt(te) * exp(y)));
 }
 
-static inline __device__ real j_synchr(real nu, real te, real ne,
+static inline __device__ real L_j_synchr(real nu, real te, real ne,
                                        real B,  real cos_theta)
 {
   const real nus = te * te * B * sqrt(1 - cos_theta * cos_theta) *
@@ -122,14 +122,15 @@ static inline __device__ real j_synchr(real nu, real te, real ne,
      cos_theta >=           1 ||
      x         <=           0) return 0;
 
-  const real f      = M_SQRT2 * M_PI * CONST_e * CONST_e / (3 * CONST_c);
+  const real f      = (CONST_G * CONST_mSun / (CONST_c * CONST_c)) *
+                      (M_SQRT2 * M_PI * CONST_e * CONST_e / (3 * CONST_c));
   const real cbrtx  = cbrt(x);                                    // 1e2 -- 1e6
   const real xx     = sqrt(x) + (real)1.88774862536 * sqrt(cbrtx);// 1e3 -- 1e9
   const real log_K2 = (te > (real)T_MAX) ?
                       log(2 * te * te - (real)0.5) :
                       log_K2it(te);
 
-  return nus * (xx * exp(-cbrtx)) * (xx * exp(-log_K2)) * (ne * f);
+  return (m_BH * xx * exp(-cbrtx)) * (xx * exp(-log_K2)) * (f * ne * nus);
 }
 
 static inline __device__ State rhs(const State &s, real t)
@@ -338,8 +339,7 @@ static inline __device__ State rhs(const State &s, real t)
 
       const real nu = nu0 * shift;
       B_nu   = B_Planck(nu, te);
-      L_j_nu = (j_synchr(nu, te, ne, b, bkcos) + j_ff(nu, te, ne)) * m_BH *
-        (real)(CONST_G * CONST_mSun / (CONST_c * CONST_c)); // length scale
+      L_j_nu = L_j_synchr(nu, te, ne, b, bkcos) + L_j_ff(nu, te, ne);
     }
 
     if(L_j_nu > 0) {
