@@ -13,8 +13,12 @@ ifeq ($(DETAILS),1) # use `make <prob> DETAILS=1` to show the ptxas info
 	CFLAGS += -v --ptxas-options=-v
 endif
 
-ifeq ($(DOUBLE),1) # use `make <prob> DOUBLE=1` to compile in double precision
-	CPPFLAGS += -DOUBLE
+ifeq ($(DOUBLE),1)      # use `make <prob> DOUBLE=1` for double precision
+	CPPFLAGS += -DOUBLE=1
+	CFLAGS   += -arch sm_13
+else ifeq ($(SINGLE),1) # use `make <prob> SINGLE=1` for single precision
+	CPPFLAGS += -DOUBLE=0
+else                    # mixed precision otherwise
 	CFLAGS   += -arch sm_13
 endif
 
@@ -69,9 +73,9 @@ help:
 	 done
 	@echo
 	@echo "\
-Use \`make <prob> [DEBUG=1] [DETAILS=1] [DOUBLE=1] [GL=0] [IO=0]\` and\n\
-\`bin/GRay-<prob>\` to compile and run GRay.  The option DEBUG=1 turns on\n\
-debugging messages, DETAILS=1 prints ptxas information, DOUBLE=1 enforces\n\
+Use \`make <prob> [DEBUG=1] [DETAILS=1] [DOUBLE/SINGLE=1] [GL=0] [IO=0]\`\n\
+and \`bin/GRay-<prob>\` to compile and run GRay.  The option DEBUG=1 turns\n\
+on debugging messages, DETAILS=1 prints ptxas information, DOUBLE=1 enforces\n\
 double-precision, while GL=0 disables OpenGL and IO=0 disables IO.\n\
 \n\
 To enable PrimeSense or LeapMotion sensor, one needs to pass in the flag\n\

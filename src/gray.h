@@ -21,27 +21,36 @@
 
 // Rename macros
 #ifdef EBUG
-#  define DEBUG
+#  define DEBUG 1
 #  undef   EBUG
 #endif
-#ifdef ISABLE_GL
-#  define DISABLE_GL
-#  undef   ISABLE_GL
+
+#ifdef OUBLE
+#  if OUBLE == 1
+#    define DOUBLE 1
+#  else
+#    define SINGLE 1
+#  endif
+#  undef OUBLE
+#else
+#  define MIXED 1
 #endif
+
 #ifdef ISABLE_NITE
-#  define DISABLE_NITE
+#  define DISABLE_NITE 1
 #  undef   ISABLE_NITE
 #endif
 #ifdef ISABLE_LEAP
-#  define DISABLE_LEAP
+#  define DISABLE_LEAP 1
 #  undef   ISABLE_LEAP
 #endif
-#ifdef OUBLE
-#  define DOUBLE
-#  undef   OUBLE
+
+#ifdef ISABLE_GL
+#  define DISABLE_GL 1
+#  undef   ISABLE_GL
 #endif
 #ifdef UMP
-#  define DUMP
+#  define DUMP 1
 #  undef   UMP
 #endif
 
@@ -56,12 +65,21 @@
 #endif
 
 // Typedef real to make the source code precision independent
-#ifdef DOUBLE
-  typedef double real;
-# define GL_REAL GL_DOUBLE
-#else
-  typedef float real;
-# define GL_REAL GL_FLOAT
+#if defined(DOUBLE)
+  typedef double  real;
+  typedef double xreal;
+# define GL_REAL  GL_DOUBLE
+# define GL_XREAL GL_DOUBLE
+#elif defined(MIXED)
+  typedef float   real;
+  typedef double xreal;
+# define GL_REAL  GL_FLOAT
+# define GL_XREAL GL_DOUBLE
+#elif defined(SINGLE)
+  typedef float   real;
+  typedef float  xreal;
+# define GL_REAL  GL_FLOAT
+# define GL_XREAL GL_FLOAT
 #endif
 
 // Include problem specific headers

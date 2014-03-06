@@ -16,21 +16,22 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
+#define EPSILON  1e-32
 #define FLOP_RHS 84
 #define R_SCHW   2
 
-#define CONST_c     ((real)2.99792458e+10)
-#define CONST_h     ((real)6.62606957e-27)
-#define CONST_G     ((real)6.67384800e-08)
-#define CONST_kB    ((real)1.38064881e-16)
-#define CONST_Ry    ((real)2.17987197e-11)
-#define CONST_e     ((real)4.80320425e-10)
-#define CONST_me    ((real)9.10938291e-28)
-#define CONST_mp_me ((real)1836.152672450)
-#define CONST_mSun  ((real)1.98910000e+33)
+#define CONST_c     (2.99792458e+10)
+#define CONST_h     (6.62606957e-27)
+#define CONST_G     (6.67384800e-08)
+#define CONST_kB    (1.38064881e-16)
+#define CONST_Ry    (2.17987197e-11)
+#define CONST_e     (4.80320425e-10)
+#define CONST_me    (9.10938291e-28)
+#define CONST_mp_me (1836.152672450)
+#define CONST_mSun  (1.98910000e+33)
 
-#define T_MIN  ((real)1e-1)
-#define T_MAX  ((real)1e+2)
+#define T_MIN  (1e-1)
+#define T_MAX  (1e+2)
 #define T_GRID (60)
 
 static __device__ __constant__ real log_K2it_tab[] = {
@@ -49,74 +50,92 @@ static __device__ __constant__ real log_K2it_tab[] = {
   +9.9034625556
 };
 
-static inline __device__ real K2it(real te)
+static inline __device__ real log_K2it(real te)
 {
-  const real h = T_GRID * log(te / T_MIN) / log(T_MAX / T_MIN);
+  const real h = log(te / (real)T_MIN) * (real)(T_GRID / log(T_MAX / T_MIN));
   const int  i = h;
   const real d = h - i;
 
-  return exp((1 - d) * log_K2it_tab[i] + d * log_K2it_tab[i+1]);
+  return (1 - d) * log_K2it_tab[i] + d * log_K2it_tab[i+1];
 }
 
 static inline __device__ real B_Planck(real nu, real te)
 {
-  const real f1 = 2 * CONST_h * CONST_c;
-  const real f2 = CONST_h / (CONST_me * CONST_c);
+  real f1 = 2 * CONST_h * CONST_c;          // ~ 4e-16
+  real f2 = CONST_h / (CONST_me * CONST_c); // ~ 2e-10
 
-  nu /= CONST_c;
-  return f1 * nu * nu * nu / (exp(f2 * (nu / te)) - 1);
+  nu /= (real)CONST_c;             // 1e-02 -- 1e+12
+  f1 *= nu * nu;                   // 4e-20 -- 4e+08
+  f2 *= nu / (te + (real)EPSILON); // 1e-12 -- 1e+02
+
+  return nu * (f2 > (real)1e-5 ?
+               f1 / (exp(f2) - 1) :
+               (f1 / f2) / (1 + f2 / 2 + f2 * f2 / 6));
 }
 
-static inline __device__ real j_ff(real nu, real te, real ne)
+static inline __device__ real Gaunt(real x, real y)
+{
+  const real sqrt_x = sqrt(x);
+  const real sqrt_y = sqrt(y);
+
+  if(x > 1)
+    return y > 1 ?
+           (real)sqrt(3.0 / M_PI) / sqrt_y :
+           (real)(sqrt(3.0) / M_PI) * ((real)log(4 / 1.78107241799) -
+                                       log(y + (real)EPSILON));
+  else if(x * y > 1)
+    return (real)sqrt(12.0) / (sqrt_x * sqrt_y);
+  else if(y > sqrt_x)
+    return 1;
+  else {
+    // The "small-angle classical region" formulae in Rybicki &
+    // Lightman (1979) and Novikov & Thorne (1973) are inconsistent;
+    // it seems that both versions contain typos.
+    // TODO: double-check the following formula
+    const real g = (real)(sqrt(3.0) / M_PI) *
+                   ((real)log(4.0 / pow(1.78107241799, 2.5)) +
+                    log(sqrt_x / (y + (real)EPSILON)));
+    return g > (real)EPSILON ? g : (real)EPSILON;
+  }
+}
+
+static inline __device__ real L_j_ff(real nu, real te, real ne)
 {
   // Assume Z == 1 and ni == ne
 
-  const real f = (real)6.8e-38 / sqrt(CONST_me * CONST_c * CONST_c / CONST_kB);
-  const real x = (CONST_me * CONST_c * CONST_c / CONST_Ry) * te;
-  const real y = (CONST_h / (CONST_me * CONST_c * CONST_c)) * nu / te;
+  real x = CONST_me * CONST_c * CONST_c / CONST_Ry;    // ~ 4e4
+  real y = (CONST_h / (CONST_me * CONST_c * CONST_c)); // ~ 3e-21
+  real f = sqrt(CONST_G * CONST_mSun / (CONST_c * CONST_c) *
+                6.8e-38 / sqrt(CONST_me * CONST_c * CONST_c / CONST_kB));
 
-  real g = 1;
-  if(x > 1) {
-    if(y > 1)
-      g = sqrt((real)3.0 / (real)M_PI) / sqrt(y);
-    else
-      g = sqrt((real)3.0) / (real)M_PI *
-          (log(4 / (real)1.78107241799) - log(y));
-  } else {
-    if(y > 1 / x)
-      g = sqrt((real)12.0) / sqrt(x * y);
-    else if(y < sqrt(x)) {
-      // The "small-angle classical region" formulae in Rybicki &
-      // Lightman (1979) and Novikov & Thorne (1973) are inconsistent;
-      // it seems that both versions contain typos.
-      // TODO: double-check the following formula
-      g = sqrt((real)3.0) / (real)M_PI *
-          (log(4 / pow((real)1.78107241799, (real)2.5)) + log(sqrt(x) / y));
-      if(g < 0) g = 0;
-    }
-  }
+  x *= te;      // ~ 1e+04
+  y *= nu / te; // ~ 1e-10
+  f *= ne;      // ~ 1e-15
 
-  return g * f * ne * ne * exp(-y) / sqrt(te);
+  return (m_BH * f * Gaunt(x, y)) * (f / (sqrt(te) * exp(y) + (real)EPSILON));
 }
 
-static inline __device__ real j_synchr(real nu, real te, real ne,
+static inline __device__ real L_j_synchr(real nu, real te, real ne,
                                        real B,  real cos_theta)
 {
-  const real nus = CONST_e / (9 * (real)M_PI * CONST_me * CONST_c) *
-    te * te * B * sqrt(1 - cos_theta * cos_theta);
-  const real x   = nu / nus;
+  const real nus = te * te * B * sqrt(1 - cos_theta * cos_theta) *
+                   (real)(CONST_e / (9 * M_PI * CONST_me * CONST_c)); // ~ 1e5
+  const real x   = nu / (nus + (real)EPSILON); // 1e6 -- 1e18
 
-  if(te        <= T_MIN ||
-     cos_theta <=    -1 ||
-     cos_theta >=     1 ||
-     x         <=     0) return 0;
+  if(te        <= (real)T_MIN ||
+     cos_theta <=          -1 ||
+     cos_theta >=           1 ||
+     x         <=           0) return 0;
 
-  const real cbrtx = cbrt(x);
-  const real xx    = sqrt(x) + (real)1.88774862536 * sqrt(cbrtx);
-  const real K2    = (te > T_MAX) ? 2 * te * te - (real)0.5 : K2it(te);
+  const real f      = (CONST_G * CONST_mSun / (CONST_c * CONST_c)) *
+                      (M_SQRT2 * M_PI * CONST_e * CONST_e / (3 * CONST_c));
+  const real cbrtx  = cbrt(x);                                    // 1e2 -- 1e6
+  const real xx     = sqrt(x) + (real)1.88774862536 * sqrt(cbrtx);// 1e3 -- 1e9
+  const real log_K2 = (te > (real)T_MAX) ?
+                      log(2 * te * te - (real)0.5) :
+                      log_K2it(te);
 
-  return (real)M_SQRT2 * (real)M_PI * CONST_e * CONST_e / (3 * CONST_c) *
-    ne * nus * xx * xx * exp(-cbrtx) / K2;
+  return (m_BH * xx * exp(-cbrtx)) * (xx * exp(-log_K2)) * (f * ne * nus);
 }
 
 static inline __device__ State rhs(const State &s, real t)
@@ -198,8 +217,8 @@ static inline __device__ State rhs(const State &s, real t)
       if(ir < 0) ir = 0; else if(ir > nr-1) ir = nr-1;
 
       int iphi = (s.phi >= 0) ?
-        ((int)(nphi * s.phi / (2 * (real)M_PI) + (real)0.5) % ( nphi)):
-        ((int)(nphi * s.phi / (2 * (real)M_PI) - (real)0.5) % (-nphi));
+        ((int)(nphi * s.phi / (real)(2 * M_PI) + (real)0.5) % ( nphi)):
+        ((int)(nphi * s.phi / (real)(2 * M_PI) - (real)0.5) % (-nphi));
       if(iphi < 0) iphi += nphi;
 
       h2 = itheta * nr + ir;
@@ -226,7 +245,8 @@ static inline __device__ State rhs(const State &s, real t)
       ur     = field[h3].v1;
       utheta = field[h3].v2;
       uphi   = field[h3].v3;
-      ut     = 1 / sqrt(-(gKSP00                   +
+      ut     = 1 / sqrt((real)EPSILON
+                        -(gKSP00                   +
                           gKSP11 * ur     * ur     +
                           gKSP22 * utheta * utheta +
                           gKSP33 * uphi   * uphi   +
@@ -255,14 +275,14 @@ static inline __device__ State rhs(const State &s, real t)
       bphi   = (bphi   + bt * uphi  ) / ut;
 
       const real bb = (bt     * (gKSP00 * bt     + gKSP01 * br    +
-				 gKSP02 * btheta + gKSP03 * bphi) +
-		       br     * (gKSP01 * bt     + gKSP11 * br    +
-				 gKSP12 * btheta + gKSP13 * bphi) +
-		       btheta * (gKSP02 * bt     + gKSP12 * br    +
-				 gKSP22 * btheta + gKSP23 * bphi) +
-		       bphi   * (gKSP03 * bt     + gKSP13 * br    +
-				 gKSP23 * btheta + gKSP33 * bphi));
-      const real ibeta = bb / (2 * (Gamma - 1) * field[h3].u);
+                                 gKSP02 * btheta + gKSP03 * bphi) +
+                       br     * (gKSP01 * bt     + gKSP11 * br    +
+                                 gKSP12 * btheta + gKSP13 * bphi) +
+                       btheta * (gKSP02 * bt     + gKSP12 * br    +
+                                 gKSP22 * btheta + gKSP23 * bphi) +
+                       bphi   * (gKSP03 * bt     + gKSP13 * br    +
+                                 gKSP23 * btheta + gKSP33 * bphi));
+      const real ibeta = bb / (2 * (Gamma - 1) * field[h3].u + (real)EPSILON);
       Tp_Te = (ibeta > 5) ? Tp_Te_w : Tp_Te_d;
       b = sqrt(bb);
     }
@@ -315,22 +335,24 @@ static inline __device__ State rhs(const State &s, real t)
 
       shift = -(k0 * ut + k1 * ur + k2 * utheta + k3 * uphi); // is positive
       const real bkcos =
-        (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) / shift / b;
+        (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) /
+        (shift * b + (real)EPSILON);
 
-      b *= CONST_c * sqrt(4 * (real)M_PI * (CONST_mp_me + 1) * CONST_me * ne_rho);
-      real ne = ne_rho      * field[h3].rho;
-      real te = field[h3].u / field[h3].rho * CONST_mp_me *
+      b *= sqrt(ne_rho) *
+           (real)(CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me));
+      real ne = ne_rho      *  field[h3].rho;
+      real te = field[h3].u / (field[h3].rho + (real)EPSILON) *
+        (real)CONST_mp_me *
         ((Tp_Te + 1) / (Tp_Te + 2) / (real)1.5 + Gamma - 1) / (Tp_Te + 1) / 2;
 
       const real nu = nu0 * shift;
       B_nu   = B_Planck(nu, te);
-      L_j_nu = (j_synchr(nu, te, ne, b, bkcos) + j_ff(nu, te, ne)) *
-        m_BH * (CONST_G * CONST_mSun ) / (CONST_c * CONST_c); // length scale
+      L_j_nu = L_j_synchr(nu, te, ne, b, bkcos) + L_j_ff(nu, te, ne);
     }
 
     if(L_j_nu > 0) {
-      dtau = -L_j_nu * shift / B_nu;
-      dI   = -L_j_nu * exp(-s.tau) / (shift * shift);
+      dtau = -L_j_nu * shift       / (B_nu          + (real)EPSILON);
+      dI   = -L_j_nu * exp(-s.tau) / (shift * shift + (real)EPSILON);
     }
   }
 
