@@ -18,6 +18,10 @@
 
 #include "gray.h"
 
+namespace global {
+  size_t bsz = 64;
+}
+
 void optimize(int device)
 {
   int n_devices;

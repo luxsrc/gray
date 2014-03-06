@@ -96,6 +96,7 @@ namespace global {
 #ifndef DISABLE_GL
   extern float ratio, ax, ly, az, a_spin;
 #endif
+  extern size_t bsz;
 }
 
 // Basic function prototypes

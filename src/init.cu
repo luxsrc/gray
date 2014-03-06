@@ -35,11 +35,10 @@ void init(Data &data)
   debug("init(*%p)\n", &data);
 
   const size_t n   = data;
-  const size_t bsz = 64;
-  const size_t gsz = (n - 1) / bsz + 1;
+  const size_t gsz = (n - 1) / global::bsz + 1;
 
   State *s = data.device();
-  kernel<<<gsz, bsz>>>(s, n, global::t);
+  kernel<<<gsz, global::bsz>>>(s, n, global::t);
   cudaError_t err = cudaDeviceSynchronize();
   data.deactivate();
 
