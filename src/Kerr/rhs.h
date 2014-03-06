@@ -243,7 +243,8 @@ static inline __device__ State rhs(const State &s, real t)
       ur     = field[h3].v1;
       utheta = field[h3].v2;
       uphi   = field[h3].v3;
-      ut     = 1 / sqrt(-(gKSP00                   +
+      ut     = 1 / sqrt((real)EPSILON
+                        -(gKSP00                   +
                           gKSP11 * ur     * ur     +
                           gKSP22 * utheta * utheta +
                           gKSP33 * uphi   * uphi   +
@@ -279,7 +280,7 @@ static inline __device__ State rhs(const State &s, real t)
                                  gKSP22 * btheta + gKSP23 * bphi) +
                        bphi   * (gKSP03 * bt     + gKSP13 * br    +
                                  gKSP23 * btheta + gKSP33 * bphi));
-      const real ibeta = bb / (2 * (Gamma - 1) * field[h3].u);
+      const real ibeta = bb / (2 * (Gamma - 1) * field[h3].u + (real)EPSILON);
       Tp_Te = (ibeta > 5) ? Tp_Te_w : Tp_Te_d;
       b = sqrt(bb);
     }
@@ -332,12 +333,14 @@ static inline __device__ State rhs(const State &s, real t)
 
       shift = -(k0 * ut + k1 * ur + k2 * utheta + k3 * uphi); // is positive
       const real bkcos =
-        (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) / shift / b;
+        (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) /
+        (shift * b + (real)EPSILON);
 
       b *= sqrt(ne_rho) *
            (real)(CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me));
-      real ne = ne_rho      * field[h3].rho;
-      real te = field[h3].u / field[h3].rho * (real)CONST_mp_me *
+      real ne = ne_rho      *  field[h3].rho;
+      real te = field[h3].u / (field[h3].rho + (real)EPSILON) *
+        (real)CONST_mp_me *
         ((Tp_Te + 1) / (Tp_Te + 2) / (real)1.5 + Gamma - 1) / (Tp_Te + 1) / 2;
 
       const real nu = nu0 * shift;
@@ -346,8 +349,8 @@ static inline __device__ State rhs(const State &s, real t)
     }
 
     if(L_j_nu > 0) {
-      dtau = -L_j_nu * shift / B_nu;
-      dI   = -L_j_nu * exp(-s.tau) / (shift * shift);
+      dtau = -L_j_nu * shift       / (B_nu          + (real)EPSILON);
+      dI   = -L_j_nu * exp(-s.tau) / (shift * shift + (real)EPSILON);
     }
   }
 
