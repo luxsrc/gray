@@ -21,27 +21,30 @@
 
 // Rename macros
 #ifdef EBUG
-#  define DEBUG
+#  define DEBUG 1
 #  undef   EBUG
 #endif
-#ifdef ISABLE_GL
-#  define DISABLE_GL
-#  undef   ISABLE_GL
+
+#ifdef OUBLE
+#  define DOUBLE 1
+#  undef   OUBLE
 #endif
+
 #ifdef ISABLE_NITE
-#  define DISABLE_NITE
+#  define DISABLE_NITE 1
 #  undef   ISABLE_NITE
 #endif
 #ifdef ISABLE_LEAP
-#  define DISABLE_LEAP
+#  define DISABLE_LEAP 1
 #  undef   ISABLE_LEAP
 #endif
-#ifdef OUBLE
-#  define DOUBLE
-#  undef   OUBLE
+
+#ifdef ISABLE_GL
+#  define DISABLE_GL 1
+#  undef   ISABLE_GL
 #endif
 #ifdef UMP
-#  define DUMP
+#  define DUMP 1
 #  undef   UMP
 #endif
 
