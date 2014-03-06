@@ -122,14 +122,14 @@ static inline __device__ real j_synchr(real nu, real te, real ne,
      cos_theta >=           1 ||
      x         <=           0) return 0;
 
-  const real f      = log(M_SQRT2 * M_PI * CONST_e * CONST_e / (3 * CONST_c));
+  const real f      = M_SQRT2 * M_PI * CONST_e * CONST_e / (3 * CONST_c);
   const real cbrtx  = cbrt(x);                                    // 1e2 -- 1e6
   const real xx     = sqrt(x) + (real)1.88774862536 * sqrt(cbrtx);// 1e3 -- 1e9
   const real log_K2 = (te > (real)T_MAX) ?
                       log(2 * te * te - (real)0.5) :
                       log_K2it(te);
 
-  return exp(f - cbrtx - log_K2) * xx * xx * ne * nus;
+  return nus * (xx * exp(-cbrtx)) * (xx * exp(-log_K2)) * (ne * f);
 }
 
 static inline __device__ State rhs(const State &s, real t)
