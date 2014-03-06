@@ -98,11 +98,16 @@ static inline __device__ real j_ff(real nu, real te, real ne)
 {
   // Assume Z == 1 and ni == ne
 
-  const real f = 6.8e-38 / sqrt(CONST_me * CONST_c * CONST_c / CONST_kB);
-  const real x = te * (real)(CONST_me * CONST_c * CONST_c / CONST_Ry);
-  const real y = (nu / te) * (real)(CONST_h / (CONST_me * CONST_c * CONST_c));
+  real x = CONST_me * CONST_c * CONST_c / CONST_Ry;    // ~ 4e4
+  real y = (CONST_h / (CONST_me * CONST_c * CONST_c)); // ~ 3e-21
+  real f = sqrt(6.8e-38 /
+                sqrt(CONST_me * CONST_c * CONST_c / CONST_kB)); // ~ 9e-22
 
-  return Gaunt(x, y) * f * ne * ne * exp(-y) / sqrt(te);
+  x *= te;      // ~ 1e+04
+  y *= nu / te; // ~ 1e-10
+  f *= ne;      // ~ 1e-15
+
+  return (f * Gaunt(x, y)) * (f / (sqrt(te) * exp(y)));
 }
 
 static inline __device__ real j_synchr(real nu, real te, real ne,
