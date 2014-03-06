@@ -106,6 +106,7 @@ extern void error(const char *, ...);
 #else
 #  define debug(...) // do nothing
 #endif
+extern void optimize(int);
 
 // NiTE+OpenNI or Leap Motion related functions for natural interactions
 #ifndef DISABLE_NITE
