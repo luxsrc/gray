@@ -25,9 +25,11 @@
 typedef struct {
   real t, r, theta, phi;
   real kr, ktheta;
-  real I;       // specific intensity
-  real tau;     // optical depth
   real bimpact; // impact parameter defined as L / E, constant
+  struct {
+    real I;       // specific intensity
+    real tau;     // optical depth
+  } rad;
 } State;
 
 #endif // STATE_H

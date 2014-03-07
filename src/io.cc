@@ -56,7 +56,7 @@ void spec(Data &data)
     error("ERROR: fail to allocate buffer\n");
   else
     for(size_t i = 0; i < n; ++i) {
-      const real tmp = h[i].I;
+      const real tmp = h[i].rad.I;
       I[i]   = tmp; // real to float
       total += tmp;
     }
