@@ -346,7 +346,7 @@ static inline __device__ State rhs(const State &s, real t)
   }
 
   for(int i = 0; i < N_NU; ++i) {
-    const real nu     = nu0 * shift;
+    const real nu     = nu0[i] * shift;
     const real B_nu   =   B_Planck(nu, te);
     const real L_j_nu = L_j_synchr(nu, te, ne, b, bkcos) + L_j_ff(nu, te, ne);
     if(L_j_nu > 0) {
