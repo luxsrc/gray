@@ -345,12 +345,16 @@ static inline __device__ State rhs(const State &s, real t)
       ((Tp_Te + 1) / (Tp_Te + 2) / (real)1.5 + Gamma - 1) / (Tp_Te + 1) / 2;
   }
 
-  const real nu     = nu0 * shift;
-  const real B_nu   =   B_Planck(nu, te);
-  const real L_j_nu = L_j_synchr(nu, te, ne, b, bkcos) + L_j_ff(nu, te, ne);
-  if(L_j_nu > 0) {
-    d.rad.I   = -L_j_nu * exp(-s.rad.tau) / (shift * shift + (real)EPSILON);
-    d.rad.tau = -L_j_nu * shift           / (B_nu          + (real)EPSILON);
+  for(int i = 0; i < N_NU; ++i) {
+    const real nu     = nu0 * shift;
+    const real B_nu   =   B_Planck(nu, te);
+    const real L_j_nu = L_j_synchr(nu, te, ne, b, bkcos) + L_j_ff(nu, te, ne);
+    if(L_j_nu > 0) {
+      d.rad[i].I   = -L_j_nu * exp(-s.rad[i].tau)   /
+                     (shift * shift + (real)EPSILON);
+      d.rad[i].tau = -L_j_nu * shift                /
+                     (B_nu          + (real)EPSILON);
+    }
   }
 
   return d;

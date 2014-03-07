@@ -20,6 +20,7 @@
 #define STATE_H
 
 #define HARM 1
+#define N_NU 5
 #define PARTICLE_TIME t
 
 typedef struct {
@@ -29,7 +30,7 @@ typedef struct {
   struct {
     real I;       // specific intensity
     real tau;     // optical depth
-  } rad;
+  } rad[N_NU];
 } State;
 
 #endif // STATE_H
