@@ -30,7 +30,7 @@ static __device__ State ic(const size_t i, size_t n, const real t)
     const real deg2rad = M_PI / 180;
     const real cos_obs = cos(deg2rad * i_obs);
     const real sin_obs = sin(deg2rad * i_obs);
-    const real scale   = 100;
+    const real scale   = 64;
     const real half    = .5;
 
     real x, y, z;
@@ -92,6 +92,6 @@ static __device__ State ic(const size_t i, size_t n, const real t)
   }
 
   return (State){t, r, theta, phi, kr, ktheta, // null geodesic
-                 bimpact,                      // constants of motion
-                 0, 0};                        // radiative transfer variables
+                 0, 0,                         // radiative transfer variables
+                 bimpact};                     // constants of motion
 }

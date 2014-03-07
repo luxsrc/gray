@@ -96,6 +96,7 @@ namespace global {
 #ifndef DISABLE_GL
   extern float ratio, ax, ly, az, a_spin;
 #endif
+  extern size_t bsz;
 }
 
 // Basic function prototypes
@@ -106,6 +107,7 @@ extern void error(const char *, ...);
 #else
 #  define debug(...) // do nothing
 #endif
+extern void optimize(int);
 
 // NiTE+OpenNI or Leap Motion related functions for natural interactions
 #ifndef DISABLE_NITE

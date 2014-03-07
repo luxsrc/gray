@@ -92,14 +92,15 @@ double evolve(Data &data, double dt)
 
   if(!count && !atexit(cleanup)) setup(n);
 
-  const size_t bsz = 64;
-  const size_t gsz = (n - 1) / bsz + 1;
+  const size_t gsz = (n - 1) / global::bsz + 1;
 
   if(cudaSuccess != cudaEventRecord(time0, 0))
     error("evolve(): fail to record event\n");
 
   State *s = data.device();
-  driver<<<gsz, bsz, sizeof(State) * bsz>>>(s, count, n, t, global::t += dt);
+  driver<<<gsz, global::bsz,
+                global::bsz * sizeof(State)>>>(s, count, n, t,
+                                               global::t += dt);
   cudaError_t err = cudaDeviceSynchronize();
   data.deactivate();
 
@@ -121,13 +122,13 @@ double evolve(Data &data, double dt)
   double actual = 0, peak = 0;
   for(size_t j = 0, h = 0; j < gsz; ++j) {
     size_t sum = 0, max = 0;
-    for(size_t i = 0; i < bsz; ++i, ++h) {
+    for(size_t i = 0; i < global::bsz; ++i, ++h) {
       const size_t x = (h < n) ? temp[h] : 0;
       sum += x;
       if(max < x) max = x;
     }
     actual += sum;
-    peak   += max * bsz;
+    peak   += max * global::bsz;
   }
 
   if(actual) {

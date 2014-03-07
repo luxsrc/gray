@@ -72,28 +72,10 @@ int main(int argc, char **argv)
 #endif
 
   int i = 1;
-  if(argc > i && argv[1][0] == '-') { // `./gray -2` use the second device
-    int n_devices;
-    cudaGetDeviceCount(&n_devices);
-
-    if(n_devices < 1)
-      error("No GPU is found on this machine\n");
-    else
-      print("%d GPU%s found\n", n_devices, n_devices == 1 ? " is" : "s are");
-
-    int device = atoi(argv[1] + 1);
-    if(n_devices <= device)
-      error("%u is an invalid GPU id\n");
-    else
-      print("Run on GPU %u\n", device);
-
-    cudaError_t err = cudaSetDevice(device);
-    if(cudaSuccess != err)
-      error("init(): fail to switch to device %d [%s]\n",
-            device, cudaGetErrorString(err));
-
-    ++i;
-  }
+  if(argc > i && argv[i][0] == '-') // `./gray -2` use the second device
+    optimize(atoi(argv[i++] + 1));
+  else
+    optimize(0);
 
   size_t n = 0;
   for(; i < argc; ++i) {
