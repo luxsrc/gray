@@ -326,7 +326,7 @@ static inline __device__ State rhs(const State &s, real t)
     }
 
     // Compute red shift, angle cosine between b and k, etc
-    real shift, B_nu, L_j_nu;
+    real shift, bkcos, ne, te;
     {
       const real k0 = -1;             // k_t
       const real k1 = g11 * s.kr;     // k_r
@@ -334,29 +334,27 @@ static inline __device__ State rhs(const State &s, real t)
       const real k3 = s.bimpact;      // k_phi
 
       shift = -(k0 * ut + k1 * ur + k2 * utheta + k3 * uphi); // is positive
-      const real bkcos =
-        (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) /
-        (shift * b + (real)EPSILON);
+      bkcos =  (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) /
+               (shift * b + (real)EPSILON);
 
       b *= sqrt(ne_rho) *
            (real)(CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me));
-      real ne = ne_rho      *  field[h3].rho;
-      real te = field[h3].u / (field[h3].rho + (real)EPSILON) *
-        (real)CONST_mp_me *
+      ne = ne_rho      *  field[h3].rho;
+      te = field[h3].u / (field[h3].rho + (real)EPSILON) * (real)CONST_mp_me *
         ((Tp_Te + 1) / (Tp_Te + 2) / (real)1.5 + Gamma - 1) / (Tp_Te + 1) / 2;
-
-      const real nu = nu0 * shift;
-      B_nu   = B_Planck(nu, te);
-      L_j_nu = L_j_synchr(nu, te, ne, b, bkcos) + L_j_ff(nu, te, ne);
     }
 
+    const real nu     = nu0 * shift;
+    const real B_nu   =   B_Planck(nu, te);
+    const real L_j_nu = L_j_synchr(nu, te, ne, b, bkcos) + L_j_ff(nu, te, ne);
+
     if(L_j_nu > 0) {
-      dtau = -L_j_nu * shift       / (B_nu          + (real)EPSILON);
       dI   = -L_j_nu * exp(-s.tau) / (shift * shift + (real)EPSILON);
+      dtau = -L_j_nu * shift       / (B_nu          + (real)EPSILON);
     }
   }
 
   return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, // null geodesic
-                 0,                                    // constants of motion
-                 dI, dtau};                            // radiative transfer
+                 dI, dtau,                             // radiative transfer
+                 0};                                   // constants of motion
 }
