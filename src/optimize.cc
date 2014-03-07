@@ -18,8 +18,11 @@
 
 #include "gray.h"
 
+#define BSZ ( 64)
+#define REG (128) // ptxas info says 93 registers for Kerr but just in case...
+
 namespace global {
-  size_t bsz = 64;
+  size_t bsz = BSZ;
 }
 
 void optimize(int device)
@@ -47,4 +50,14 @@ void optimize(int device)
   ssz = prop.sharedMemPerBlock;
   print("\"%s\" with %gMiB global and %gKiB shared memory\n",
         prop.name, gsz / 1048576.0, ssz / 1024.0);
+
+  size_t bsz = global::bsz;
+  if(bsz > prop.sharedMemPerBlock / sizeof(State))
+     bsz = prop.sharedMemPerBlock / sizeof(State);
+  if(bsz > prop.regsPerBlock / REG)
+     bsz = prop.regsPerBlock / REG;
+  if(bsz > prop.maxThreadsPerBlock)
+     bsz = prop.maxThreadsPerBlock;
+  global::bsz = (bsz / prop.warpSize) * prop.warpSize;
+  print("The kernel will be run with %zu threads per block\n", global::bsz);
 }
