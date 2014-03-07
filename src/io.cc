@@ -68,8 +68,8 @@ void spec(Data &data)
   snprintf(name, sizeof(name), global::format, -1);
 
   FILE *file = fopen(name, "w");
-  for(int i = 0; i < N_NU; ++i)
-    fprintf(file, "%15e\n", total[i] / n); // fixed at 16 bytes
+  for(int i = 0; i < N_NU-1; ++i) fprintf(file, "%15e ", total[i] / n);
+  fprintf(file, "%15e\n", total[N_NU-1] / n);
   fwrite(&n, sizeof(size_t), 1,        file);
   fwrite( I, sizeof(float),  n * N_NU, file);
   fclose(file);
