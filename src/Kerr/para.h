@@ -42,13 +42,18 @@ static __constant__ int    nphi    = 0;
 
 static __constant__ real   R_torus = 6;
 static __constant__ real   Omega   = 0.068;
-static __constant__ real   m_BH    = 4.3e6;  /* in unit of solar mass */
+static __constant__ real   m_BH    = 4.3e6; // in unit of solar mass
 
 static __constant__ real   Gamma   = 4.0 / 3.0;
-static __constant__ real   nu0     = 3.6e11; /* Hz, infrared */
 static __constant__ real   Tp_Te_d = 3;
 static __constant__ real   Tp_Te_w = 3;
 static __constant__ real   ne_rho  = 1e6;
+
+static __constant__ real   nu0[]   = {9.5589e+10,
+                                      1.5177e+11,
+                                      2.31053e+11,
+                                      3.59224e+11,
+                                      6.60735e+11}; // in Hz
 
 static inline bool config(const char c, const real v)
 {
@@ -62,7 +67,6 @@ static inline bool config(const char c, const real v)
   case 't': err = cudaMemcpyToSymbol(tolerance, &v, sizeof(real)); break;
 
   case 'G': err = cudaMemcpyToSymbol(Gamma,     &v, sizeof(real)); break;
-  case 'n': err = cudaMemcpyToSymbol(nu0,       &v, sizeof(real)); break;
   case 'Q': err = cudaMemcpyToSymbol(Tp_Te_d,   &v, sizeof(real)); break;
   case 'R': err = cudaMemcpyToSymbol(Tp_Te_w,   &v, sizeof(real)); break;
   case 'd': err = cudaMemcpyToSymbol(ne_rho,    &v, sizeof(real)); break;

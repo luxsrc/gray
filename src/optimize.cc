@@ -54,10 +54,10 @@ void optimize(int device)
   size_t bsz = global::bsz;
   if(bsz > prop.sharedMemPerBlock / sizeof(State))
      bsz = prop.sharedMemPerBlock / sizeof(State);
-  if(bsz > prop.regsPerBlock / REG)
-     bsz = prop.regsPerBlock / REG;
-  if(bsz > prop.maxThreadsPerBlock)
-     bsz = prop.maxThreadsPerBlock;
+  if(bsz > prop.regsPerBlock / (size_t)REG)
+     bsz = prop.regsPerBlock / (size_t)REG;
+  if(bsz > (size_t)prop.maxThreadsPerBlock)
+     bsz = (size_t)prop.maxThreadsPerBlock;
   global::bsz = (bsz / prop.warpSize) * prop.warpSize;
   print("The kernel will be run with %zu threads per block\n", global::bsz);
 }

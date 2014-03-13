@@ -140,6 +140,8 @@ static inline __device__ real L_j_synchr(real nu, real te, real ne,
 
 static inline __device__ State rhs(const State &s, real t)
 {
+  State d = {};
+
   const real a2 = a_spin * a_spin;
   const real r2 = s.r * s.r; // 1 FLOP
 
@@ -152,7 +154,7 @@ static inline __device__ State rhs(const State &s, real t)
     s2 = sin_theta * sin_theta;
   } // 4 FLOP
 
-  real g00, g11, g22, g33, g30, g33_s2, Dlt, kt, kphi;
+  real g00, g11, g22, g33, g30, g33_s2, Dlt;
   {
     real sum, tmp;
     sum    = r2 + a2;
@@ -168,27 +170,26 @@ static inline __device__ State rhs(const State &s, real t)
     g33    = g33_s2 * s2;
 
     tmp    = 1 / (g33 * g00 - g30 * g30);
-    kt     = -(g33 + s.bimpact * g30) * tmp; // assume E = -k_t = 1, see ic.h
-    kphi   =  (g30 + s.bimpact * g00) * tmp; // assume E = -k_t = 1, see ic.h
+    d.t    = -(g33 + s.bimpact * g30) * tmp; // assume E = -k_t = 1, see ic.h
+    d.phi  =  (g30 + s.bimpact * g00) * tmp; // assume E = -k_t = 1, see ic.h
   } // 25 FLOP
 
-  real ar, atheta;
   {
-    ar = cs * R_SCHW * s.r / (g22 * g22); // use ar as tmp
+    d.r = cs * R_SCHW * s.r / (g22 * g22); // use d.r as tmp
 
     const real G222 = -a2 * cs;
-    const real G200 =  a2 * ar;
-    const real G230 = -a_spin * ar * (g22 + a2 * s2);
+    const real G200 =  a2 * d.r;
+    const real G230 = -a_spin * d.r * (g22 + a2 * s2);
     const real G233 = -a_spin * G230 * s2 + g33_s2 * cs;
 
-    ar = G222 / Dlt; // use ar as tmp, will be reused in the next block
+    d.r = G222 / Dlt; // use d.r as tmp, will be reused in the next block
 
-    atheta = (+     G200 *   kt     *   kt
-              +     ar   * s.kr     * s.kr
-              -     G222 * s.ktheta * s.ktheta
-              +     G233 *   kphi   *   kphi
-              - 2 * s.r  * s.kr     * s.ktheta
-              + 2 * G230 *   kphi   *   kt    ) / g22;
+    d.ktheta = (+     G200 * d.t      * d.t
+                +     d.r * s.kr     * s.kr
+                -     G222 * s.ktheta * s.ktheta
+                +     G233 * d.phi    * d.phi
+                - 2 * s.r  * s.kr     * s.ktheta
+                + 2 * G230 * d.phi    * d.t     ) / g22;
   } // 25 FLOP
 
   {
@@ -197,164 +198,164 @@ static inline __device__ State rhs(const State &s, real t)
     const real G130 = -a_spin * s2 * G100;
     const real G133 = (s.r - a_spin * G130) * s2;
 
-    ar     = (+     G100 *   kt     *   kt
-              -     G111 * s.kr     * s.kr
-              +     s.r  * s.ktheta * s.ktheta
-              +     G133 *   kphi   *   kphi
-              - 2 * ar   * s.kr     * s.ktheta // tmp ar from the atheta block
-              + 2 * G130 *   kphi   *   kt    ) / g11;
+    d.kr = (+     G100 * d.t      * d.t
+            -     G111 * s.kr     * s.kr
+            +     s.r  * s.ktheta * s.ktheta
+            +     G133 * d.phi    * d.phi
+            - 2 * d.r  * s.kr     * s.ktheta // tmp d.r from the d.ktheta block
+            + 2 * G130 * d.phi    * d.t     ) / g11;
   } // 24 FLOP
 
-  real dtau = 0, dI = 0;
+  d.r     = s.kr;
+  d.theta = s.ktheta;
+  if(!field) return d;
 
-  if(field) { // loaded HARM data
-    int h2, h3;
+  int h2, h3;
+  int itheta = ntheta * s.theta / (real)M_PI; // we want floor() here
+  if(itheta < 0) itheta = 0; else if(itheta > ntheta-1) itheta = ntheta-1;
+  {
+    int ir = round(nr * (log(s.r) - lnrmin) / (lnrmax - lnrmin));
+    if(ir < 0) ir = 0; else if(ir > nr-1) ir = nr-1;
 
-    int itheta = ntheta * s.theta / (real)M_PI; // we want floor() here
-    if(itheta < 0) itheta = 0; else if(itheta > ntheta-1) itheta = ntheta-1;
-    {
-      int ir = round(nr * (log(s.r) - lnrmin) / (lnrmax - lnrmin));
-      if(ir < 0) ir = 0; else if(ir > nr-1) ir = nr-1;
+    int iphi = (s.phi >= 0) ?
+      ((int)(nphi * s.phi / (real)(2 * M_PI) + (real)0.5) % ( nphi)):
+      ((int)(nphi * s.phi / (real)(2 * M_PI) - (real)0.5) % (-nphi));
+    if(iphi < 0) iphi += nphi;
 
-      int iphi = (s.phi >= 0) ?
-        ((int)(nphi * s.phi / (real)(2 * M_PI) + (real)0.5) % ( nphi)):
-        ((int)(nphi * s.phi / (real)(2 * M_PI) - (real)0.5) % (-nphi));
-      if(iphi < 0) iphi += nphi;
+    h2 = itheta * nr + ir;
+    h3 = (iphi * ntheta + itheta) * nr + ir;
+  }
 
-      h2 = itheta * nr + ir;
-      h3 = (iphi * ntheta + itheta) * nr + ir;
-    }
+  real ut, ur, utheta, uphi;
+  real bt, br, btheta, bphi, b, Tp_Te;
 
-    real ut, ur, utheta, uphi;
-    real bt, br, btheta, bphi, b, Tp_Te;
+  // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
+  {
+    const real gKSP00 = coord[h2].gcov[0][0];
+    const real gKSP11 = coord[h2].gcov[1][1];
+    const real gKSP22 = coord[h2].gcov[2][2];
+    const real gKSP33 = coord[h2].gcov[3][3];
+    const real gKSP01 = coord[h2].gcov[0][1];
+    const real gKSP02 = coord[h2].gcov[0][2];
+    const real gKSP03 = coord[h2].gcov[0][3];
+    const real gKSP12 = coord[h2].gcov[1][2];
+    const real gKSP13 = coord[h2].gcov[1][3];
+    const real gKSP23 = coord[h2].gcov[2][3];
 
-    // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
-    {
-      const real gKSP00 = coord[h2].gcov[0][0];
-      const real gKSP11 = coord[h2].gcov[1][1];
-      const real gKSP22 = coord[h2].gcov[2][2];
-      const real gKSP33 = coord[h2].gcov[3][3];
-      const real gKSP01 = coord[h2].gcov[0][1];
-      const real gKSP02 = coord[h2].gcov[0][2];
-      const real gKSP03 = coord[h2].gcov[0][3];
-      const real gKSP12 = coord[h2].gcov[1][2];
-      const real gKSP13 = coord[h2].gcov[1][3];
-      const real gKSP23 = coord[h2].gcov[2][3];
+    // Vector u
+    ur     = field[h3].v1;
+    utheta = field[h3].v2;
+    uphi   = field[h3].v3;
+    ut     = 1 / sqrt((real)EPSILON
+                      -(gKSP00                   +
+                        gKSP11 * ur     * ur     +
+                        gKSP22 * utheta * utheta +
+                        gKSP33 * uphi   * uphi   +
+                        2 * (gKSP01 * ur              +
+                             gKSP02 * utheta          +
+                             gKSP03 * uphi            +
+                             gKSP12 * ur     * utheta +
+                             gKSP13 * ur     * uphi   +
+                             gKSP23 * utheta * uphi)));
+    ur     *= ut;
+    utheta *= ut;
+    uphi   *= ut;
 
-      // Vector u
-      ur     = field[h3].v1;
-      utheta = field[h3].v2;
-      uphi   = field[h3].v3;
-      ut     = 1 / sqrt((real)EPSILON
-                        -(gKSP00                   +
-                          gKSP11 * ur     * ur     +
-                          gKSP22 * utheta * utheta +
-                          gKSP33 * uphi   * uphi   +
-                          2 * (gKSP01 * ur              +
-                               gKSP02 * utheta          +
-                               gKSP03 * uphi            +
-                               gKSP12 * ur     * utheta +
-                               gKSP13 * ur     * uphi   +
-                               gKSP23 * utheta * uphi)));
-      ur     *= ut;
-      utheta *= ut;
-      uphi   *= ut;
+    // Vector B
+    br     = field[h3].B1;
+    btheta = field[h3].B2;
+    bphi   = field[h3].B3;
+    bt     = (br     * (gKSP01 * ut     + gKSP11 * ur    +
+                        gKSP12 * utheta + gKSP13 * uphi) +
+              btheta * (gKSP02 * ut     + gKSP12 * ur    +
+                        gKSP22 * utheta + gKSP23 * uphi) +
+              bphi   * (gKSP03 * ut     + gKSP13 * ur    +
+                        gKSP23 * uphi   + gKSP33 * uphi));
+    br     = (br     + bt * ur    ) / ut;
+    btheta = (btheta + bt * utheta) / ut;
+    bphi   = (bphi   + bt * uphi  ) / ut;
 
-      // Vector B
-      br     = field[h3].B1;
-      btheta = field[h3].B2;
-      bphi   = field[h3].B3;
-      bt     = (br     * (gKSP01 * ut     + gKSP11 * ur    +
-                          gKSP12 * utheta + gKSP13 * uphi) +
-                btheta * (gKSP02 * ut     + gKSP12 * ur    +
-                          gKSP22 * utheta + gKSP23 * uphi) +
-                bphi   * (gKSP03 * ut     + gKSP13 * ur    +
-                          gKSP23 * uphi   + gKSP33 * uphi));
-      br     = (br     + bt * ur    ) / ut;
-      btheta = (btheta + bt * utheta) / ut;
-      bphi   = (bphi   + bt * uphi  ) / ut;
+    const real bb = (bt     * (gKSP00 * bt     + gKSP01 * br    +
+                               gKSP02 * btheta + gKSP03 * bphi) +
+                     br     * (gKSP01 * bt     + gKSP11 * br    +
+                               gKSP12 * btheta + gKSP13 * bphi) +
+                     btheta * (gKSP02 * bt     + gKSP12 * br    +
+                               gKSP22 * btheta + gKSP23 * bphi) +
+                     bphi   * (gKSP03 * bt     + gKSP13 * br    +
+                               gKSP23 * btheta + gKSP33 * bphi));
+    const real ibeta = bb / (2 * (Gamma - 1) * field[h3].u + (real)EPSILON);
+    Tp_Te = (ibeta > 5) ? Tp_Te_w : Tp_Te_d;
+    b = sqrt(bb);
+  }
 
-      const real bb = (bt     * (gKSP00 * bt     + gKSP01 * br    +
-                                 gKSP02 * btheta + gKSP03 * bphi) +
-                       br     * (gKSP01 * bt     + gKSP11 * br    +
-                                 gKSP12 * btheta + gKSP13 * bphi) +
-                       btheta * (gKSP02 * bt     + gKSP12 * br    +
-                                 gKSP22 * btheta + gKSP23 * bphi) +
-                       bphi   * (gKSP03 * bt     + gKSP13 * br    +
-                                 gKSP23 * btheta + gKSP33 * bphi));
-      const real ibeta = bb / (2 * (Gamma - 1) * field[h3].u + (real)EPSILON);
-      Tp_Te = (ibeta > 5) ? Tp_Te_w : Tp_Te_d;
-      b = sqrt(bb);
-    }
+  // Transform vector u and b from KSP to KS coordinates
+  {
+    const real dxdxp00 = coord[h2].dxdxp[0][0];
+    const real dxdxp11 = coord[h2].dxdxp[1][1];
+    const real dxdxp12 = coord[h2].dxdxp[1][2];
+    const real dxdxp21 = coord[h2].dxdxp[2][1];
+    const real dxdxp22 = coord[h2].dxdxp[2][2];
+    const real dxdxp33 = coord[h2].dxdxp[3][3];
 
-    // Transform vector u and b from KSP to KS coordinates
-    {
-      const real dxdxp00 = coord[h2].dxdxp[0][0];
-      const real dxdxp11 = coord[h2].dxdxp[1][1];
-      const real dxdxp12 = coord[h2].dxdxp[1][2];
-      const real dxdxp21 = coord[h2].dxdxp[2][1];
-      const real dxdxp22 = coord[h2].dxdxp[2][2];
-      const real dxdxp33 = coord[h2].dxdxp[3][3];
+    real temp1, temp2;
 
-      real temp1, temp2;
+    temp1  = ur;
+    temp2  = utheta;
+    ut    *= dxdxp00;
+    ur     = (dxdxp11 * temp1 + dxdxp12 * temp2);
+    utheta = (dxdxp21 * temp1 + dxdxp22 * temp2);
+    uphi  *= dxdxp33;
 
-      temp1  = ur;
-      temp2  = utheta;
-      ut    *= dxdxp00;
-      ur     = (dxdxp11 * temp1 + dxdxp12 * temp2);
-      utheta = (dxdxp21 * temp1 + dxdxp22 * temp2);
-      uphi  *= dxdxp33;
+    temp1  = br;
+    temp2  = btheta;
+    bt    *= dxdxp00;
+    br     = (dxdxp11 * temp1 + dxdxp12 * temp2);
+    btheta = (dxdxp21 * temp1 + dxdxp22 * temp2);
+    bphi  *= dxdxp33;
+  }
 
-      temp1  = br;
-      temp2  = btheta;
-      bt    *= dxdxp00;
-      br     = (dxdxp11 * temp1 + dxdxp12 * temp2);
-      btheta = (dxdxp21 * temp1 + dxdxp22 * temp2);
-      bphi  *= dxdxp33;
-    }
+  // Transform vector u and b from KS to BL coordinates
+  {
+    const real temp0 = -R_SCHW * s.r / Dlt; // Note that s.r and Dlt are
+    const real temp3 = -a_spin       / Dlt; // evaluated at photon position
 
-    // Transform vector u and b from KS to BL coordinates
-    {
-      const real temp0 = -R_SCHW * s.r / Dlt; // Note that s.r and Dlt are
-      const real temp3 = -a_spin       / Dlt; // evaluated at photon position
+    ut   += ur * temp0;
+    uphi += ur * temp3;
 
-      ut   += ur * temp0;
-      uphi += ur * temp3;
+    bt   += br * temp0;
+    bphi += br * temp3;
+  }
 
-      bt   += br * temp0;
-      bphi += br * temp3;
-    }
+  // Compute red shift, angle cosine between b and k, etc
+  real shift, bkcos, ne, te;
+  {
+    const real k0 = -1;             // k_t
+    const real k1 = g11 * s.kr;     // k_r
+    const real k2 = g22 * s.ktheta; // k_theta
+    const real k3 = s.bimpact;      // k_phi
 
-    // Compute red shift, angle cosine between b and k, etc
-    real shift, bkcos, ne, te;
-    {
-      const real k0 = -1;             // k_t
-      const real k1 = g11 * s.kr;     // k_r
-      const real k2 = g22 * s.ktheta; // k_theta
-      const real k3 = s.bimpact;      // k_phi
+    shift = -(k0 * ut + k1 * ur + k2 * utheta + k3 * uphi); // is positive
+    bkcos =  (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) /
+             (shift * b + (real)EPSILON);
 
-      shift = -(k0 * ut + k1 * ur + k2 * utheta + k3 * uphi); // is positive
-      bkcos =  (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) /
-               (shift * b + (real)EPSILON);
+    b *= sqrt(ne_rho) *
+         (real)(CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me));
+    ne = ne_rho      *  field[h3].rho;
+    te = field[h3].u / (field[h3].rho + (real)EPSILON) * (real)CONST_mp_me *
+      ((Tp_Te + 1) / (Tp_Te + 2) / (real)1.5 + Gamma - 1) / (Tp_Te + 1) / 2;
+  }
 
-      b *= sqrt(ne_rho) *
-           (real)(CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me));
-      ne = ne_rho      *  field[h3].rho;
-      te = field[h3].u / (field[h3].rho + (real)EPSILON) * (real)CONST_mp_me *
-        ((Tp_Te + 1) / (Tp_Te + 2) / (real)1.5 + Gamma - 1) / (Tp_Te + 1) / 2;
-    }
-
-    const real nu     = nu0 * shift;
+  for(int i = 0; i < N_NU; ++i) {
+    const real nu     = nu0[i] * shift;
     const real B_nu   =   B_Planck(nu, te);
     const real L_j_nu = L_j_synchr(nu, te, ne, b, bkcos) + L_j_ff(nu, te, ne);
-
     if(L_j_nu > 0) {
-      dI   = -L_j_nu * exp(-s.tau) / (shift * shift + (real)EPSILON);
-      dtau = -L_j_nu * shift       / (B_nu          + (real)EPSILON);
+      d.rad[i].I   = -L_j_nu * exp(-s.rad[i].tau)   /
+                     (shift * shift + (real)EPSILON);
+      d.rad[i].tau = -L_j_nu * shift                /
+                     (B_nu          + (real)EPSILON);
     }
   }
 
-  return (State){kt, s.kr, s.ktheta, kphi, ar, atheta, // null geodesic
-                 dI, dtau,                             // radiative transfer
-                 0};                                   // constants of motion
+  return d;
 }

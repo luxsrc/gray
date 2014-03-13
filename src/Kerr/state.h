@@ -20,14 +20,17 @@
 #define STATE_H
 
 #define HARM 1
+#define N_NU 5
 #define PARTICLE_TIME t
 
 typedef struct {
   real t, r, theta, phi;
   real kr, ktheta;
-  real I;       // specific intensity
-  real tau;     // optical depth
   real bimpact; // impact parameter defined as L / E, constant
+  struct {
+    real I;       // specific intensity
+    real tau;     // optical depth
+  } rad[N_NU];
 } State;
 
 #endif // STATE_H
