@@ -3,14 +3,11 @@ Massive parallel ODE integrator written in CUDA C/C++
 
 The "GRay" code is a massive parallel ordinary differential equation
 integrator that employs the "stream processing paradigm".  It is
-designed to efficiently integrate billions of photons in curved
-spacetime according to Einstein's general theory of relativity.  The
-key component of the code is an adaptive scheduler that intelligently
-rearrange the photons (yet to be implemented) to reduce process idle
-time while maintaining memory locality.  The code is implemented in
-CUDA C/C++.
+designed to efficiently integrate millions of photons in curved
+spacetime according to Einstein's general theory of relativity.
 
-The following chart illustrates the structure and flow of GRay:
+The code is implemented in CUDA C/C++.  The following chart
+illustrates the structure and flow of GRay:
 
   main() in "main.cc"
   |
