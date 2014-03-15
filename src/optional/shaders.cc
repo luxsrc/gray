@@ -16,9 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "gray.h"
+#include "../gray.h"
 
-#ifndef DISABLE_GL
 #include <shader.h>
 
 #define STR1NG(x) #x
@@ -70,5 +69,3 @@ void mkshaders(GLuint shader[3])
   if(GL_NO_ERROR != glGetError())
     error("mkshaders(): fail to compile shader\n");
 }
-
-#endif // !DISABLE_GL

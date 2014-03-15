@@ -21,14 +21,14 @@
 
 class Data {
   size_t n;
-#ifndef DISABLE_GL
+#ifdef INTEROPERABLE
   GLuint vbo;
   struct cudaGraphicsResource *res;
 #else
   State *res; // device resource
 #endif
   State *buf; // host buffer
-  bool mapped;
+  bool   mapped;
 
   cudaError_t d2h();
   cudaError_t h2d();
@@ -38,7 +38,7 @@ class Data {
   ~Data();
 
   operator size_t() { return n; }
-#ifndef DISABLE_GL
+#ifdef INTEROPERABLE
   operator GLuint() { return vbo; }
 #endif
 

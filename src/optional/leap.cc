@@ -16,9 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "gray.h"
+#include "../gray.h"
 
-#ifndef DISABLE_LEAP
 #include <Leap.h>
 
 class GRayLeapListener : public Leap::Listener {
@@ -152,4 +151,3 @@ void sense()
 {
   if(!controller && !atexit(cleanup)) setup();
 }
-#endif

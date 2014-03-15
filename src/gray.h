@@ -48,6 +48,8 @@
 #ifdef ISABLE_GL
 #  define DISABLE_GL 1
 #  undef   ISABLE_GL
+#else
+#  define INTEROPERABLE 1 // so class Data uses OpenGL buffer data
 #endif
 #ifdef UMP
 #  define DUMP 1

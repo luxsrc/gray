@@ -25,33 +25,36 @@ endif
 ifeq ($(GL),0) # use `make <prob> GL=0` to disable OpenGL visualization
 	CPPFLAGS += -DISABLE_GL
 else
+	OPT += src/optional/{ctrl,shaders,texture,vis}.cc
 	ifeq ($(shell uname),Darwin)
 		LDFLAGS += $(addprefix -Xlinker ,\
 		             -framework Glut -framework OpenGL)
 	else
 		LDFLAGS += -lglut -lglu -lgl
 	endif
+
+	ifneq ($(NITE),1) # use `make <prob> NITE=1` to enable PrimeSense
+		CPPFLAGS += -DISABLE_NITE
+	else
+		OPT += src/optional/nite.cc
+		CPPFLAGS += -I$(NITE_PATH)/Include \
+	        	    -I$(OPNI_PATH)/Include
+		LDFLAGS  += -L$(NITE_PATH)/Redist  \
+		            -L$(OPNI_PATH)/Redist  \
+		            -lNiTE2 -lOpenNI2
+	endif
+
+	ifneq ($(LEAP),1) # use `make <prob> LEAP=1` to enable Leap Motion
+		CPPFLAGS += -DISABLE_LEAP
+	else
+		OPT += src/optional/leap.cc
+		CPPFLAGS += -I$(LEAP_PATH)/include
+		LDFLAGS  += -L$(LEAP_PATH)/lib -lLeap
+	endif
 endif
 
 ifneq ($(IO),0) # use `make <prob> IO=0` to disable IO
 	CPPFLAGS += -DUMP
-endif
-
-ifneq ($(NITE),1) # use `make <prob> NITE=1 to enable natural interaction
-	CPPFLAGS += -DISABLE_NITE
-else
-	CPPFLAGS += -I$(NITE_PATH)/Include \
-	            -I$(OPNI_PATH)/Include
-	LDFLAGS  += -L$(NITE_PATH)/Redist  \
-	            -L$(OPNI_PATH)/Redist  \
-	            -lNiTE2 -lOpenNI2
-endif
-
-ifneq ($(LEAP),1) # use `make <prob> LEAP=1 to enable natural interaction
-	CPPFLAGS += -DISABLE_LEAP
-else
-	CPPFLAGS += -I$(LEAP_PATH)/include
-	LDFLAGS  += -L$(LEAP_PATH)/lib -lLeap
 endif
 
 ifeq ($(wildcard $(CUDA)/lib64/libcuda*),)
@@ -91,7 +94,8 @@ the beginning of this \"Makefile\"."
 
 	@mkdir -p bin
 	@echo -n 'Compiling $@... '
-	@$(NVCC) src/*.{cu,cc} $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/GRay-$@
+	@$(NVCC) src/*.{cu,cc} $(OPT) $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) \
+	   -o bin/GRay-$@
 
 ifeq ($(NITE),1)
 	@install_name_tool -change libNiTE2.dylib \

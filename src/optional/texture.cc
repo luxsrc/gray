@@ -16,9 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "gray.h"
+#include "../gray.h"
 
-#ifndef DISABLE_GL
 #include <cmath>
 
 static unsigned char *mkimg(int n)
@@ -61,5 +60,3 @@ void mktexture(GLuint texture[1])
   if(GL_NO_ERROR != glGetError())
     error("mktexture(): fail to make texture\n");
 }
-
-#endif // !DISABLE_GL

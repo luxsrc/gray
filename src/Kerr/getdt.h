@@ -22,9 +22,9 @@ static __device__ real getdt(const State &s, real t,
                              const State &a, real dt_max)
 {
   const real r_bh = 1 + sqrt(1 - a_spin * a_spin);
-  if(s.r < r_bh + epsilon ||
+  if(s.r < r_bh + epsilon
 #ifdef DISABLE_LEAP
-     s.r > (real)1.2 * r_obs
+  || s.r > (real)1.2 * r_obs
 #endif
      ) return 0; // 0 stops the integration
 
