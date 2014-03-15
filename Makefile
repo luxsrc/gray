@@ -52,6 +52,7 @@ endif
 ifneq ($(LEAP),1) # use `make <prob> LEAP=1 to enable natural interaction
 	CPPFLAGS += -DISABLE_LEAP
 else
+	OPT += src/optional/leap.cc
 	CPPFLAGS += -I$(LEAP_PATH)/include
 	LDFLAGS  += -L$(LEAP_PATH)/lib -lLeap
 endif
