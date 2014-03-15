@@ -68,7 +68,7 @@ int main(int argc, char **argv)
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
   glutCreateWindow(argv[0]);
   if(GL_NO_ERROR != glGetError())
-    error("main(): fail to initialize GLUT/OpenGL\n");
+    error("main(): fail to initialize OpenGL/GLUT\n");
 #endif
 
   int i = 1;

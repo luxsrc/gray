@@ -19,7 +19,7 @@
 #include "gray.h"
 #include <cstdlib>
 
-#ifndef DISABLE_GL
+#ifdef INTEROPERABLE
 #  include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 #endif
 
@@ -30,8 +30,8 @@ Data::Data(size_t n_input)
   const size_t sz = sizeof(State) * (n = n_input);
   cudaError_t err = cudaErrorMemoryAllocation; // assume we will have problem
 
-#ifndef DISABLE_GL
-  glGenBuffers(1, &vbo); // when OpenGL is enabled, we use
+#ifdef INTEROPERABLE
+  glGenBuffers(1, &vbo); // when INTEROPERABLE is enabled, we use
                          // glBufferData() to allocate device memory
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sz, 0, GL_DYNAMIC_DRAW);
@@ -42,9 +42,9 @@ Data::Data(size_t n_input)
                                        cudaGraphicsMapFlagsWriteDiscard);
   mapped = false; // hence, we need to map the device memory before using it
 #else
-  err = cudaMalloc((void **)&res, sz); // when OpenGL is disabled, we use
-                                       // cudaMalloc() to get device memory
-  mapped = true; // hence, there's no need to map between OpenGL and CUDA
+  err = cudaMalloc((void **)&res, sz); // when INTEROPERABLE is disabled, we
+                                       // use cudaMalloc() to get device memory
+  mapped = true; // hence, the memory is "always" mapped
 #endif
   if(cudaSuccess != err)
     error("Data::Data(): fail to allocate device memory [%s]\n",
@@ -60,7 +60,7 @@ Data::~Data()
 
   cudaError_t err;
 
-#ifndef DISABLE_GL
+#ifdef INTEROPERABLE
   err = cudaGraphicsUnregisterResource(res);
   glDeleteBuffers(1, &vbo);
 #else
@@ -69,7 +69,7 @@ Data::~Data()
   if(buf)
     free(buf);
 
-#ifndef DISABLE_GL
+#ifdef INTEROPERABLE
   if(cudaSuccess != err || GL_NO_ERROR != glGetError())
 #else
   if(cudaSuccess != err)

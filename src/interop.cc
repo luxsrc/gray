@@ -18,7 +18,7 @@
 
 #include "gray.h"
 
-#ifndef DISABLE_GL
+#ifdef INTEROPERABLE
 #  include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 #endif
 
@@ -26,7 +26,7 @@ State *Data::device()
 {
   debug("Data::device()\n");
 
-#ifndef DISABLE_GL
+#ifdef INTEROPERABLE
   State *head = NULL;
   size_t size = 0;
 
@@ -56,7 +56,7 @@ void Data::deactivate()
 {
   debug("Data::deactivate()\n");
 
-#ifndef DISABLE_GL
+#ifdef INTEROPERABLE
   if(mapped) {
     if(cudaSuccess != cudaGraphicsUnmapResources(1, &res, 0))
       error("Data::deactivate(): fail to unmap OpenGL resource\n");
