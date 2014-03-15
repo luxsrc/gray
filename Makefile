@@ -32,29 +32,29 @@ else
 	else
 		LDFLAGS += -lglut -lglu -lgl
 	endif
+
+	ifneq ($(NITE),1) # use `make <prob> NITE=1` to enable PrimeSense
+		CPPFLAGS += -DISABLE_NITE
+	else
+		OPT += src/optional/nite.cc
+		CPPFLAGS += -I$(NITE_PATH)/Include \
+	        	    -I$(OPNI_PATH)/Include
+		LDFLAGS  += -L$(NITE_PATH)/Redist  \
+		            -L$(OPNI_PATH)/Redist  \
+		            -lNiTE2 -lOpenNI2
+	endif
+
+	ifneq ($(LEAP),1) # use `make <prob> LEAP=1` to enable Leap Motion
+		CPPFLAGS += -DISABLE_LEAP
+	else
+		OPT += src/optional/leap.cc
+		CPPFLAGS += -I$(LEAP_PATH)/include
+		LDFLAGS  += -L$(LEAP_PATH)/lib -lLeap
+	endif
 endif
 
 ifneq ($(IO),0) # use `make <prob> IO=0` to disable IO
 	CPPFLAGS += -DUMP
-endif
-
-ifneq ($(NITE),1) # use `make <prob> NITE=1 to enable natural interaction
-	CPPFLAGS += -DISABLE_NITE
-else
-	OPT += src/optional/nite.cc
-	CPPFLAGS += -I$(NITE_PATH)/Include \
-	            -I$(OPNI_PATH)/Include
-	LDFLAGS  += -L$(NITE_PATH)/Redist  \
-	            -L$(OPNI_PATH)/Redist  \
-	            -lNiTE2 -lOpenNI2
-endif
-
-ifneq ($(LEAP),1) # use `make <prob> LEAP=1 to enable natural interaction
-	CPPFLAGS += -DISABLE_LEAP
-else
-	OPT += src/optional/leap.cc
-	CPPFLAGS += -I$(LEAP_PATH)/include
-	LDFLAGS  += -L$(LEAP_PATH)/lib -lLeap
 endif
 
 ifeq ($(wildcard $(CUDA)/lib64/libcuda*),)
