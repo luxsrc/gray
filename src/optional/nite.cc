@@ -16,9 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "gray.h"
+#include "../gray.h"
 
-#ifndef DISABLE_NITE
 #include <cmath>
 #include <NiTE.h>
 
@@ -210,4 +209,3 @@ void track()
     }
   }
 }
-#endif

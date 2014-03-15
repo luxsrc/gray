@@ -41,6 +41,7 @@ endif
 ifneq ($(NITE),1) # use `make <prob> NITE=1 to enable natural interaction
 	CPPFLAGS += -DISABLE_NITE
 else
+	OPT += src/optional/nite.cc
 	CPPFLAGS += -I$(NITE_PATH)/Include \
 	            -I$(OPNI_PATH)/Include
 	LDFLAGS  += -L$(NITE_PATH)/Redist  \
