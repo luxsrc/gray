@@ -17,6 +17,11 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
+#include <para.h>
+
+#ifndef DT_DUMP
+#define DT_DUMP 1
+#endif
 
 #ifndef DISABLE_GL
 static Data *d = NULL;
@@ -37,7 +42,6 @@ static void idle(void)
       ms = evolve(*d, global::dt_dump * (limit - count) / limit);
       if(0 == ms) return;
       count = 0;
-      dump(*d);
     }
     if(ms < 20 && delta < limit) delta *= 2;
     if(ms > 80 && delta > 1    ) delta /= 2;
@@ -60,12 +64,9 @@ int solve(Data &data)
 
   d = &data;
   glutIdleFunc(idle);
-
-  dump(data);
   glutMainLoop();
 
   spec(data); // TODO: check if glutMainLoop() actually exit...
-
   return 0;
 }
 #else
@@ -73,13 +74,14 @@ int solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
 
-  do {
+  if(global::dt_dump != 0.0) {
     dump(data);
-  } while(0 < evolve(data, global::dt_dump));
+    while(0 < evolve(data, global::dt_dump))
+      dump(data);
+  } else
+    while(0 < evolve(data, DT_DUMP));
 
-  dump(data);
   spec(data);
-
   return 0;
 }
 #endif
