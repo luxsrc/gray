@@ -17,7 +17,7 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
-#include "harm.h"
+#include "Kerr/harm.h"
 #include <cstdlib>
 #include <para.h>
 #include <ic.h>

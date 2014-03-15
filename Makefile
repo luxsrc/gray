@@ -90,22 +90,27 @@ the beginning of this \"Makefile\"."
 
 	@mkdir -p bin
 	@echo -n 'Compiling $@... '
-	@$(NVCC) src/*.{cu,cc} $(OPT) $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) \
-	   -o bin/GRay-$@
+	@if ls src/$@/*.c? &> /dev/null; then                        \
+	   $(NVCC) src/*.{cu,cc} src/$@/*.c?                         \
+	     $(OPT) $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/GRay-$@; \
+	 else                                                        \
+	   $(NVCC) src/*.{cu,cc}                                     \
+	     $(OPT) $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/GRay-$@; \
+	 fi
 
 ifeq ($(NITE),1)
 	@install_name_tool -change libNiTE2.dylib \
 	       $(NITE_PATH)/Redist/libNiTE2.dylib \
-	       bin/GRay-Kerr
+	       bin/GRay-$@
 	@install_name_tool -change libOpenNI2.dylib \
 	       $(OPNI_PATH)/Redist/libOpenNI2.dylib \
-	       bin/GRay-Kerr
+	       bin/GRay-$@
 endif
 
 ifeq ($(LEAP),1)
 	@install_name_tool -change @loader_path/libLeap.dylib \
 	                       $(LEAP_PATH)/lib/libLeap.dylib \
-	                       bin/GRay-Kerr
+	                       bin/GRay-$@
 endif
 
 	@if [ -f bin/GRay-$@ ]; then                     \
