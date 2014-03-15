@@ -40,7 +40,7 @@ Data::Data(size_t n_input)
   if(GL_NO_ERROR == glGetError())
     err = cudaGraphicsGLRegisterBuffer(&res, vbo,
                                        cudaGraphicsMapFlagsWriteDiscard);
-  mapped = false; // hence, we will need to map the device memory before using it
+  mapped = false; // hence, we need to map the device memory before using it
 #else
   err = cudaMalloc((void **)&res, sz); // when OpenGL is disabled, we use
                                        // cudaMalloc() to get device memory

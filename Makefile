@@ -66,10 +66,10 @@ CFLAGS   += $(addprefix --compiler-options ,-Wall) -m64 -O3
 help:
 	@echo 'The follow problems are avilable:'
 	@echo
-	@c=0; for F in src/*/; do  \
-	   f=$${F##src/};          \
-	   c=`expr $$c + 1`;       \
-	   echo "  $$c. $${f%%/}"; \
+	@c=0; for F in src/[[:upper:]]*/; do \
+	   f=$${F##src/};                    \
+	   c=`expr $$c + 1`;                 \
+	   echo "  $$c. $${f%%/}";           \
 	 done
 	@echo
 	@echo "\
