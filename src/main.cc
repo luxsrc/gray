@@ -62,7 +62,7 @@ int main(int argc, char **argv)
   print("GRay: a massive parallel GRaysic integrator\n");
   debug("Debugging is turned on\n");
 
-#ifndef DISABLE_GL
+#ifdef ENABLE_GL
   glutInit(&argc, argv);
   glutInitWindowSize(WIDTH, HEIGHT);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
@@ -121,7 +121,7 @@ int main(int argc, char **argv)
   Data data(n ? n : N_DEFAULT);
   init(data);
 
-#ifndef DISABLE_GL
+#ifdef ENABLE_GL
   vis((GLuint)data, (size_t)data);
   print("\
 Press 'ESC' or 'q' to quit, 'p' to pulse, 'r' to reverse the run, 's' to\n\

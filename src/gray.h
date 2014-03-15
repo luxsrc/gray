@@ -37,24 +37,27 @@
 #endif
 
 #ifdef ISABLE_GL
-#  define DISABLE_GL 1
-#  undef   ISABLE_GL
+#  undef ISABLE_GL
 #else
+#  define ENABLE_GL 1
 #  define INTEROPERABLE 1 // so class Data uses OpenGL buffer data
 #endif
 
 #ifdef ISABLE_NITE
-#  define DISABLE_NITE 1
-#  undef   ISABLE_NITE
+#  undef ISABLE_NITE
+#else
+#  define ENABLE_NITE 1
 #endif
+
 #ifdef ISABLE_LEAP
-#  define DISABLE_LEAP 1
-#  undef   ISABLE_LEAP
+#  undef ISABLE_LEAP
+#else
+#  define ENABLE_LEAP 1
 #endif
 
 // Include system headers
 #include <cuda_runtime_api.h> // C-style CUDA runtime API
-#ifndef DISABLE_GL
+#ifdef ENABLE_GL
 #  ifdef __APPLE__
 #    include <GLUT/glut.h>
 #  else
@@ -91,7 +94,7 @@
 namespace global {
   extern double t, dt_dump, dt_saved;
   extern const char *format;
-#ifndef DISABLE_GL
+#ifdef ENABLE_GL
   extern float ratio, ax, ly, az, a_spin;
 #endif
   extern size_t bsz;
@@ -108,17 +111,17 @@ extern void error(const char *, ...);
 extern void optimize(int);
 
 // NiTE+OpenNI or Leap Motion related functions for natural interactions
-#ifndef DISABLE_NITE
+#ifdef ENABLE_NITE
 extern void sense();
 extern void track();
 #endif
 
-#ifndef DISABLE_LEAP
+#ifdef ENABLE_LEAP
 extern void sense();
 #endif
 
 // OpenGL/GLUT functions
-#ifndef DISABLE_GL
+#ifdef ENABLE_GL
 extern void mktexture(GLuint[1]);
 extern void mkshaders(GLuint[2]);
 extern int  getctrl();

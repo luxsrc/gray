@@ -116,7 +116,7 @@ int getctrl()
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-#ifndef DISABLE_NITE
+#ifdef ENABLE_NITE
   if(draw_body) track();
 #endif
 

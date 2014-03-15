@@ -23,7 +23,7 @@
 #define DT_DUMP 1
 #endif
 
-#ifndef DISABLE_GL
+#ifdef ENABLE_GL
 static Data *d = NULL;
 
 static void idle(void)
@@ -47,11 +47,7 @@ static void idle(void)
     if(ms > 80 && delta > 1    ) delta /= 2;
   }
 
-#ifndef DISABLE_NITE
-  sense();
-#endif
-
-#ifndef DISABLE_LEAP
+#if defined(ENABLE_NITE) || defined(ENABLE_LEAP)
   sense();
 #endif
 
