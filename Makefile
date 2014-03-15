@@ -25,6 +25,7 @@ endif
 ifeq ($(GL),0) # use `make <prob> GL=0` to disable OpenGL visualization
 	CPPFLAGS += -DISABLE_GL
 else
+	OPT += src/optional/{ctrl,shaders,texture,vis}.cc
 	ifeq ($(shell uname),Darwin)
 		LDFLAGS += $(addprefix -Xlinker ,\
 		             -framework Glut -framework OpenGL)
@@ -91,7 +92,8 @@ the beginning of this \"Makefile\"."
 
 	@mkdir -p bin
 	@echo -n 'Compiling $@... '
-	@$(NVCC) src/*.{cu,cc} $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/GRay-$@
+	@$(NVCC) src/*.{cu,cc} $(OPT) $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) \
+	   -o bin/GRay-$@
 
 ifeq ($(NITE),1)
 	@install_name_tool -change libNiTE2.dylib \

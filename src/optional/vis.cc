@@ -16,9 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "gray.h"
+#include "../gray.h"
 
-#ifndef DISABLE_GL
 #include <cmath>
 #include <para.h>
 #include <shader.h> // to get vertex and color pointer offsets
@@ -116,5 +115,3 @@ void vis(GLuint vbo_in, size_t n_in)
   if(GL_NO_ERROR != glGetError())
     error("vis(): fail to setup visualization\n");
 }
-
-#endif // !DISABLE_GL
