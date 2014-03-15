@@ -36,6 +36,13 @@
 #  define MIXED 1
 #endif
 
+#ifdef ISABLE_GL
+#  define DISABLE_GL 1
+#  undef   ISABLE_GL
+#else
+#  define INTEROPERABLE 1 // so class Data uses OpenGL buffer data
+#endif
+
 #ifdef ISABLE_NITE
 #  define DISABLE_NITE 1
 #  undef   ISABLE_NITE
@@ -43,17 +50,6 @@
 #ifdef ISABLE_LEAP
 #  define DISABLE_LEAP 1
 #  undef   ISABLE_LEAP
-#endif
-
-#ifdef ISABLE_GL
-#  define DISABLE_GL 1
-#  undef   ISABLE_GL
-#else
-#  define INTEROPERABLE 1 // so class Data uses OpenGL buffer data
-#endif
-#ifdef UMP
-#  define DUMP 1
-#  undef   UMP
 #endif
 
 // Include system headers

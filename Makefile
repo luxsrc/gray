@@ -53,10 +53,6 @@ else
 	endif
 endif
 
-ifneq ($(IO),0) # use `make <prob> IO=0` to disable IO
-	CPPFLAGS += -DUMP
-endif
-
 ifeq ($(wildcard $(CUDA)/lib64/libcuda*),)
 	LDFLAGS += $(addprefix -Xlinker ,-rpath $(CUDA)/lib)
 else
