@@ -40,7 +40,6 @@
 #  undef ISABLE_GL
 #else
 #  define ENABLE_GL 1
-#  define INTEROPERABLE 1 // so class Data uses OpenGL buffer data
 #endif
 
 #ifdef ISABLE_PRIME

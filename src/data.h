@@ -21,7 +21,7 @@
 
 class Data {
   size_t n, m;
-#ifdef INTEROPERABLE
+#ifdef ENABLE_GL
   GLuint vbo;
   struct cudaGraphicsResource *res;
 #else
@@ -38,7 +38,7 @@ class Data {
   ~Data();
 
   operator size_t() { return n; }
-#ifdef INTEROPERABLE
+#ifdef ENABLE_GL
   operator GLuint() { return vbo; }
 #endif
 

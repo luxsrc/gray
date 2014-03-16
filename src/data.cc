@@ -19,7 +19,7 @@
 #include "gray.h"
 #include <cstdlib>
 
-#ifdef INTEROPERABLE
+#ifdef ENABLE_GL
 #  include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 #endif
 
@@ -32,8 +32,8 @@ Data::Data(size_t n_input)
 
   const size_t sz = sizeof(State) * n;
   cudaError_t err;
-#ifdef INTEROPERABLE
-  glGenBuffers(1, &vbo); // when INTEROPERABLE is enabled, we use
+#ifdef ENABLE_GL
+  glGenBuffers(1, &vbo); // when ENABLE_GL is enabled, we use
                          // glBufferData() to allocate device memory
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sz, 0, GL_DYNAMIC_DRAW);
@@ -45,8 +45,8 @@ Data::Data(size_t n_input)
                                      cudaGraphicsMapFlagsWriteDiscard);
   mapped = false; // hence, we need to map the device memory before using it
 #else
-  err = cudaMalloc((void **)&res, sz); // when INTEROPERABLE is disabled, we
-                                       // use cudaMalloc() to get device memory
+  err = cudaMalloc((void **)&res, sz); // when ENABLE_GL is disabled, we use
+                                       // cudaMalloc() to get device memory
   mapped = true; // hence, the memory is "always" mapped
 #endif
   if(cudaSuccess != err)
