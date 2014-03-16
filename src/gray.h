@@ -97,7 +97,7 @@ namespace global {
   extern const char *format;
 #ifdef ENABLE_GL
   extern GLFWwindow *window;
-  extern float ratio, ax, ly, az, a_spin;
+  extern float ax, ly, az, a_spin;
 #endif
   extern size_t bsz;
 }

@@ -24,6 +24,8 @@
 #endif
 
 #ifdef ENABLE_GL
+extern void display(size_t, GLuint);
+
 int solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
@@ -51,6 +53,8 @@ int solve(Data &data)
 #if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
     sense();
 #endif
+
+    display((size_t)data, (GLuint)data);
 
     glfwSwapBuffers(global::window);
     glfwPollEvents();

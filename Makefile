@@ -26,7 +26,7 @@ endif
 ifeq ($(GL),0) # use `make <prob> GL=0` to disable OpenGL visualization
 	CPPFLAGS += -DISABLE_GL
 else
-	OPT += src/optional/{ctrl,vis}.cc
+	OPT += src/optional/{ctrl,shaders,texture,vis}.cc
 	ifeq ($(shell uname),Darwin)
 		CPPFLAGS += -I$(GLFW_PATH)/include
 		LDFLAGS  += -L$(GLFW_PATH)/lib -lglfw \

@@ -18,6 +18,10 @@
 
 #include "../gray.h"
 
+namespace global {
+  float ax = 330, ly = -70, az = 90;
+}
+
 void key_callback(GLFWwindow *win, int key, int code, int action, int mods)
 {
   if(GLFW_RELEASE != action) return; // do nothing
