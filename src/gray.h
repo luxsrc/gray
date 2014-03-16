@@ -63,6 +63,7 @@
 #  else
 #    include <GL/glut.h>
 #  endif
+#  include <GLFW/glfw3.h>
 #endif
 
 // Typedef real to make the source code precision independent
@@ -95,7 +96,10 @@ namespace global {
   extern double t, dt_dump, dt_saved;
   extern const char *format;
 #ifdef ENABLE_GL
+  extern GLFWwindow *window;
   extern float ratio, ax, ly, az, a_spin;
+  extern int   shader;
+  extern bool  draw_body;
 #endif
   extern size_t bsz;
 }
@@ -117,7 +121,7 @@ extern void sense();
 
 // OpenGL/GLUT functions
 #ifdef ENABLE_GL
-extern void setup(int &, char *[]);
+extern void setup(int, char **);
 extern void vis(GLuint, size_t);
 #endif
 

@@ -109,7 +109,7 @@ int main(int argc, char **argv)
   init(data);
 
 #ifdef ENABLE_GL
-  vis((GLuint)data, (size_t)data);
+  //vis((GLuint)data, (size_t)data);
   print("\
 Press 'ESC' or 'q' to quit, 'p' to pulse, 'r' to reverse the run, 's' to\n\
 to turn sprites on and off, and 'f' to enter and exit full screen\n\

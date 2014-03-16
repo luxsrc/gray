@@ -17,18 +17,8 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "../gray.h"
-
 #include <cmath>
-#include <para.h>
 #include <shader.h> // to get vertex and color pointer offsets
-
-#ifndef WIDTH
-#define WIDTH 512
-#endif
-
-#ifndef HEIGHT
-#define HEIGHT 512
-#endif
 
 #ifndef VERTEX_POINTER_OFFSET
 #define VERTEX_POINTER_OFFSET 0
@@ -40,35 +30,85 @@
 
 #define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
 
-extern void mktexture(GLuint[]);
-extern void mkshaders(GLuint[]);
-extern int  getctrl();
-extern void regctrl();
-
 namespace global {
+  GLFWwindow *window = NULL;
   float ratio = 1, a_spin = 0.999;
 }
 
-static size_t  n;
-static GLuint  vbo; // OpenGL Vertex Buffer Object
-static GLuint  shader[2], texture;
-static GLfloat width, height;
+static GLuint shader[2], texture;
 
-static void display(void)
+extern void mktexture(GLuint[]);
+extern void mkshaders(GLuint[]);
+extern void keyboard(GLFWwindow *, int, int, int, int);
+extern void mouse   (GLFWwindow *, double, double);
+#ifdef ENABLE_PRIME
+extern void track();
+#endif
+
+static void error_callback(int err, const char *msg)
 {
+  glfwDestroyWindow(global::window);
+  glfwTerminate();
+  error("[GLFW] %s\n", msg);
+}
+
+void setup(int argc, char **argv)
+{
+  if(!glfwInit())
+    error("[GLFW] fail to initialize the OpenGL Framework\n");
+
+  global::window = glfwCreateWindow(512, 512, argv[0], NULL, NULL);
+  if(!global::window) {
+    glfwTerminate();
+    error("[GLFW] fail to create window\n");
+  }
+
+  glfwSetErrorCallback(error_callback);
+  glfwMakeContextCurrent(global::window);
+  glfwSetKeyCallback(global::window, keyboard);
+  glfwSetCursorPosCallback(global::window, mouse);
+
+  glEnable(GL_DEPTH_TEST);
+  glClearColor(0.0, 0.0, 0.0, 1.0);
+  glEnable(GL_VERTEX_PROGRAM_POINT_SIZE_NV);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+  if(GL_NO_ERROR != glGetError())
+    error("vis(): fail to setup visualization\n");
+
+  mkshaders(shader);
+  mktexture(&texture);
+}
+
+void display(size_t n, GLuint vbo)
+{
+  int width, height;
+  glfwGetFramebufferSize(global::window, &width, &height);
+
   glViewport(0, 0, width, height);
+  global::ratio = (float)width / height;
+
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(27.0, global::ratio, 1.0, 1.0e6);
+
   glMatrixMode(GL_MODELVIEW);
-  const int i = getctrl();
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#ifdef ENABLE_PRIME
+  if(global::draw_body) track();
+#endif
+  glLoadIdentity();
+  glRotatef(-90, 1, 0, 0);
+  glTranslatef(0, -global::ly, 0);
+  glRotatef(-(global::az- 90), 1, 0, 0);
+  glRotatef(-(global::ax-270), 0, 0, 1);
 
   // Draw wire sphere, i.e., the "black hole"
   glColor3f(0.0, 1.0, 0.0);
   glutWireSphere(1.0 + sqrt(1.0 - global::a_spin * global::a_spin), 32, 16);
 
   // Draw particles, i.e., photon locations
-  glUseProgram(shader[i]);
+  glUseProgram(shader[global::shader]);
 
   glEnable(GL_POINT_SPRITE_ARB);
   glEnable(GL_BLEND);
@@ -93,40 +133,4 @@ static void display(void)
   glUseProgram(0);
   if(GL_NO_ERROR != glGetError())
     error("callback: display(): fail to visualize simulation\n");
-  glutSwapBuffers();
-}
-
-static void reshape(int w, int h)
-{
-  global::ratio = (width = w) / (height = h);
-}
-
-void setup(int &argc, char *argv[])
-{
-  glutInit(&argc, argv);
-  glutInitWindowSize(WIDTH, HEIGHT);
-  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-  glutCreateWindow(argv[0]);
-  if(GL_NO_ERROR != glGetError())
-    error("main(): fail to initialize OpenGL/GLUT\n");
-}
-
-void vis(GLuint vbo_in, size_t n_in)
-{
-  n   = n_in;
-  vbo = vbo_in;
-  mkshaders(shader);
-  mktexture(&texture);
-
-  glEnable(GL_DEPTH_TEST);
-  glClearColor(0.0, 0.0, 0.0, 1.0);
-  glEnable(GL_VERTEX_PROGRAM_POINT_SIZE_NV);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-  regctrl();
-  glutDisplayFunc(display);
-  glutReshapeFunc(reshape);
-
-  if(GL_NO_ERROR != glGetError())
-    error("vis(): fail to setup visualization\n");
 }
