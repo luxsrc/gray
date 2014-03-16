@@ -47,7 +47,7 @@ static void idle(void)
     if(ms > 80 && delta > 1    ) delta /= 2;
   }
 
-#if defined(ENABLE_NITE) || defined(ENABLE_LEAP)
+#if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
   sense();
 #endif
 

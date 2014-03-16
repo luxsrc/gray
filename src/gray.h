@@ -43,10 +43,10 @@
 #  define INTEROPERABLE 1 // so class Data uses OpenGL buffer data
 #endif
 
-#ifdef ISABLE_NITE
-#  undef ISABLE_NITE
+#ifdef ISABLE_PRIME
+#  undef ISABLE_PRIME
 #else
-#  define ENABLE_NITE 1
+#  define ENABLE_PRIME 1
 #endif
 
 #ifdef ISABLE_LEAP
@@ -111,7 +111,7 @@ extern void error(const char *, ...);
 extern void optimize(int);
 
 // NiTE+OpenNI or Leap Motion related functions for natural interactions
-#if defined(ENABLE_NITE) || defined(ENABLE_LEAP)
+#if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
 extern void sense();
 #endif
 

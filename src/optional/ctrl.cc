@@ -29,7 +29,7 @@
 #define HEIGHT 512
 #endif
 
-#ifdef ENABLE_NITE
+#ifdef ENABLE_PRIME
 extern void track();
 #endif
 
@@ -120,7 +120,7 @@ int getctrl()
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-#ifdef ENABLE_NITE
+#ifdef ENABLE_PRIME
   if(draw_body) track();
 #endif
 
