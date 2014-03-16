@@ -18,29 +18,22 @@
 
 #include "gray.h"
 
-#define BSZ ( 64)
-#define REG (128) // ptxas info says 93 registers for Kerr but just in case...
-
-namespace global {
-  size_t bsz = BSZ;
-}
-
-void optimize(int device)
+void pick(int device)
 {
   int n_devices;
   cudaGetDeviceCount(&n_devices);
 
   if(n_devices < 1)
-    error("optimize(): no GPU is found on this machine\n");
+    error("pick(): no GPU is found on this machine\n");
   if(n_devices <= device)
-    error("optimize(): %u is an invalid GPU id\n");
+    error("pick(): %u is an invalid GPU id\n");
 
   print("%d GPU%s found --- running on GPU %u\n",
         n_devices, n_devices == 1 ? " is" : "s are", device);
 
   cudaError_t err = cudaSetDevice(device);
   if(cudaSuccess != err)
-    error("optimize(): fail to switch to device %d [%s]\n",
+    error("pick(): fail to switch to device %d [%s]\n",
           device, cudaGetErrorString(err));
 
   double gsz, ssz;
@@ -50,14 +43,4 @@ void optimize(int device)
   ssz = prop.sharedMemPerBlock;
   print("\"%s\" with %gMiB global and %gKiB shared memory\n",
         prop.name, gsz / 1048576.0, ssz / 1024.0);
-
-  size_t bsz = global::bsz;
-  if(bsz > prop.sharedMemPerBlock / sizeof(State))
-     bsz = prop.sharedMemPerBlock / sizeof(State);
-  if(bsz > prop.regsPerBlock / (size_t)REG)
-     bsz = prop.regsPerBlock / (size_t)REG;
-  if(bsz > (size_t)prop.maxThreadsPerBlock)
-     bsz = (size_t)prop.maxThreadsPerBlock;
-  global::bsz = (bsz / prop.warpSize) * prop.warpSize;
-  print("The kernel will be run with %zu threads per block\n", global::bsz);
 }

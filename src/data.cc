@@ -27,8 +27,9 @@ Data::Data(size_t n_input)
 {
   debug("Data::Data(%zu)\n", n_input);
 
-  n = n_input;
-  m = NVAR;
+  n   = n_input;
+  m   = NVAR;
+  bsz = 64;
 
   const size_t sz = sizeof(State) * n;
   cudaError_t err;

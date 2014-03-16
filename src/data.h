@@ -37,6 +37,7 @@ class Data {
   Data(size_t = 65536);
   ~Data();
 
+  size_t bsz;
   operator size_t() { return n; }
 #ifdef ENABLE_GL
   operator GLuint() { return vbo; }

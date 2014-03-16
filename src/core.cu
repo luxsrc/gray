@@ -39,10 +39,10 @@ void init(Data &data)
   debug("init(*%p)\n", &data);
 
   const size_t n   = data;
-  const size_t gsz = (n - 1) / global::bsz + 1;
+  const size_t gsz = (n - 1) / data.bsz + 1;
 
   State *s = data.device();
-  kernel<<<gsz, global::bsz>>>(s, n, global::t);
+  kernel<<<gsz, data.bsz>>>(s, n, global::t);
   cudaError_t err = cudaDeviceSynchronize();
   data.deactivate();
 
@@ -136,14 +136,14 @@ double evolve(Data &data, double dt)
 
   if(!res && !buf && !atexit(cleanup)) setup(n);
 
-  const size_t gsz = (n - 1) / global::bsz + 1;
+  const size_t gsz = (n - 1) / data.bsz + 1;
 
   if(cudaSuccess != cudaEventRecord(time0, 0))
     error("evolve(): fail to record event\n");
 
   State *s = data.device();
-  driver<<<gsz, global::bsz,
-                global::bsz * sizeof(State)>>>(s, n, t, global::t += dt);
+  driver<<<gsz, data.bsz,
+                data.bsz * sizeof(State)>>>(s, n, t, global::t += dt);
   cudaError_t err = cudaDeviceSynchronize();
   data.deactivate();
 
@@ -165,13 +165,13 @@ double evolve(Data &data, double dt)
   double actual = 0, peak = 0;
   for(size_t j = 0, h = 0; j < gsz; ++j) {
     size_t sum = 0, max = 0;
-    for(size_t i = 0; i < global::bsz; ++i, ++h) {
+    for(size_t i = 0; i < data.bsz; ++i, ++h) {
       const size_t x = (h < n) ? buf[h] : 0;
       sum += x;
       if(max < x) max = x;
     }
     actual += sum;
-    peak   += max * global::bsz;
+    peak   += max * data.bsz;
   }
 
   if(actual) {

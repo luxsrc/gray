@@ -101,7 +101,6 @@ namespace global {
   extern int   shader;
   extern bool  draw_body;
 #endif
-  extern size_t bsz;
 }
 
 // Basic function prototypes
@@ -112,7 +111,7 @@ extern void error(const char *, ...);
 #else
 #  define debug(...) // do nothing
 #endif
-extern void optimize(int);
+extern void pick(int);
 
 // NiTE+OpenNI or Leap Motion related functions for natural interactions
 #if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
