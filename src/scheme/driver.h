@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-static __device__ void copy(real *dst, real *src, const size_t n)
+static inline __device__ void copy(real *dst, real *src, const size_t n)
 {
   for(int i = 0, j = threadIdx.x; i < NVAR; ++i, j += blockDim.x)
     if(j < n) dst[j] = src[j];

@@ -18,7 +18,7 @@
 
 #define R_SCHW 2
 
-static __device__ State ic(const size_t i, size_t n, const real t)
+static inline __device__ State ic(const size_t i, size_t n, const real t)
 {
   State s = {};
 

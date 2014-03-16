@@ -20,6 +20,46 @@
 #include "Kerr/harm.h"
 #include <cstdlib>
 #include <para.h>
+
+#include <ic.h>
+
+static __global__ void kernel(State *s, const size_t n, const real t)
+{
+  const size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if(i < n)
+    s[i] = ic(i, n, t);
+}
+
+void init(Data &data)
+{
+  debug("init(*%p)\n", &data);
+
+  const size_t n   = data;
+  const size_t gsz = (n - 1) / global::bsz + 1;
+
+  State *s = data.device();
+  kernel<<<gsz, global::bsz>>>(s, n, global::t);
+  cudaError_t err = cudaDeviceSynchronize();
+  data.deactivate();
+
+  if(cudaSuccess != err)
+    error("init(): fail to launch kernel [%s]\n",
+          cudaGetErrorString(err));
+}
+
+bool init_config(const char *arg)
+{
+  debug("init_config(""%s"")\n", arg);
+  return config(arg[0], atof(arg + 2));
+}
+
+bool init_config(char flag, real val)
+{
+  debug("init_config(""%c=%d"")\n", flag, val);
+  return config(flag, val);
+}
+
 #include <rhs.h>
 #include <getdt.h>
 

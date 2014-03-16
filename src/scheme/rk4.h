@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-static __device__ real scheme(State &y, real t, real dt)
+static inline __device__ real scheme(State &y, real t, real dt)
 {
   const State s = y; // create a constant copy
 
