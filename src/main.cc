@@ -34,14 +34,6 @@
 #define N_DEFAULT (512 * 512)
 #endif
 
-#ifndef WIDTH
-#define WIDTH 512
-#endif
-
-#ifndef HEIGHT
-#define HEIGHT 512
-#endif
-
 namespace global {
   double t        = T_START;
   double dt_dump  = DT_DUMP;
@@ -63,12 +55,7 @@ int main(int argc, char **argv)
   debug("Debugging is turned on\n");
 
 #ifdef ENABLE_GL
-  glutInit(&argc, argv);
-  glutInitWindowSize(WIDTH, HEIGHT);
-  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-  glutCreateWindow(argv[0]);
-  if(GL_NO_ERROR != glGetError())
-    error("main(): fail to initialize OpenGL/GLUT\n");
+  setup(argc, argv);
 #endif
 
   int i = 1;

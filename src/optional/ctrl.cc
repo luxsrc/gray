@@ -29,6 +29,10 @@
 #define HEIGHT 512
 #endif
 
+#ifdef ENABLE_NITE
+extern void track();
+#endif
+
 namespace global {
   float ax = 330, ly = -70, az = 90;
 }

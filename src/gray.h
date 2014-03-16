@@ -111,21 +111,13 @@ extern void error(const char *, ...);
 extern void optimize(int);
 
 // NiTE+OpenNI or Leap Motion related functions for natural interactions
-#ifdef ENABLE_NITE
-extern void sense();
-extern void track();
-#endif
-
-#ifdef ENABLE_LEAP
+#if defined(ENABLE_NITE) || defined(ENABLE_LEAP)
 extern void sense();
 #endif
 
 // OpenGL/GLUT functions
 #ifdef ENABLE_GL
-extern void mktexture(GLuint[1]);
-extern void mkshaders(GLuint[2]);
-extern int  getctrl();
-extern void regctrl();
+extern void setup(int &, char *[]);
 extern void vis(GLuint, size_t);
 #endif
 

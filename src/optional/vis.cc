@@ -40,6 +40,11 @@
 
 #define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
 
+extern void mktexture(GLuint[]);
+extern void mkshaders(GLuint[]);
+extern int  getctrl();
+extern void regctrl();
+
 namespace global {
   float ratio = 1, a_spin = 0.999;
 }
@@ -94,6 +99,16 @@ static void display(void)
 static void reshape(int w, int h)
 {
   global::ratio = (width = w) / (height = h);
+}
+
+void setup(int &argc, char *argv[])
+{
+  glutInit(&argc, argv);
+  glutInitWindowSize(WIDTH, HEIGHT);
+  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+  glutCreateWindow(argv[0]);
+  if(GL_NO_ERROR != glGetError())
+    error("main(): fail to initialize OpenGL/GLUT\n");
 }
 
 void vis(GLuint vbo_in, size_t n_in)
