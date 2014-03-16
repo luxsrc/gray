@@ -18,6 +18,35 @@
 
 #include "../gray.h"
 
+namespace global {
+  float a_spin = 0.999;
+}
+
+static GLFWwindow *window = NULL;
+
+static void error_callback(int err, const char *msg)
+{
+  glfwDestroyWindow(window);
+  glfwTerminate();
+  error("[GLFW] %s\n", msg);
+}
+
+void setup(int argc, char **argv)
+{
+  if(!glfwInit())
+    error("[GLFW] fail to initialize the OpenGL Framework\n");
+
+  window = glfwCreateWindow(512, 512, argv[0], NULL, NULL);
+  if(!window) {
+    glfwTerminate();
+    error("[GLFW] fail to create window\n");
+  }
+
+  glfwSetErrorCallback(error_callback);
+  glfwMakeContextCurrent(window);
+}
+
+/*
 #include <cmath>
 #include <para.h>
 #include <shader.h> // to get vertex and color pointer offsets
@@ -46,7 +75,7 @@ extern int  getctrl();
 extern void regctrl();
 
 namespace global {
-  float ratio = 1, a_spin = 0.999;
+  float ratio = 1;
 }
 
 static size_t  n;
@@ -101,16 +130,6 @@ static void reshape(int w, int h)
   global::ratio = (width = w) / (height = h);
 }
 
-void setup(int &argc, char *argv[])
-{
-  glutInit(&argc, argv);
-  glutInitWindowSize(WIDTH, HEIGHT);
-  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-  glutCreateWindow(argv[0]);
-  if(GL_NO_ERROR != glGetError())
-    error("main(): fail to initialize OpenGL/GLUT\n");
-}
-
 void vis(GLuint vbo_in, size_t n_in)
 {
   n   = n_in;
@@ -130,3 +149,4 @@ void vis(GLuint vbo_in, size_t n_in)
   if(GL_NO_ERROR != glGetError())
     error("vis(): fail to setup visualization\n");
 }
+*/

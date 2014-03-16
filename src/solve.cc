@@ -25,7 +25,7 @@
 
 #ifdef ENABLE_GL
 static Data *d = NULL;
-
+/*
 static void idle(void)
 {
   static size_t count = 0;
@@ -51,16 +51,16 @@ static void idle(void)
   sense();
 #endif
 
-  glutPostRedisplay();
+  //glutPostRedisplay();
 }
-
+*/
 int solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
 
   d = &data;
-  glutIdleFunc(idle);
-  glutMainLoop();
+  //glutIdleFunc(idle);
+  //glutMainLoop();
 
   spec(data); // TODO: check if glutMainLoop() actually exit...
   return 0;

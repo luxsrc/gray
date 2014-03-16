@@ -118,7 +118,7 @@ extern void sense();
 
 // OpenGL/GLUT functions
 #ifdef ENABLE_GL
-extern void setup(int &, char *[]);
+extern void setup(int, char **);
 extern void vis(GLuint, size_t);
 #endif
 
