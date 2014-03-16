@@ -17,6 +17,9 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
+
+static __device__ __constant__ size_t *count = NULL;
+
 #include "Kerr/harm.h"
 #include <cstdlib>
 #include <para.h>
@@ -78,16 +81,16 @@ bool init_config(char flag, real val)
 #  include "scheme/driver.h"
 #undef GET_TIME
 
-static size_t *count = NULL;
-static size_t *temp  = NULL;
+static size_t *res = NULL, *buf = NULL;
 static cudaEvent_t time0, time1;
 
 static void setup(size_t n)
 {
-  if(cudaSuccess != cudaMalloc((void **)&count, sizeof(size_t) * n))
+  if(cudaSuccess != cudaMalloc((void **)&res, sizeof(size_t) * n))
     error("evolve(): fail to allocate device memory\n");
-
-  if(NULL == (temp = (size_t *)malloc(sizeof(size_t) * n)))
+  if(cudaSuccess != cudaMemcpyToSymbol(count, &res, sizeof(size_t *)))
+    error("evolve(): fail to sync device memory address to constant memory\n");
+  if(NULL == (buf = (size_t *)malloc(sizeof(size_t) * n)))
     error("evolve(): fail to allocate host memory\n");
 
 #ifdef HARM
@@ -108,14 +111,15 @@ static void setup(size_t n)
 
 static void cleanup(void)
 {
-  if(count) {
-    cudaFree(count);
-    count = NULL;
+  if(res) {
+    cudaFree(res);
+    res = NULL;
+    cudaMemcpyToSymbol(count, &res, sizeof(size_t *)); // set count to NULL
   }
 
-  if(temp) {
-    free(temp);
-    temp = NULL;
+  if(buf) {
+    free(buf);
+    buf = NULL;
   }
 
   if(cudaSuccess != cudaEventDestroy(time1) ||
@@ -130,7 +134,7 @@ double evolve(Data &data, double dt)
   const double t = global::t;
   const size_t n = data;
 
-  if(!count && !atexit(cleanup)) setup(n);
+  if(!res && !buf && !atexit(cleanup)) setup(n);
 
   const size_t gsz = (n - 1) / global::bsz + 1;
 
@@ -139,8 +143,7 @@ double evolve(Data &data, double dt)
 
   State *s = data.device();
   driver<<<gsz, global::bsz,
-                global::bsz * sizeof(State)>>>(s, count, n, t,
-                                               global::t += dt);
+                global::bsz * sizeof(State)>>>(s, n, t, global::t += dt);
   cudaError_t err = cudaDeviceSynchronize();
   data.deactivate();
 
@@ -156,14 +159,14 @@ double evolve(Data &data, double dt)
     error("evolve(): fail to obtain elapsed time\n");
 
   if(cudaSuccess !=
-     cudaMemcpy(temp, count, sizeof(size_t) * n, cudaMemcpyDeviceToHost))
+     cudaMemcpy(buf, res, sizeof(size_t) * n, cudaMemcpyDeviceToHost))
     error("evolve(): fail to copy memory from device to host\n");
 
   double actual = 0, peak = 0;
   for(size_t j = 0, h = 0; j < gsz; ++j) {
     size_t sum = 0, max = 0;
     for(size_t i = 0; i < global::bsz; ++i, ++h) {
-      const size_t x = (h < n) ? temp[h] : 0;
+      const size_t x = (h < n) ? buf[h] : 0;
       sum += x;
       if(max < x) max = x;
     }

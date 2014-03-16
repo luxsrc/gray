@@ -22,14 +22,12 @@ static inline __device__ void copy(real *dst, real *src, const size_t n)
     if(j < n) dst[j] = src[j];
 }
 
-static __global__ void driver(State *state, size_t *count, size_t n,
-                              real t, real target)
+static __global__ void driver(State *state, size_t n, real t, real target)
 {
   extern __shared__ State shared[]; // dynamic shared variable
 
   n     -= blockIdx.x * blockDim.x;
   state += blockIdx.x * blockDim.x;
-  count += blockIdx.x * blockDim.x;
 
   copy((real *)shared, (real *)state, NVAR * n);
   __syncthreads();
@@ -53,7 +51,7 @@ static __global__ void driver(State *state, size_t *count, size_t n,
         c += 1;
       }
 
-    count[threadIdx.x] = c;
+    count[blockIdx.x * blockDim.x + threadIdx.x] = c;
   }
 
   __syncthreads();
