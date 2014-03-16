@@ -63,6 +63,7 @@
 #  else
 #    include <GL/glut.h>
 #  endif
+#  include <GLFW/glfw3.h>
 #endif
 
 // Typedef real to make the source code precision independent
