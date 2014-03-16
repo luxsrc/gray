@@ -122,8 +122,6 @@ extern void vis(GLuint, size_t);
 #endif
 
 // GRay specific functions
-extern void   dump  (Data &);
-extern void   spec  (Data &);
 extern double evolve(Data &, double);
 extern void   init  (Data &);
 extern int    solve (Data &);

@@ -20,7 +20,7 @@
 #define DATA_H
 
 class Data {
-  size_t n;
+  size_t n, m;
 #ifdef INTEROPERABLE
   GLuint vbo;
   struct cudaGraphicsResource *res;
@@ -45,6 +45,9 @@ class Data {
   State *device();
   State *host();
   void   deactivate();
+
+  void   dump(const char *, double);
+  void   spec(const char *);
 };
 
 #endif // DATA_H

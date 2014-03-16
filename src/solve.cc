@@ -62,7 +62,7 @@ int solve(Data &data)
   glutIdleFunc(idle);
   glutMainLoop();
 
-  spec(data); // TODO: check if glutMainLoop() actually exit...
+  data.spec(global::format); // TODO: check if glutMainLoop() actually exit...
   return 0;
 }
 #else
@@ -71,13 +71,13 @@ int solve(Data &data)
   debug("solve(*%p)\n", &data);
 
   if(global::dt_dump != 0.0) {
-    dump(data);
+    data.dump(global::format, global::t);
     while(0 < evolve(data, global::dt_dump))
-      dump(data);
+      data.dump(global::format, global::t);
   } else
     while(0 < evolve(data, DT_DUMP));
 
-  spec(data);
+  data.spec(global::format);
   return 0;
 }
 #endif
