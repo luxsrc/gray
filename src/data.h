@@ -20,8 +20,8 @@
 #define DATA_H
 
 class Data {
-  size_t n;
-#ifdef INTEROPERABLE
+  size_t n, m;
+#ifdef ENABLE_GL
   GLuint vbo;
   struct cudaGraphicsResource *res;
 #else
@@ -30,21 +30,25 @@ class Data {
   State *buf; // host buffer
   bool   mapped;
 
-  cudaError_t d2h();
-  cudaError_t h2d();
+  cudaError_t dtoh();
+  cudaError_t htod();
 
  public:
   Data(size_t = 65536);
   ~Data();
 
+  size_t bsz;
   operator size_t() { return n; }
-#ifdef INTEROPERABLE
+#ifdef ENABLE_GL
   operator GLuint() { return vbo; }
 #endif
 
   State *device();
   State *host();
   void   deactivate();
+
+  void   dump(const char *, double);
+  void   spec(const char *);
 };
 
 #endif // DATA_H

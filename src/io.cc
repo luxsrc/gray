@@ -20,21 +20,16 @@
 #include <cstdlib>
 #include <cstdio>
 
-void dump(Data &data)
+void Data::dump(const char *format, double t)
 {
-  debug("dump(*%p)\n", &data);
-
-  static size_t frame = 0;
-
-  const double t = global::t;
-  const size_t n = data;
-  const size_t m = NVAR;
-  const void  *h = data.host();
+  debug("Data::dump()\n");
 
   char name[256];
-  snprintf(name, sizeof(name), global::format, (int)(frame++));
+  static int frame = 0;
+  snprintf(name, sizeof(name), format, frame++);
 
   FILE *file = fopen(name, "wb");
+  const void *h = host();
   fwrite(&t, sizeof(double), 1, file);
   fwrite(&m, sizeof(size_t), 1, file);
   fwrite(&n, sizeof(size_t), 1, file);
@@ -42,13 +37,12 @@ void dump(Data &data)
   fclose(file);
 }
 
-void spec(Data &data)
+void Data::spec(const char *format)
 {
-  debug("spec(*%p)\n", &data);
+  debug("Data::spec()\n");
 
 #ifdef HARM
-  const size_t n = data;
-  const State *h = data.host();
+  const State *h = host();
 
   float *I = (float *)malloc(sizeof(float) * n * N_NU);
   double total[N_NU];
@@ -65,7 +59,7 @@ void spec(Data &data)
     }
 
   char name[256];
-  snprintf(name, sizeof(name), global::format, -1);
+  snprintf(name, sizeof(name), format, -1);
 
   FILE *file = fopen(name, "w");
   for(int i = 0; i < N_NU-1; ++i) fprintf(file, "%15e ", total[i] / n);

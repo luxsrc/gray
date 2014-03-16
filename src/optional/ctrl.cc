@@ -18,113 +18,63 @@
 
 #include "../gray.h"
 
-#include <cstdlib>
-#include <para.h>
-
-#ifndef WIDTH
-#define WIDTH 512
-#endif
-
-#ifndef HEIGHT
-#define HEIGHT 512
-#endif
-
 namespace global {
-  float ax = 330, ly = -70, az = 90;
+  int   width = 512, height = 512;
+  float ratio = 1, ax = 330, ly = -70, az = 90;
+  int   shader    = 1;
+  bool  draw_body = true;
 }
 
-static int last_x = 0, last_y = 0;
-static int left   = 0, right  = 0;
+static double last_x = 0, last_y = 0;
 
-static bool fullscreen = false;
-static bool draw_body  = true;
-static int  shader     = 1;
-
-static void keyboard(unsigned char key, int x, int y)
+void resize(GLFWwindow *win, int w, int h)
 {
-  using namespace global;
+  global::width  = w;
+  global::height = h;
+  global::ratio  = (double)w / (double)h;
+}
+
+void keyboard(GLFWwindow *win, int key, int code, int action, int mods)
+{
+  if(GLFW_RELEASE != action) return; // do nothing
 
   switch(key) {
-  case 'q': case 'Q': case 27: // ESCAPE key
-    exit(0);
+  case 'q' : case 'Q' : case GLFW_KEY_ESCAPE :
+    glfwSetWindowShouldClose(global::window, GL_TRUE);
     break;
   case 'f': case 'F':
-    if((fullscreen = !fullscreen))
-      glutFullScreen();
-    else
-      glutReshapeWindow(WIDTH, HEIGHT);
+    print("TODO: switch between window/fullscreen modes\n");
     break;
   case 'h': case 'H':
-    draw_body = !draw_body;
+    global::draw_body = !global::draw_body;
     break;
   case 's': case 'S':
-    if(++shader >= 2) shader = 0;
+    if(++global::shader >= 2) global::shader = 0;
     break;
   case 'r': case 'R':
-    if(dt_dump == 0.0)
-      dt_saved *= -1; // fall through
+    if(global::dt_dump == 0.0)
+      global::dt_saved *= -1; // fall through
     else {
-      dt_dump *= -1;
+      global::dt_dump *= -1;
       break;
     }
   case 'p': case 'P':
-    const double temp = dt_saved;
-    dt_saved = dt_dump;
-    dt_dump = temp;
+    const double temp = global::dt_saved;
+    global::dt_saved = global::dt_dump;
+    global::dt_dump = temp;
     break;
   }
 }
 
-static void mouse(int b, int s, int x, int y)
+void mouse(GLFWwindow *win, double x, double y)
 {
+  if(GLFW_PRESS == glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_RIGHT))
+    global::ly -= 0.1 * (y - last_y);
+  else if(GLFW_PRESS == glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_LEFT)) {
+    global::ax -= 0.5 * (x - last_x);
+    global::az -= 0.5 * (y - last_y);
+  }
+
   last_x = x;
   last_y = y;
-
-  switch(b) {
-  case GLUT_LEFT_BUTTON : left  = (s == GLUT_DOWN); break;
-  case GLUT_RIGHT_BUTTON: right = (s == GLUT_DOWN); break;
-  }
-}
-
-static void motion(int x, int y)
-{
-  using namespace global;
-
-  const int dx = x - last_x; last_x = x;
-  const int dy = y - last_y; last_y = y;
-
-  if(right)
-    ly -= 0.1 * dy;
-  else if(left) {
-    az -= 0.5 * dy;
-    ax -= 0.5 * dx;
-  }
-
-  glutPostRedisplay();
-}
-
-void regctrl()
-{
-  glutKeyboardFunc(keyboard);
-  glutMouseFunc(mouse);
-  glutMotionFunc(motion);
-}
-
-int getctrl()
-{
-  using namespace global;
-
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-#ifndef DISABLE_NITE
-  if(draw_body) track();
-#endif
-
-  glLoadIdentity();
-  glRotatef(-90, 1, 0, 0);
-  glTranslatef(0, -ly, 0);
-  glRotatef(-(az- 90), 1, 0, 0);
-  glRotatef(-(ax-270), 0, 0, 1);
-
-  return shader;
 }

@@ -36,34 +36,33 @@
 #  define MIXED 1
 #endif
 
-#ifdef ISABLE_NITE
-#  define DISABLE_NITE 1
-#  undef   ISABLE_NITE
-#endif
-#ifdef ISABLE_LEAP
-#  define DISABLE_LEAP 1
-#  undef   ISABLE_LEAP
+#ifdef ISABLE_GL
+#  undef ISABLE_GL
+#else
+#  define ENABLE_GL 1
 #endif
 
-#ifdef ISABLE_GL
-#  define DISABLE_GL 1
-#  undef   ISABLE_GL
+#ifdef ISABLE_PRIME
+#  undef ISABLE_PRIME
 #else
-#  define INTEROPERABLE 1 // so class Data uses OpenGL buffer data
+#  define ENABLE_PRIME 1
 #endif
-#ifdef UMP
-#  define DUMP 1
-#  undef   UMP
+
+#ifdef ISABLE_LEAP
+#  undef ISABLE_LEAP
+#else
+#  define ENABLE_LEAP 1
 #endif
 
 // Include system headers
 #include <cuda_runtime_api.h> // C-style CUDA runtime API
-#ifndef DISABLE_GL
+#ifdef ENABLE_GL
 #  ifdef __APPLE__
 #    include <GLUT/glut.h>
 #  else
 #    include <GL/glut.h>
 #  endif
+#  include <GLFW/glfw3.h>
 #endif
 
 // Typedef real to make the source code precision independent
@@ -95,10 +94,13 @@
 namespace global {
   extern double t, dt_dump, dt_saved;
   extern const char *format;
-#ifndef DISABLE_GL
+#ifdef ENABLE_GL
+  extern GLFWwindow *window;
+  extern int   width, height;
   extern float ratio, ax, ly, az, a_spin;
+  extern int   shader;
+  extern bool  draw_body;
 #endif
-  extern size_t bsz;
 }
 
 // Basic function prototypes
@@ -109,30 +111,20 @@ extern void error(const char *, ...);
 #else
 #  define debug(...) // do nothing
 #endif
-extern void optimize(int);
+extern void pick(int);
 
 // NiTE+OpenNI or Leap Motion related functions for natural interactions
-#ifndef DISABLE_NITE
-extern void sense();
-extern void track();
-#endif
-
-#ifndef DISABLE_LEAP
+#if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
 extern void sense();
 #endif
 
 // OpenGL/GLUT functions
-#ifndef DISABLE_GL
-extern void mktexture(GLuint[1]);
-extern void mkshaders(GLuint[2]);
-extern int  getctrl();
-extern void regctrl();
+#ifdef ENABLE_GL
+extern void setup(int, char **);
 extern void vis(GLuint, size_t);
 #endif
 
 // GRay specific functions
-extern void   dump  (Data &);
-extern void   spec  (Data &);
 extern double evolve(Data &, double);
 extern void   init  (Data &);
 extern int    solve (Data &);

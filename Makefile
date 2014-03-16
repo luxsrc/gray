@@ -1,4 +1,5 @@
 CUDA_PATH = $(subst /bin/nvcc,,$(shell which nvcc))
+GLFW_PATH = /opt/local
 NITE_PATH = /usr/local/NiTE/2.2
 OPNI_PATH = /usr/local/OpenNI/2.2
 LEAP_PATH = /usr/local/LeapSDK
@@ -27,14 +28,21 @@ ifeq ($(GL),0) # use `make <prob> GL=0` to disable OpenGL visualization
 else
 	OPT += src/optional/{ctrl,shaders,texture,vis}.cc
 	ifeq ($(shell uname),Darwin)
-		LDFLAGS += $(addprefix -Xlinker ,\
-		             -framework Glut -framework OpenGL)
+		CPPFLAGS += -I$(GLFW_PATH)/include
+		LDFLAGS  += -L$(GLFW_PATH)/lib -lglfw \
+			      $(addprefix -Xlinker ,  \
+			        -framework Cocoa      \
+			        -framework Glut       \
+			        -framework OpenGL     \
+			        -framework IOKit      \
+			        -framework CoreVideo)
 	else
-		LDFLAGS += -lglut -lglu -lgl
+		CFLAGS  += `pkg-config --cflags glfw3`
+		LDFLAGS += `pkg-config --libs   glfw3`
 	endif
 
-	ifneq ($(NITE),1) # use `make <prob> NITE=1` to enable PrimeSense
-		CPPFLAGS += -DISABLE_NITE
+	ifneq ($(PRIME),1) # use `make <prob> PRIME=1` to enable PrimeSense
+		CPPFLAGS += -DISABLE_PRIME
 	else
 		OPT += src/optional/nite.cc
 		CPPFLAGS += -I$(NITE_PATH)/Include \
@@ -51,10 +59,6 @@ else
 		CPPFLAGS += -I$(LEAP_PATH)/include
 		LDFLAGS  += -L$(LEAP_PATH)/lib -lLeap
 	endif
-endif
-
-ifneq ($(IO),0) # use `make <prob> IO=0` to disable IO
-	CPPFLAGS += -DUMP
 endif
 
 ifeq ($(wildcard $(CUDA)/lib64/libcuda*),)
@@ -76,13 +80,14 @@ help:
 	 done
 	@echo
 	@echo "\
-Use \`make <prob> [DEBUG=1] [DETAILS=1] [DOUBLE/SINGLE=1] [GL=0] [IO=0]\`\n\
-and \`bin/GRay-<prob>\` to compile and run GRay.  The option DEBUG=1 turns\n\
-on debugging messages, DETAILS=1 prints ptxas information, DOUBLE=1 enforces\n\
-double-precision, while GL=0 disables OpenGL and IO=0 disables IO.\n\
+Use \`make <prob> [DEBUG=1] [DETAILS=1] [DOUBLE/SINGLE=1] [GL=0]\` and\n\
+\`bin/GRay-<prob>\` to compile and to run GRay.  The option DEBUG=1 turns on\n\
+debugging messages, DETAILS=1 prints ptxas information, DOUBLE=1 enforces\n\
+double-precision and SINGLE=1 enforces single-precision, while GL=0 disables\n\
+OpenGL visualization.\n\
 \n\
-To enable PrimeSense or LeapMotion sensor, one needs to pass in the flag\n\
-NITE=1 or LEAP=1 and manually set the header and library search paths at\n\
+To enable PrimeSense or Leap Motion sensor, one needs to pass in the flag\n\
+PRIME=1 or LEAP=1 and manually set the header and library search paths at\n\
 the beginning of this \"Makefile\"."
 
 %:
@@ -94,22 +99,27 @@ the beginning of this \"Makefile\"."
 
 	@mkdir -p bin
 	@echo -n 'Compiling $@... '
-	@$(NVCC) src/*.{cu,cc} $(OPT) $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) \
-	   -o bin/GRay-$@
+	@if ls src/$@/*.c? &> /dev/null; then                        \
+	   $(NVCC) src/*.{cu,cc} src/$@/*.c?                         \
+	     $(OPT) $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/GRay-$@; \
+	 else                                                        \
+	   $(NVCC) src/*.{cu,cc}                                     \
+	     $(OPT) $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/GRay-$@; \
+	 fi
 
-ifeq ($(NITE),1)
+ifeq ($(PRIME),1)
 	@install_name_tool -change libNiTE2.dylib \
 	       $(NITE_PATH)/Redist/libNiTE2.dylib \
-	       bin/GRay-Kerr
+	       bin/GRay-$@
 	@install_name_tool -change libOpenNI2.dylib \
 	       $(OPNI_PATH)/Redist/libOpenNI2.dylib \
-	       bin/GRay-Kerr
+	       bin/GRay-$@
 endif
 
 ifeq ($(LEAP),1)
 	@install_name_tool -change @loader_path/libLeap.dylib \
 	                       $(LEAP_PATH)/lib/libLeap.dylib \
-	                       bin/GRay-Kerr
+	                       bin/GRay-$@
 endif
 
 	@if [ -f bin/GRay-$@ ]; then                     \

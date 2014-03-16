@@ -17,59 +17,50 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
+#include <para.h>
 
-#ifndef DISABLE_GL
-static Data *d = NULL;
-
-static void idle(void)
-{
-  static size_t count = 0;
-  static size_t delta = 32;
-  const  size_t limit = 1024;
-
-  if(global::dt_dump != 0.0) {
-    double ms;
-    if(count + delta < limit) {
-      ms = evolve(*d, global::dt_dump * delta / limit);
-      if(0 == ms) return;
-      count += delta;
-    } else {
-      ms = evolve(*d, global::dt_dump * (limit - count) / limit);
-      if(0 == ms) return;
-      count = 0;
-#ifdef DUMP
-      dump(*d);
-#endif
-    }
-    if(ms < 20 && delta < limit) delta *= 2;
-    if(ms > 80 && delta > 1    ) delta /= 2;
-  }
-
-#ifndef DISABLE_NITE
-  sense();
+#ifndef DT_DUMP
+#define DT_DUMP 1
 #endif
 
-#ifndef DISABLE_LEAP
-  sense();
-#endif
-
-  glutPostRedisplay();
-}
+#ifdef ENABLE_GL
+extern void display(size_t, GLuint);
 
 int solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
 
-  d = &data;
-  glutIdleFunc(idle);
+  while(!glfwWindowShouldClose(global::window)) {
+    static size_t count = 0;
+    static size_t delta = 32;
+    const  size_t limit = 1024;
 
-#ifdef DUMP
-  dump(data);
+    if(global::dt_dump != 0.0) {
+      double ms;
+      if(count + delta < limit) {
+        ms = evolve(data, global::dt_dump * delta / limit);
+        if(0 == ms) break;
+        count += delta;
+      } else {
+        ms = evolve(data, global::dt_dump * (limit - count) / limit);
+        if(0 == ms) break;
+        count = 0;
+      }
+      if(ms < 20 && delta < limit) delta *= 2;
+      if(ms > 80 && delta > 1    ) delta /= 2;
+    }
+
+#if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
+    sense();
 #endif
-  glutMainLoop();
 
-  spec(data); // TODO: check if glutMainLoop() actually exit...
+    display((size_t)data, (GLuint)data);
 
+    glfwSwapBuffers(global::window);
+    glfwPollEvents();
+  }
+
+  data.spec(global::format); // TODO: check if glutMainLoop() actually exit...
   return 0;
 }
 #else
@@ -77,15 +68,14 @@ int solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
 
-#ifdef DUMP
-  do dump(data);
-#endif
-  while(0 < evolve(data, global::dt_dump));
-#ifdef DUMP
-  dump(data);
-#endif
-  spec(data);
+  if(global::dt_dump != 0.0) {
+    data.dump(global::format, global::t);
+    while(0 < evolve(data, global::dt_dump))
+      data.dump(global::format, global::t);
+  } else
+    while(0 < evolve(data, DT_DUMP));
 
+  data.spec(global::format);
   return 0;
 }
 #endif

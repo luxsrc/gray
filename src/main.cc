@@ -17,7 +17,7 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
-#include "harm.h"
+#include "Kerr/harm.h"
 #include <cstdlib>
 #include <cstring>
 #include <para.h>
@@ -32,14 +32,6 @@
 
 #ifndef N_DEFAULT
 #define N_DEFAULT (512 * 512)
-#endif
-
-#ifndef WIDTH
-#define WIDTH 512
-#endif
-
-#ifndef HEIGHT
-#define HEIGHT 512
 #endif
 
 namespace global {
@@ -62,20 +54,15 @@ int main(int argc, char **argv)
   print("GRay: a massive parallel GRaysic integrator\n");
   debug("Debugging is turned on\n");
 
-#ifndef DISABLE_GL
-  glutInit(&argc, argv);
-  glutInitWindowSize(WIDTH, HEIGHT);
-  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-  glutCreateWindow(argv[0]);
-  if(GL_NO_ERROR != glGetError())
-    error("main(): fail to initialize OpenGL/GLUT\n");
+#ifdef ENABLE_GL
+  setup(argc, argv);
 #endif
 
   int i = 1;
   if(argc > i && argv[i][0] == '-') // `./gray -2` use the second device
-    optimize(atoi(argv[i++] + 1));
+    pick(atoi(argv[i++] + 1));
   else
-    optimize(0);
+    pick(0);
 
   size_t n = 0;
   for(; i < argc; ++i) {
@@ -121,8 +108,8 @@ int main(int argc, char **argv)
   Data data(n ? n : N_DEFAULT);
   init(data);
 
-#ifndef DISABLE_GL
-  vis((GLuint)data, (size_t)data);
+#ifdef ENABLE_GL
+  //vis((GLuint)data, (size_t)data);
   print("\
 Press 'ESC' or 'q' to quit, 'p' to pulse, 'r' to reverse the run, 's' to\n\
 to turn sprites on and off, and 'f' to enter and exit full screen\n\
