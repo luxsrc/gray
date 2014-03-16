@@ -96,6 +96,7 @@ namespace global {
   extern double t, dt_dump, dt_saved;
   extern const char *format;
 #ifdef ENABLE_GL
+  extern GLFWwindow *window;
   extern float ratio, ax, ly, az, a_spin;
 #endif
   extern size_t bsz;

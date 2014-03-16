@@ -18,6 +18,18 @@
 
 #include "../gray.h"
 
+void key_callback(GLFWwindow *win, int key, int code, int action, int mods)
+{
+  if(GLFW_RELEASE != action) return; // do nothing
+
+  switch(key) {
+  case 'q' : case 'Q' : case GLFW_KEY_ESCAPE :
+    glfwSetWindowShouldClose(global::window, GL_TRUE);
+    break;
+  }
+}
+
+/*
 #include <cstdlib>
 #include <para.h>
 
@@ -49,9 +61,6 @@ static void keyboard(unsigned char key, int x, int y)
   using namespace global;
 
   switch(key) {
-  case 'q': case 'Q': case 27: // ESCAPE key
-    exit(0);
-    break;
   case 'f': case 'F':
     if((fullscreen = !fullscreen))
       glutFullScreen();
@@ -132,3 +141,4 @@ int getctrl()
 
   return shader;
 }
+*/

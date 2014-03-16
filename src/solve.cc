@@ -28,7 +28,7 @@ int solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
 
-  while(1) {
+  while(!glfwWindowShouldClose(global::window)) {
     static size_t count = 0;
     static size_t delta = 32;
     const  size_t limit = 1024;
@@ -52,7 +52,8 @@ int solve(Data &data)
     sense();
 #endif
 
-    //glutPostRedisplay();
+    glfwSwapBuffers(global::window);
+    glfwPollEvents();
   }
 
   spec(data); // TODO: check if glutMainLoop() actually exit...

@@ -19,14 +19,15 @@
 #include "../gray.h"
 
 namespace global {
+  GLFWwindow *window = NULL;
   float a_spin = 0.999;
 }
 
-static GLFWwindow *window = NULL;
+extern void key_callback(GLFWwindow *, int, int, int, int);
 
 static void error_callback(int err, const char *msg)
 {
-  glfwDestroyWindow(window);
+  glfwDestroyWindow(global::window);
   glfwTerminate();
   error("[GLFW] %s\n", msg);
 }
@@ -36,14 +37,16 @@ void setup(int argc, char **argv)
   if(!glfwInit())
     error("[GLFW] fail to initialize the OpenGL Framework\n");
 
-  window = glfwCreateWindow(512, 512, argv[0], NULL, NULL);
-  if(!window) {
+  global::window = glfwCreateWindow(512, 512, argv[0], NULL, NULL);
+  if(!global::window) {
     glfwTerminate();
     error("[GLFW] fail to create window\n");
   }
 
   glfwSetErrorCallback(error_callback);
-  glfwMakeContextCurrent(window);
+  glfwMakeContextCurrent(global::window);
+
+  glfwSetKeyCallback(global::window, key_callback);
 }
 
 /*
