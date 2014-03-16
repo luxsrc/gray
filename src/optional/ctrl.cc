@@ -20,7 +20,8 @@
 
 namespace global {
   float ax = 330, ly = -70, az = 90;
-  int shader = 1;
+  int   shader    = 1;
+  bool  draw_body = true;
 }
 
 static double last_x = 0, last_y = 0;
@@ -35,6 +36,9 @@ void keyboard(GLFWwindow *win, int key, int code, int action, int mods)
     break;
   case 'f': case 'F':
     print("TODO: switch between window/fullscreen modes\n");
+    break;
+  case 'h': case 'H':
+    global::draw_body = !global::draw_body;
     break;
   case 's': case 'S':
     if(++global::shader >= 2) global::shader = 0;

@@ -32,7 +32,7 @@
 
 namespace global {
   GLFWwindow *window = NULL;
-  float a_spin = 0.999;
+  float ratio = 1, a_spin = 0.999;
 }
 
 static GLuint shader[2], texture;
@@ -41,6 +41,9 @@ extern void mktexture(GLuint[]);
 extern void mkshaders(GLuint[]);
 extern void keyboard(GLFWwindow *, int, int, int, int);
 extern void mouse   (GLFWwindow *, double, double);
+#ifdef ENABLE_PRIME
+extern void track();
+#endif
 
 static void error_callback(int err, const char *msg)
 {
@@ -76,21 +79,23 @@ void setup(int argc, char **argv)
   mktexture(&texture);
 }
 
-
 void display(size_t n, GLuint vbo)
 {
   int width, height;
   glfwGetFramebufferSize(global::window, &width, &height);
 
   glViewport(0, 0, width, height);
+  global::ratio = (float)width / height;
+
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(27.0, (float)width / height, 1.0, 1.0e6);
+  gluPerspective(27.0, global::ratio, 1.0, 1.0e6);
+
   glMatrixMode(GL_MODELVIEW);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #ifdef ENABLE_PRIME
-  if(draw_body) track();
+  if(global::draw_body) track();
 #endif
   glLoadIdentity();
   glRotatef(-90, 1, 0, 0);
