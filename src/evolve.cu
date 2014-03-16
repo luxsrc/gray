@@ -26,7 +26,7 @@
 #define GET(s)  ((real *)&(s))[index]
 #define EACH(s) for(int index = 0; index < NVAR; ++index) GET(s)
 #  include <fixup.h>
-#  include "scheme.h"
+#  include "scheme/rk4.h"
 #undef GET
 #undef EACH
 
@@ -35,7 +35,7 @@
 #else
 #  define GET_TIME t
 #endif
-#  include "driver.h"
+#  include "scheme/driver.h"
 #undef GET_TIME
 
 static size_t *count = NULL;
