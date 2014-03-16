@@ -19,12 +19,20 @@
 #include "../gray.h"
 
 namespace global {
-  float ax = 330, ly = -70, az = 90;
+  int   width = 512, height = 512;
+  float ratio = 1, ax = 330, ly = -70, az = 90;
   int   shader    = 1;
   bool  draw_body = true;
 }
 
 static double last_x = 0, last_y = 0;
+
+void resize(GLFWwindow *win, int w, int h)
+{
+  global::width  = w;
+  global::height = h;
+  global::ratio  = (double)w / (double)h;
+}
 
 void keyboard(GLFWwindow *win, int key, int code, int action, int mods)
 {

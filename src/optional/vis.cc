@@ -32,15 +32,18 @@
 
 namespace global {
   GLFWwindow *window = NULL;
-  float ratio = 1, a_spin = 0.999;
+  float a_spin = 0.999;
 }
 
 static GLuint shader[2], texture;
 
 extern void mktexture(GLuint[]);
 extern void mkshaders(GLuint[]);
+
+extern void resize  (GLFWwindow *, int, int);
 extern void keyboard(GLFWwindow *, int, int, int, int);
 extern void mouse   (GLFWwindow *, double, double);
+
 #ifdef ENABLE_PRIME
 extern void track();
 #endif
@@ -63,10 +66,11 @@ void setup(int argc, char **argv)
     error("[GLFW] fail to create window\n");
   }
 
-  glfwSetErrorCallback(error_callback);
-  glfwMakeContextCurrent(global::window);
-  glfwSetKeyCallback(global::window, keyboard);
-  glfwSetCursorPosCallback(global::window, mouse);
+  glfwSetErrorCallback     (error_callback);
+  glfwSetWindowSizeCallback(global::window, resize);
+  glfwSetKeyCallback       (global::window, keyboard);
+  glfwSetCursorPosCallback (global::window, mouse);
+  glfwMakeContextCurrent   (global::window);
 
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -81,16 +85,10 @@ void setup(int argc, char **argv)
 
 void display(size_t n, GLuint vbo)
 {
-  int width, height;
-  glfwGetFramebufferSize(global::window, &width, &height);
-
-  glViewport(0, 0, width, height);
-  global::ratio = (float)width / height;
-
+  glViewport(0, 0, global::width, global::height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(27.0, global::ratio, 1.0, 1.0e6);
-
   glMatrixMode(GL_MODELVIEW);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
