@@ -98,6 +98,7 @@ namespace global {
 #ifdef ENABLE_GL
   extern GLFWwindow *window;
   extern float ax, ly, az, a_spin;
+  extern int shader;
 #endif
   extern size_t bsz;
 }

@@ -20,6 +20,7 @@
 
 namespace global {
   float ax = 330, ly = -70, az = 90;
+  int shader = 1;
 }
 
 void key_callback(GLFWwindow *win, int key, int code, int action, int mods)
@@ -29,6 +30,21 @@ void key_callback(GLFWwindow *win, int key, int code, int action, int mods)
   switch(key) {
   case 'q' : case 'Q' : case GLFW_KEY_ESCAPE :
     glfwSetWindowShouldClose(global::window, GL_TRUE);
+    break;
+  case 's': case 'S':
+    if(++global::shader >= 2) global::shader = 0;
+    break;
+  case 'r': case 'R':
+    if(global::dt_dump == 0.0)
+      global::dt_saved *= -1; // fall through
+    else {
+      global::dt_dump *= -1;
+      break;
+    }
+  case 'p': case 'P':
+    const double temp = global::dt_saved;
+    global::dt_saved = global::dt_dump;
+    global::dt_dump = temp;
     break;
   }
 }

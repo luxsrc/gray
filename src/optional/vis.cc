@@ -101,7 +101,7 @@ void display(size_t n, GLuint vbo)
   glutWireSphere(1.0 + sqrt(1.0 - global::a_spin * global::a_spin), 32, 16);
 
   // Draw particles, i.e., photon locations
-  glUseProgram(shader[1]);
+  glUseProgram(shader[global::shader]);
 
   glEnable(GL_POINT_SPRITE_ARB);
   glEnable(GL_BLEND);
