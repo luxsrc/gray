@@ -24,43 +24,36 @@
 #endif
 
 #ifdef ENABLE_GL
-static Data *d = NULL;
-/*
-static void idle(void)
-{
-  static size_t count = 0;
-  static size_t delta = 32;
-  const  size_t limit = 1024;
-
-  if(global::dt_dump != 0.0) {
-    double ms;
-    if(count + delta < limit) {
-      ms = evolve(*d, global::dt_dump * delta / limit);
-      if(0 == ms) return;
-      count += delta;
-    } else {
-      ms = evolve(*d, global::dt_dump * (limit - count) / limit);
-      if(0 == ms) return;
-      count = 0;
-    }
-    if(ms < 20 && delta < limit) delta *= 2;
-    if(ms > 80 && delta > 1    ) delta /= 2;
-  }
-
-#if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
-  sense();
-#endif
-
-  //glutPostRedisplay();
-}
-*/
 int solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
 
-  d = &data;
-  //glutIdleFunc(idle);
-  //glutMainLoop();
+  while(1) {
+    static size_t count = 0;
+    static size_t delta = 32;
+    const  size_t limit = 1024;
+
+    if(global::dt_dump != 0.0) {
+      double ms;
+      if(count + delta < limit) {
+        ms = evolve(data, global::dt_dump * delta / limit);
+        if(0 == ms) break;
+        count += delta;
+      } else {
+        ms = evolve(data, global::dt_dump * (limit - count) / limit);
+        if(0 == ms) break;
+        count = 0;
+      }
+      if(ms < 20 && delta < limit) delta *= 2;
+      if(ms > 80 && delta > 1    ) delta /= 2;
+    }
+
+#if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
+    sense();
+#endif
+
+    //glutPostRedisplay();
+  }
 
   spec(data); // TODO: check if glutMainLoop() actually exit...
   return 0;
