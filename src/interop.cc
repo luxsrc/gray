@@ -49,7 +49,7 @@ State *Data::host()
 {
   debug("Data::host()\n");
 
-  return cudaSuccess == d2h() ? buf : NULL;
+  return cudaSuccess == dtoh() ? buf : NULL;
 }
 
 void Data::deactivate()

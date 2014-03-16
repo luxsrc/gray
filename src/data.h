@@ -30,8 +30,8 @@ class Data {
   State *buf; // host buffer
   bool   mapped;
 
-  cudaError_t d2h();
-  cudaError_t h2d();
+  cudaError_t dtoh();
+  cudaError_t htod();
 
  public:
   Data(size_t = 65536);
