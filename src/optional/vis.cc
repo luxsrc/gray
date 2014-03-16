@@ -39,7 +39,8 @@ static GLuint shader[2], texture;
 
 extern void mktexture(GLuint[]);
 extern void mkshaders(GLuint[]);
-extern void key_callback(GLFWwindow *, int, int, int, int);
+extern void keyboard(GLFWwindow *, int, int, int, int);
+extern void mouse   (GLFWwindow *, double, double);
 
 static void error_callback(int err, const char *msg)
 {
@@ -61,7 +62,8 @@ void setup(int argc, char **argv)
 
   glfwSetErrorCallback(error_callback);
   glfwMakeContextCurrent(global::window);
-  glfwSetKeyCallback(global::window, key_callback);
+  glfwSetKeyCallback(global::window, keyboard);
+  glfwSetCursorPosCallback(global::window, mouse);
 
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.0, 0.0, 0.0, 1.0);
