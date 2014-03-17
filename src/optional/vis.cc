@@ -51,7 +51,7 @@ static void error_callback(int err, const char *msg)
   error("[GLFW] %s\n", msg);
 }
 
-void setup(int argc, char **argv)
+void vis::setup(int argc, char **argv)
 {
   if(!glfwInit())
     error("[GLFW] fail to initialize the OpenGL Framework\n");
@@ -73,13 +73,13 @@ void setup(int argc, char **argv)
   glEnable(GL_VERTEX_PROGRAM_POINT_SIZE_NV);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   if(GL_NO_ERROR != glGetError())
-    error("vis(): fail to setup visualization\n");
+    error("vis::setup(): fail to setup visualization\n");
 
   mkshaders(shader);
   mktexture(&texture);
 }
 
-void display(size_t n, GLuint vbo)
+void vis::show(size_t n, GLuint vbo)
 {
   glViewport(0, 0, vis::width, vis::height);
   glMatrixMode(GL_PROJECTION);
@@ -126,5 +126,5 @@ void display(size_t n, GLuint vbo)
   // DONE
   glUseProgram(0);
   if(GL_NO_ERROR != glGetError())
-    error("callback: display(): fail to visualize simulation\n");
+    error("vis::show(): fail to visualize simulation\n");
 }

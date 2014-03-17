@@ -23,8 +23,6 @@
 #endif
 
 #ifdef ENABLE_GL
-extern void display(size_t, GLuint);
-
 int Para::solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
@@ -53,7 +51,7 @@ int Para::solve(Data &data)
     sense();
 #endif
 
-    display((size_t)data, (GLuint)data);
+    vis::show((size_t)data, (GLuint)data);
 
     glfwSwapBuffers(vis::window);
     glfwPollEvents();

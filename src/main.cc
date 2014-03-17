@@ -47,7 +47,7 @@ int main(int argc, char **argv)
   debug("Debugging is turned on\n");
 
 #ifdef ENABLE_GL
-  setup(argc, argv);
+  vis::setup(argc, argv);
 #endif
 
   int i = 1;

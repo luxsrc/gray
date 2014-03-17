@@ -34,6 +34,9 @@ namespace vis {
   extern int    shader;
   extern bool   draw_body;
 
+  extern void setup(int, char **);
+  extern void show(GLuint, size_t);
+
 #ifdef ENABLE_PRIME
   extern void sense();
   extern void track();
@@ -42,8 +45,5 @@ namespace vis {
   extern void sense();
 #endif
 }
-
-extern void setup(int, char **);
-extern void vis(GLuint, size_t);
 
 #endif // VIS_H
