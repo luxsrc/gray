@@ -33,14 +33,17 @@ namespace vis {
   extern double dt_saved;
   extern int    shader;
   extern bool   draw_body;
+
+#ifdef ENABLE_PRIME
+  extern void sense();
+  extern void track();
+#endif
+#ifdef ENABLE_LEAP
+  extern void sense();
+#endif
 }
 
 extern void setup(int, char **);
 extern void vis(GLuint, size_t);
-
-// NiTE+OpenNI or Leap Motion related functions for natural interactions
-#if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
-extern void sense();
-#endif
 
 #endif // VIS_H

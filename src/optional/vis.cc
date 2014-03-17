@@ -44,10 +44,6 @@ extern void resize  (GLFWwindow *, int, int);
 extern void keyboard(GLFWwindow *, int, int, int, int);
 extern void mouse   (GLFWwindow *, double, double);
 
-#ifdef ENABLE_PRIME
-extern void track();
-#endif
-
 static void error_callback(int err, const char *msg)
 {
   glfwDestroyWindow(vis::window);
@@ -93,7 +89,7 @@ void display(size_t n, GLuint vbo)
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #ifdef ENABLE_PRIME
-  if(vis::draw_body) track();
+  if(vis::draw_body) vis::track();
 #endif
   glLoadIdentity();
   glRotatef(-90, 1, 0, 0);

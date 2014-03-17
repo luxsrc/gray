@@ -1,5 +1,5 @@
-// Copyright (C) 2012,2013 Chi-kwan Chan
-// Copyright (C) 2012,2013 Steward Observatory
+// Copyright (C) 2012--2014 Chi-kwan Chan
+// Copyright (C) 2012--2014 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -33,10 +33,10 @@ static void setup()
   print("Making sense...");
 
   if(nite::STATUS_OK != nite::NiTE::initialize())
-    error("sense(): fail to initialize NiTE\n");
+    error("vis::sense(): fail to initialize NiTE\n");
 
   if(nite::STATUS_OK != tracker.create())
-    error("sense(): fail to create user tracker\n");
+    error("vis::sense(): fail to create user tracker\n");
 
   first = false;
 
@@ -48,7 +48,7 @@ static void cleanup()
   nite::NiTE::shutdown();
 }
 
-void sense()
+void vis::sense()
 {
   if(first && !atexit(cleanup)) setup();
 
@@ -146,7 +146,7 @@ void sense()
   }
 }
 
-void track()
+void vis::track()
 {
   glLoadIdentity();
   glTranslatef(vis::ratio - 0.1f, 1 - 0.1f, -5.0f);

@@ -147,7 +147,7 @@ static void cleanup()
   print(" DONE\n");
 }
 
-void sense()
+void vis::sense()
 {
   if(!controller && !atexit(cleanup)) setup();
 }
