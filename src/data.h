@@ -1,5 +1,5 @@
-// Copyright (C) 2012,2013 Chi-kwan Chan
-// Copyright (C) 2012,2013 Steward Observatory
+// Copyright (C) 2012--2014 Chi-kwan Chan
+// Copyright (C) 2012--2014 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -20,7 +20,7 @@
 #define DATA_H
 
 class Data {
-  size_t n, m;
+  size_t n, m, gsz, bsz;
 #ifdef ENABLE_GL
   GLuint vbo;
   struct cudaGraphicsResource *res;
@@ -37,18 +37,20 @@ class Data {
   Data(size_t = 65536);
   ~Data();
 
-  size_t bsz;
   operator size_t() { return n; }
 #ifdef ENABLE_GL
   operator GLuint() { return vbo; }
 #endif
 
+  cudaError_t init  (double);
+  cudaError_t evolve(double, double);
+
   State *device();
   State *host();
   void   deactivate();
 
-  void   dump(const char *, double);
-  void   spec(const char *);
+  void dump(const char *, double);
+  void spec(const char *);
 };
 
 #endif // DATA_H

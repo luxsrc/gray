@@ -60,8 +60,10 @@ extern void error(const char *, ...);
 #endif
 extern void pick(int);
 
-// GRay specific functions
-extern double evolve(Data &, double);
-extern void   init  (Data &);
+// Synchronize host and constant device memory
+namespace core {
+  extern cudaError_t sync(size_t *);
+  extern cudaError_t sync(Const  *);
+}
 
 #endif // GRAY_H

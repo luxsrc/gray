@@ -20,55 +20,47 @@
 
 static __device__ __constant__ size_t *count = NULL;
 
-#include "Kerr/harm.h"
-#include <cstdlib>
+cudaError_t core::sync(size_t *p)
+{
+  debug("core::sync(%p)\n", p);
+  return cudaMemcpyToSymbol(count, &p, sizeof(size_t *));
+}
 
-#include <ic.h>
+static __device__ __constant__ Const c = {};
+
+cudaError_t core::sync(Const *p)
+{
+  debug("core::sync(%p)\n", p);
+  return cudaMemcpyToSymbol(c, p, sizeof(Const));
+}
+
+#include <ic.h> // define device function ic()
 
 static __global__ void kernel(State *s, const size_t n, const real t)
 {
   const size_t i = blockIdx.x * blockDim.x + threadIdx.x;
-
   if(i < n)
     s[i] = ic(i, n, t);
 }
 
-void init(Data &data)
+cudaError_t Data::init(double t)
 {
-  debug("init(*%p)\n", &data);
+  debug("Data::init(%f)\n", t);
 
-  const size_t n   = data;
-  const size_t gsz = (n - 1) / data.bsz + 1;
+  kernel<<<gsz, bsz>>>(device(), n, t);
 
-  State *s = data.device();
-  kernel<<<gsz, data.bsz>>>(s, n, para.t);
   cudaError_t err = cudaDeviceSynchronize();
-  data.deactivate();
-
-  if(cudaSuccess != err)
-    error("init(): fail to launch kernel [%s]\n",
-          cudaGetErrorString(err));
+  deactivate();
+  return err;
 }
 
-bool init_config(const char *arg)
-{
-  debug("init_config(""%s"")\n", arg);
-  return config(arg[0], atof(arg + 2));
-}
-
-bool init_config(char flag, real val)
-{
-  debug("init_config(""%c=%d"")\n", flag, val);
-  return config(flag, val);
-}
-
-#include <rhs.h>
-#include <getdt.h>
+#include <rhs.h>   // define device function rhs()
+#include <getdt.h> // define device function getdt()
 
 #define GET(s)  ((real *)&(s))[index]
 #define EACH(s) for(int index = 0; index < NVAR; ++index) GET(s)
-#  include <fixup.h>
-#  include "scheme/rk4.h"
+#  include <fixup.h>      // define device function fixup()
+#  include "scheme/rk4.h" // define device function scheme()
 #undef GET
 #undef EACH
 
@@ -77,122 +69,16 @@ bool init_config(char flag, real val)
 #else
 #  define GET_TIME t
 #endif
-#  include "scheme/driver.h"
+#  include "scheme/driver.h" // define global kernel function driver()
 #undef GET_TIME
 
-static size_t *res = NULL, *buf = NULL;
-static cudaEvent_t time0, time1;
-
-static void setup(size_t n)
+cudaError_t Data::evolve(double t0, double t1)
 {
-  if(cudaSuccess != cudaMalloc((void **)&res, sizeof(size_t) * n))
-    error("evolve(): fail to allocate device memory\n");
-  if(cudaSuccess != cudaMemcpyToSymbol(count, &res, sizeof(size_t *)))
-    error("evolve(): fail to sync device memory address to constant memory\n");
-  if(NULL == (buf = (size_t *)malloc(sizeof(size_t) * n)))
-    error("evolve(): fail to allocate host memory\n");
+  debug("Data::evolve(%g,%g)\n", t0, t1);
 
-#ifdef HARM
-  if(cudaSuccess != cudaMemcpyToSymbol(coord, &harm::coord, sizeof(Coord*)) ||
-     cudaSuccess != cudaMemcpyToSymbol(field, &harm::field, sizeof(Field*)) ||
-     cudaSuccess != cudaMemcpyToSymbol(lnrmin,&harm::lnrmin,sizeof(real  )) ||
-     cudaSuccess != cudaMemcpyToSymbol(lnrmax,&harm::lnrmax,sizeof(real  )) ||
-     cudaSuccess != cudaMemcpyToSymbol(nr,    &harm::n1,    sizeof(int   )) ||
-     cudaSuccess != cudaMemcpyToSymbol(ntheta,&harm::n2,    sizeof(int   )) ||
-     cudaSuccess != cudaMemcpyToSymbol(nphi,  &harm::n3,    sizeof(int   )))
-    error("evolve(): fail to copy pointer(s) to device\n");
-#endif
+  driver<<<gsz, bsz, bsz * sizeof(State)>>>(device(), n, t0, t1);
 
-  if(cudaSuccess != cudaEventCreate(&time0) ||
-     cudaSuccess != cudaEventCreate(&time1))
-    error("evolve(): fail to create timer\n");
-}
-
-static void cleanup(void)
-{
-  if(res) {
-    cudaFree(res);
-    res = NULL;
-    cudaMemcpyToSymbol(count, &res, sizeof(size_t *)); // set count to NULL
-  }
-
-  if(buf) {
-    free(buf);
-    buf = NULL;
-  }
-
-  if(cudaSuccess != cudaEventDestroy(time1) ||
-     cudaSuccess != cudaEventDestroy(time0))
-    error("evolve(): fail to destroy timer\n");
-}
-
-double evolve(Data &data, double dt)
-{
-  debug("evolve(*%p, %g)\n", &data, dt);
-
-  const double t = para.t;
-  const size_t n = data;
-
-  if(!res && !buf && !atexit(cleanup)) setup(n);
-
-  const size_t gsz = (n - 1) / data.bsz + 1;
-
-  if(cudaSuccess != cudaEventRecord(time0, 0))
-    error("evolve(): fail to record event\n");
-
-  State *s = data.device();
-  driver<<<gsz, data.bsz,
-                data.bsz * sizeof(State)>>>(s, n, t, para.t += dt);
   cudaError_t err = cudaDeviceSynchronize();
-  data.deactivate();
-
-  if(cudaSuccess != cudaEventRecord(time1, 0))
-    error("evolve(): fail to record event\n");
-  if(cudaSuccess != err)
-    error("evolve(): fail to launch kernel [%s]\n",
-          cudaGetErrorString(err));
-
-  float ms;
-  if(cudaSuccess != cudaEventSynchronize(time1) ||
-     cudaSuccess != cudaEventElapsedTime(&ms, time0, time1))
-    error("evolve(): fail to obtain elapsed time\n");
-
-  if(cudaSuccess !=
-     cudaMemcpy(buf, res, sizeof(size_t) * n, cudaMemcpyDeviceToHost))
-    error("evolve(): fail to copy memory from device to host\n");
-
-  double actual = 0, peak = 0;
-  for(size_t j = 0, h = 0; j < gsz; ++j) {
-    size_t sum = 0, max = 0;
-    for(size_t i = 0; i < data.bsz; ++i, ++h) {
-      const size_t x = (h < n) ? buf[h] : 0;
-      sum += x;
-      if(max < x) max = x;
-    }
-    actual += sum;
-    peak   += max * data.bsz;
-  }
-
-  if(actual) {
-    print("t =%7.2f; %.0f ms/%.0f steps ~%7.2f Gflops (%.2f%%),%7.2fGB/s\n",
-          para.t, ms, actual, 1e-6 * flop() * actual / ms,
-          100 * actual / peak,  1e-6 * (24 * sizeof(real) * actual +
-                                        rwsz() * n) / ms); // read + write
-    return ms;
-  } else
-    return 0;
-}
-
-bool prob_config(const char *arg)
-{
-  debug("prob_config(""%s"")\n", arg);
-
-  return config(arg[0], atof(arg + 2));
-}
-
-bool prob_config(char flag, real val)
-{
-  debug("prob_config(""%c=%d"")\n", flag, val);
-
-  return config(flag, val);
+  deactivate();
+  return err;
 }

@@ -30,6 +30,7 @@ Data::Data(size_t n_input)
   n   = n_input;
   m   = NVAR;
   bsz = 64;
+  gsz = (n - 1) / bsz + 1;
 
   const size_t sz = sizeof(State) * n;
   cudaError_t err;
