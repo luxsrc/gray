@@ -22,6 +22,22 @@
 #  include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 #endif
 
+cudaError_t Data::deactivate()
+{
+  debug("Data::deactivate()\n");
+
+  cudaError_t err = cudaSuccess;
+#ifdef ENABLE_GL
+  if(mapped) {
+    err = cudaGraphicsUnmapResources(1, &res, 0);
+    mapped = false;
+  }
+#else
+  // do nothing
+#endif
+  return err;
+}
+
 State *Data::device()
 {
   debug("Data::device()\n");
@@ -50,19 +66,4 @@ State *Data::host()
   debug("Data::host()\n");
 
   return cudaSuccess == dtoh() ? buf : NULL;
-}
-
-void Data::deactivate()
-{
-  debug("Data::deactivate()\n");
-
-#ifdef ENABLE_GL
-  if(mapped) {
-    if(cudaSuccess != cudaGraphicsUnmapResources(1, &res, 0))
-      error("Data::deactivate(): fail to unmap OpenGL resource\n");
-    mapped = false;
-  }
-#else
-  // do nothing
-#endif
 }

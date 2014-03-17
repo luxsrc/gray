@@ -27,13 +27,13 @@ cudaError_t Data::dtoh()
   cudaError_t err =
     cudaMemcpy(buf, device(), sizeof(State) * n, cudaMemcpyDeviceToHost);
 
-  if(need_unmap)
-    deactivate(); // deactivate only if resource was not mapped before
-                  // calling dtoh()
+  if(need_unmap && cudaSuccess == err)
+    err = deactivate(); // deactivate only if resource was not mapped before
+                        // calling dtoh()
   return err;
 }
 
-cudaError_t Data::htod()
+cudaError_t Data::htod() // never used but kept here for completeness
 {
   debug("Data::htod()\n");
 
@@ -42,8 +42,8 @@ cudaError_t Data::htod()
   cudaError_t err =
     cudaMemcpy(device(), buf, sizeof(State) * n, cudaMemcpyHostToDevice);
 
-  if(need_unmap)
-    deactivate(); // deactivate only if resource was not mapped before
-                  // calling dtoh()
+  if(need_unmap && cudaSuccess == err)
+    err = deactivate(); // deactivate only if resource was not mapped before
+                        // calling dtoh()
   return err;
 }

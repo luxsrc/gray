@@ -23,6 +23,7 @@ static __device__ __constant__ size_t *count = NULL;
 cudaError_t core::sync(size_t *p)
 {
   debug("core::sync(%p)\n", p);
+
   return cudaMemcpyToSymbol(count, &p, sizeof(size_t *));
 }
 
@@ -31,6 +32,7 @@ static __device__ __constant__ Const c = {};
 cudaError_t core::sync(Const *p)
 {
   debug("core::sync(%p)\n", p);
+
   return cudaMemcpyToSymbol(c, p, sizeof(Const));
 }
 
@@ -39,18 +41,20 @@ cudaError_t core::sync(Const *p)
 static __global__ void kernel(State *s, const size_t n, const real t)
 {
   const size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+
   if(i < n)
     s[i] = ic(i, n, t);
 }
 
 cudaError_t Data::init(double t)
 {
-  debug("Data::init(%f)\n", t);
+  debug("Data::init(%g)\n", t);
 
   kernel<<<gsz, bsz>>>(device(), n, t);
 
   cudaError_t err = cudaDeviceSynchronize();
-  deactivate();
+  if(cudaSuccess == err)
+    err = deactivate();
   return err;
 }
 
@@ -79,6 +83,7 @@ cudaError_t Data::evolve(double t0, double t1)
   driver<<<gsz, bsz, bsz * sizeof(State)>>>(device(), n, t0, t1);
 
   cudaError_t err = cudaDeviceSynchronize();
-  deactivate();
+  if(cudaSuccess == err)
+    err = deactivate();
   return err;
 }

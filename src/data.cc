@@ -70,8 +70,9 @@ Data::~Data()
 #ifdef ENABLE_GL
   err = cudaGraphicsUnregisterResource(res);
   glDeleteBuffers(1, &vbo); // try deleting even if res is not unregistered
-  if(cudaSuccess == err && GL_NO_ERROR != glGetError())
-    err = cudaErrorUnknown;
+  if(cudaSuccess == err &&
+     GL_NO_ERROR != glGetError())
+    err = cudaErrorUnknown; // "cast" OpenGL error to CUDA unknown error
 #else
   err = cudaFree((void *)res);
 #endif

@@ -30,24 +30,23 @@ class Data {
   State *buf; // host buffer
   bool   mapped;
 
-  cudaError_t dtoh();
-  cudaError_t htod();
+  cudaError_t dtoh();       // implemented in "src/memcpy.cc"
+  cudaError_t htod();       // implemented in "src/memcpy.cc"
+  cudaError_t deactivate(); // implemented in "src/interop.cc"
+  State      *device();     // implemented in "src/interop.cc"
+  State      *host();       // implemented in "src/interop.cc"
 
  public:
-  Data(size_t);
-  ~Data();
+  Data(size_t); // implemented in "src/data.cc"
+  ~Data();      // implemented in "src/data.cc"
 
   operator size_t() { return n; }
 #ifdef ENABLE_GL
   operator GLuint() { return vbo; }
 #endif
 
-  cudaError_t init  (double);
-  cudaError_t evolve(double, double);
-
-  State *device();
-  State *host();
-  void   deactivate();
+  cudaError_t init  (double);         // implemented in "src/core.cu"
+  cudaError_t evolve(double, double); // implemented in "src/core.cu"
 
   void dump(const char *, double);
   void spec(const char *);
