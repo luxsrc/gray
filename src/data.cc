@@ -52,11 +52,16 @@ Data::Data(size_t n_input, Para &para)
                                        // cudaMalloc() to get device memory
   mapped = true; // hence, the memory is "always" mapped
 #endif
+  if(cudaSuccess == err)
+    err = cudaMalloc((void **)&counter, sizeof(size_t) * n);
+  if(cudaSuccess == err)
+    err = sync(counter);
   if(cudaSuccess != err)
     error("Data::Data(): fail to allocate device memory [%s]\n",
           cudaGetErrorString(err));
 
-  if(!(buf = (State *)malloc(sz)))
+  if(!(counter = (size_t *)malloc(sizeof(size_t) * n)) ||
+     !(buf     = (State  *)malloc(sz)))
     error("Data::Data(): fail to allocate host memory\n");
 }
 

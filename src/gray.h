@@ -60,9 +60,4 @@ extern void error(const char *, ...);
 #endif
 extern void pick(int);
 
-// Synchronize host and constant device memory
-namespace core {
-  extern cudaError_t sync(size_t *);
-}
-
 #endif // GRAY_H

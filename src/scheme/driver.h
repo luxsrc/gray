@@ -51,7 +51,7 @@ static __global__ void driver(State *state, size_t n, real t, real target)
         c += 1;
       }
 
-    count[blockIdx.x * blockDim.x + threadIdx.x] = c;
+    count.er[blockIdx.x * blockDim.x + threadIdx.x] = c;
   }
 
   __syncthreads();

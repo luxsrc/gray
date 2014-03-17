@@ -18,11 +18,11 @@
 
 #include "gray.h"
 
-static __device__ __constant__ size_t *count = NULL;
+static __device__ __constant__ struct Counter {size_t *er;} count = {};
 
-cudaError_t core::sync(size_t *p)
+cudaError_t Data::sync(size_t *p)
 {
-  debug("core::sync(%p)\n", p);
+  debug("Data::sync(%p)\n", p);
 
   return cudaMemcpyToSymbol(count, &p, sizeof(size_t *));
 }

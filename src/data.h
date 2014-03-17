@@ -26,16 +26,18 @@ class Data {
   GLuint vbo;
   struct cudaGraphicsResource *res;
 #else
-  State *res; // device resource
+  State  *res; // device resource
 #endif
-  State *buf; // host buffer
-  bool   mapped;
+  State  *buf; // host buffer
+  size_t *counter;
+  bool    mapped;
 
-  cudaError_t dtoh();       // implemented in "src/memcpy.cc"
-  cudaError_t htod();       // implemented in "src/memcpy.cc"
-  cudaError_t deactivate(); // implemented in "src/interop.cc"
-  State      *device();     // implemented in "src/interop.cc"
-  State      *host();       // implemented in "src/interop.cc"
+  cudaError_t sync(size_t *); // implemented in "src/core.cu"
+  cudaError_t dtoh();         // implemented in "src/memcpy.cc"
+  cudaError_t htod();         // implemented in "src/memcpy.cc"
+  cudaError_t deactivate();   // implemented in "src/interop.cc"
+  State      *device();       // implemented in "src/interop.cc"
+  State      *host();         // implemented in "src/interop.cc"
 
  public:
   Data(size_t, Para &); // implemented in "src/data.cc"
