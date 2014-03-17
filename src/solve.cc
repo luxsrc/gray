@@ -50,7 +50,7 @@ int Para::solve(Data &data)
 #if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
     vis::sense();
 #endif
-    vis::show((size_t)data, (GLuint)data);
+    data.show();
 
     glfwSwapBuffers(vis::window);
     glfwPollEvents();

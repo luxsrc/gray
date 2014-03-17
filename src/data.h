@@ -40,16 +40,14 @@ class Data {
   Data(size_t); // implemented in "src/data.cc"
   ~Data();      // implemented in "src/data.cc"
 
-  operator size_t() { return n; }
-#ifdef ENABLE_GL
-  operator GLuint() { return vbo; }
-#endif
-
   cudaError_t init  (double);         // implemented in "src/core.cu"
   cudaError_t evolve(double, double); // implemented in "src/core.cu"
 
   void dump(const char *, double);
   void spec(const char *);
+#ifdef ENABLE_GL
+  void show(); // implemented in "src/optional/vis.cc"
+#endif
 };
 
 #endif // DATA_H

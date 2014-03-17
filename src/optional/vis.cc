@@ -74,7 +74,7 @@ void vis::setup(int argc, char **argv, Para &para)
   vis::mktexture(&texture);
 }
 
-void vis::show(size_t n, GLuint vbo)
+void Data::show()
 {
   glViewport(0, 0, vis::width, vis::height);
   glMatrixMode(GL_PROJECTION);
@@ -121,5 +121,5 @@ void vis::show(size_t n, GLuint vbo)
   // DONE
   glUseProgram(0);
   if(GL_NO_ERROR != glGetError())
-    error("vis::show(): fail to visualize simulation\n");
+    error("Data::show(): fail to visualize simulation\n");
 }

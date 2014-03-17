@@ -38,7 +38,6 @@ namespace vis {
   extern Para  *p;
 
   extern void setup(int, char **, Para &);
-  extern void show(size_t, GLuint);
 
   extern void mktexture(GLuint[]);
   extern void mkshaders(GLuint[]);
