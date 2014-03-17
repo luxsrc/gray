@@ -93,17 +93,16 @@
 #define NVAR (sizeof(State) / sizeof(real))
 
 // Global variables
-namespace global {
-  extern double t, dt_dump, dt_saved;
-  extern const char *format;
 #ifdef ENABLE_GL
+namespace global {
   extern GLFWwindow *window;
-  extern int   width, height;
-  extern float ratio, ax, ly, az, a_spin;
-  extern int   shader;
-  extern bool  draw_body;
-#endif
+  extern int    width, height;
+  extern float  ratio, ax, ly, az, a_spin;
+  extern double dt_saved;
+  extern int    shader;
+  extern bool   draw_body;
 }
+#endif
 
 // Basic function prototypes
 extern void print(const char *, ...);
@@ -129,7 +128,6 @@ extern void vis(GLuint, size_t);
 // GRay specific functions
 extern double evolve(Data &, double);
 extern void   init  (Data &);
-extern int    solve (Data &);
 
 // Dirty wrapper functions that allow us to configure the CUDA kernels
 extern bool init_config(const char *);

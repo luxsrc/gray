@@ -41,7 +41,7 @@ void init(Data &data)
   const size_t gsz = (n - 1) / data.bsz + 1;
 
   State *s = data.device();
-  kernel<<<gsz, data.bsz>>>(s, n, global::t);
+  kernel<<<gsz, data.bsz>>>(s, n, para.t);
   cudaError_t err = cudaDeviceSynchronize();
   data.deactivate();
 
@@ -130,7 +130,7 @@ double evolve(Data &data, double dt)
 {
   debug("evolve(*%p, %g)\n", &data, dt);
 
-  const double t = global::t;
+  const double t = para.t;
   const size_t n = data;
 
   if(!res && !buf && !atexit(cleanup)) setup(n);
@@ -142,7 +142,7 @@ double evolve(Data &data, double dt)
 
   State *s = data.device();
   driver<<<gsz, data.bsz,
-                data.bsz * sizeof(State)>>>(s, n, t, global::t += dt);
+                data.bsz * sizeof(State)>>>(s, n, t, para.t += dt);
   cudaError_t err = cudaDeviceSynchronize();
   data.deactivate();
 
@@ -175,9 +175,9 @@ double evolve(Data &data, double dt)
 
   if(actual) {
     print("t =%7.2f; %.0f ms/%.0f steps ~%7.2f Gflops (%.2f%%),%7.2fGB/s\n",
-          global::t, ms, actual, 1e-6 * flop() * actual / ms,
-          100 * actual / peak,   1e-6 * (24 * sizeof(real) * actual +
-                                         rwsz() * n) / ms); // read + write
+          para.t, ms, actual, 1e-6 * flop() * actual / ms,
+          100 * actual / peak,  1e-6 * (24 * sizeof(real) * actual +
+                                        rwsz() * n) / ms); // read + write
     return ms;
   } else
     return 0;

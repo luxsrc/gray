@@ -24,6 +24,11 @@ class Para {
 
  public:
   Para(int, char **);
+
+  double t, dt_dump;
+  const char *format;
+
+  int solve(Data &);
 };
 
 #endif // PARA_H

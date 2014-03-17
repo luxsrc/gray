@@ -21,6 +21,9 @@
 
 Para::Para(int argc, char **argv)
 {
+  t = dt_dump = 0;
+  format = "%04d.raw";
+
   for(int i = 1; i < argc; ++i) {
     if(strchr(argv[i], '='))
       print("Set parameter ""%s""\n", argv[i]);

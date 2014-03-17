@@ -33,13 +33,6 @@
 #define N_DEFAULT (512 * 512)
 #endif
 
-namespace global {
-  double t        = T_START;
-  double dt_dump  = DT_DUMP;
-  double dt_saved = 0;
-  const char *format = "%04d.raw";
-}
-
 static void cleanup()
 {
   if(harm::field) cudaFree(harm::field);
@@ -70,11 +63,11 @@ int main(int argc, char **argv)
       error("Unknown flag ""%s""\n", arg);
     else {
       switch(arg[0]) {
-      case 'N': n               = atoi(arg + 2); break;
-      case 'T': global::t       = atof(arg + 2); break;
-      case 'D': global::dt_dump = atof(arg + 2); break;
-      case 'O': global::format  =      arg + 2 ; break;
-      case 'H': name            =      arg + 2 ; break;
+      case 'N': n            = atoi(arg + 2); break;
+      case 'T': para.t       = atof(arg + 2); break;
+      case 'D': para.dt_dump = atof(arg + 2); break;
+      case 'O': para.format  =      arg + 2 ; break;
+      case 'H': name         =      arg + 2 ; break;
       default :
         if(!init_config(arg) || !prob_config(arg))
           error("Unknown parameter ""%s""\n", arg);

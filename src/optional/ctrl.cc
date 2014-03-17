@@ -19,10 +19,11 @@
 #include "../gray.h"
 
 namespace global {
-  int   width = 512, height = 512;
-  float ratio = 1, ax = 330, ly = -70, az = 90;
-  int   shader    = 1;
-  bool  draw_body = true;
+  int    width = 512, height = 512;
+  float  ratio = 1, ax = 330, ly = -70, az = 90;
+  double dt_saved  = 0;
+  int    shader    = 1;
+  bool   draw_body = true;
 }
 
 static double last_x = 0, last_y = 0;

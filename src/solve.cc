@@ -25,7 +25,7 @@
 #ifdef ENABLE_GL
 extern void display(size_t, GLuint);
 
-int solve(Data &data)
+int Para::solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
 
@@ -34,14 +34,14 @@ int solve(Data &data)
     static size_t delta = 32;
     const  size_t limit = 1024;
 
-    if(global::dt_dump != 0.0) {
+    if(dt_dump != 0.0) {
       double ms;
       if(count + delta < limit) {
-        ms = evolve(data, global::dt_dump * delta / limit);
+        ms = evolve(data, dt_dump * delta / limit);
         if(0 == ms) break;
         count += delta;
       } else {
-        ms = evolve(data, global::dt_dump * (limit - count) / limit);
+        ms = evolve(data, dt_dump * (limit - count) / limit);
         if(0 == ms) break;
         count = 0;
       }
@@ -59,22 +59,22 @@ int solve(Data &data)
     glfwPollEvents();
   }
 
-  data.spec(global::format); // TODO: check if glutMainLoop() actually exit...
+  data.spec(format); // TODO: check if glutMainLoop() actually exit...
   return 0;
 }
 #else
-int solve(Data &data)
+int Para::solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
 
-  if(global::dt_dump != 0.0) {
-    data.dump(global::format, global::t);
-    while(0 < evolve(data, global::dt_dump))
-      data.dump(global::format, global::t);
+  if(dt_dump != 0.0) {
+    data.dump(format, t);
+    while(0 < evolve(data, dt_dump))
+      data.dump(format, t);
   } else
     while(0 < evolve(data, DT_DUMP));
 
-  data.spec(global::format);
+  data.spec(format);
   return 0;
 }
 #endif
