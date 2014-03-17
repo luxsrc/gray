@@ -30,4 +30,33 @@ Para::Para(int argc, char **argv)
     else
       error("Invalid argument ""%s""\n", argv[i]);
   }
+
+  /*
+  int i = 1;
+  if(argc > i && argv[i][0] == '-') // `./gray -2` use the second device
+    pick(atoi(argv[i++] + 1));
+  else
+    pick(0);
+
+  size_t n = 0;
+  for(; i < argc; ++i) {
+    const char *arg = argv[i];
+    if(arg[1] != '=')
+      error("Unknown flag ""%s""\n", arg);
+    else {
+      switch(arg[0]) {
+      case 'N': n            = atoi(arg + 2); break;
+      case 'T': para.t       = atof(arg + 2); break;
+      case 'D': para.dt_dump = atof(arg + 2); break;
+      case 'O': para.format  =      arg + 2 ; break;
+      case 'H': name         =      arg + 2 ; break;
+      default :
+        if(!init_config(arg) || !prob_config(arg))
+          error("Unknown parameter ""%s""\n", arg);
+        break;
+      }
+      print("Set parameter ""%s""\n", arg);
+    }
+  }
+  */
 }
