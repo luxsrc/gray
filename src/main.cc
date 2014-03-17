@@ -20,7 +20,6 @@
 #include "Kerr/harm.h"
 #include <cstdlib>
 #include <cstring>
-#include <para.h>
 
 #ifndef T_START
 #define T_START 0

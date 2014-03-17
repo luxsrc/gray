@@ -16,20 +16,28 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef STATE_H
-#define STATE_H
+#ifndef CONST_H
+#define CONST_H
 
-#define HARM 1
-#define PARTICLE_TIME t
+#define DT_DUMP (-100)
+#define N_NU 32 // so sizeof(Const) == 248 for single and 432 for double
 
 typedef struct {
-  real t, r, theta, phi;
-  real kr, ktheta;
-  real bimpact; // impact parameter defined as L / E, constant
-  struct {
-    real I;     // specific intensity
-    real tau;   // optical depth
-  } rad[N_NU];  // N_NU is now defined in const.h
-} State;
+  // Parameters for geodesic integration
+  real r_obs;     // observer radius in GM/c^2
+  real i_obs;     // observer theta in degrees
+  real a_spin;    // dimensionless spin j/mc
+  real dt_scale;  // typical step size
+  real epsilon;   // stop photon
+  real tolerance; // if xi+1 > tolerance, fall back to forward Euler
 
-#endif // STATE_H
+  // Parameters for radiative transfer
+  Coord *coord;
+  Field *field;
+  size_t nr, ntheta, nphi;
+  real   lnrmin, lnrmax;
+  real   m_BH, Gamma, Tp_Te_d, Tp_Te_w, T_w, ne_rho;
+  real   nu0[N_NU];
+} Const;
+
+#endif // CONST_H

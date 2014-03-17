@@ -17,7 +17,6 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
-#include <para.h>
 
 #ifndef DT_DUMP
 #define DT_DUMP 1

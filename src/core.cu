@@ -22,7 +22,6 @@ static __device__ __constant__ size_t *count = NULL;
 
 #include "Kerr/harm.h"
 #include <cstdlib>
-#include <para.h>
 
 #include <ic.h>
 
