@@ -37,9 +37,6 @@ namespace vis {
 
 static GLuint shader[2], texture;
 
-extern void mktexture(GLuint[]);
-extern void mkshaders(GLuint[]);
-
 static void error_callback(int err, const char *msg)
 {
   glfwDestroyWindow(vis::window);
@@ -71,8 +68,8 @@ void vis::setup(int argc, char **argv)
   if(GL_NO_ERROR != glGetError())
     error("vis::setup(): fail to setup visualization\n");
 
-  mkshaders(shader);
-  mktexture(&texture);
+  vis::mkshaders(shader);
+  vis::mktexture(&texture);
 }
 
 void vis::show(size_t n, GLuint vbo)

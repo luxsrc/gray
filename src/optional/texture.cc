@@ -1,5 +1,5 @@
-// Copyright (C) 2012,2013 Chi-kwan Chan
-// Copyright (C) 2012,2013 Steward Observatory
+// Copyright (C) 2012--2014 Chi-kwan Chan
+// Copyright (C) 2012--2014 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -39,7 +39,7 @@ static unsigned char *mkimg(int n)
   return img;
 }
 
-void mktexture(GLuint texture[1])
+void vis::mktexture(GLuint texture[])
 {
   glGenTextures(1, texture);
 
@@ -58,5 +58,5 @@ void mktexture(GLuint texture[1])
   glTexEnvi(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
 
   if(GL_NO_ERROR != glGetError())
-    error("mktexture(): fail to make texture\n");
+    error("vis::mktexture(): fail to make texture\n");
 }

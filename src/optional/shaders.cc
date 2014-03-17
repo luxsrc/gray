@@ -31,7 +31,7 @@ static GLuint compile(const char *src, GLenum type)
   return s;
 }
 
-void mkshaders(GLuint shader[3])
+void vis::mkshaders(GLuint shader[])
 {
   shader[0] = glCreateProgram();
   glAttachShader(shader[0], compile(STRING(
@@ -67,5 +67,5 @@ void mkshaders(GLuint shader[3])
   glLinkProgram(shader[1]);
 
   if(GL_NO_ERROR != glGetError())
-    error("mkshaders(): fail to compile shader\n");
+    error("vis::mkshaders(): fail to compile shader\n");
 }

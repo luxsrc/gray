@@ -37,6 +37,9 @@ namespace vis {
   extern void setup(int, char **);
   extern void show(GLuint, size_t);
 
+  extern void mktexture(GLuint[]);
+  extern void mkshaders(GLuint[]);
+
   extern void resize  (GLFWwindow *, int, int);
   extern void keyboard(GLFWwindow *, int, int, int, int);
   extern void mouse   (GLFWwindow *, double, double);
