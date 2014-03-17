@@ -29,9 +29,9 @@ cudaError_t core::sync(size_t *p)
 
 static __device__ __constant__ Const c = {};
 
-cudaError_t core::sync(Const *p)
+cudaError_t Para::sync(Const *p)
 {
-  debug("core::sync(%p)\n", p);
+  debug("Para::sync(%p)\n", p);
 
   return cudaMemcpyToSymbol(c, p, sizeof(Const));
 }

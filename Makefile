@@ -99,13 +99,8 @@ the beginning of this \"Makefile\"."
 
 	@mkdir -p bin
 	@echo -n 'Compiling $@... '
-	@if ls src/$@/*.c? &> /dev/null; then                        \
-	   $(NVCC) src/*.{cu,cc} src/$@/*.c?                         \
-	     $(OPT) $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/GRay-$@; \
-	 else                                                        \
-	   $(NVCC) src/*.{cu,cc}                                     \
-	     $(OPT) $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/GRay-$@; \
-	 fi
+	@$(NVCC) src/*.c? src/$@/*.c? \
+	   $(OPT) $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/GRay-$@
 
 ifeq ($(PRIME),1)
 	@install_name_tool -change libNiTE2.dylib \
