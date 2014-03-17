@@ -33,7 +33,7 @@ static void setup()
   print("Making sense...");
 
   if(nite::STATUS_OK != nite::NiTE::initialize())
-    error("vis::sense(): fail to initialize NiTE\n");
+    error("vis::sense(): fail to initialize PrimeSense\n");
 
   if(nite::STATUS_OK != tracker.create())
     error("vis::sense(): fail to create user tracker\n");

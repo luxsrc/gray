@@ -34,7 +34,7 @@ class Data {
   cudaError_t htod();
 
  public:
-  Data(size_t = 65536);
+  Data(size_t);
   ~Data();
 
   operator size_t() { return n; }

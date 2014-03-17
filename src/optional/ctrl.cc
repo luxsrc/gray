@@ -24,6 +24,7 @@ namespace vis {
   double dt_saved  = 0;
   int    shader    = 1;
   bool   draw_body = true;
+  Para  *p         = NULL;
 }
 
 static double last_x = 0, last_y = 0;
@@ -53,16 +54,16 @@ void vis::keyboard(GLFWwindow *win, int key, int code, int action, int mods)
     if(++vis::shader >= 2) vis::shader = 0;
     break;
   case 'r': case 'R':
-    if(vis::dt_dump == 0.0)
+    if(p->dt_dump == 0.0)
       vis::dt_saved *= -1; // fall through
     else {
-      vis::dt_dump *= -1;
+      p->dt_dump *= -1;
       break;
     }
   case 'p': case 'P':
     const double temp = vis::dt_saved;
-    vis::dt_saved = vis::dt_dump;
-    vis::dt_dump = temp;
+    vis::dt_saved = p->dt_dump;
+    p->dt_dump = temp;
     break;
   }
 }

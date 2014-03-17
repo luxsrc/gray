@@ -33,13 +33,13 @@ int Para::solve(Data &data)
     const  size_t limit = 1024;
 
     if(dt_dump != 0.0) {
-      double ms;
+      double t_old = t, ms;
       if(count + delta < limit) {
-        ms = evolve(data, dt_dump * delta / limit);
+        ms = data.evolve(t_old, t += dt_dump * delta / limit);
         if(0 == ms) break;
         count += delta;
       } else {
-        ms = evolve(data, dt_dump * (limit - count) / limit);
+	ms = data.evolve(t_old, t += dt_dump * (limit - count) / limit);
         if(0 == ms) break;
         count = 0;
       }
@@ -48,9 +48,8 @@ int Para::solve(Data &data)
     }
 
 #if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
-    sense();
+    vis::sense();
 #endif
-
     vis::show((size_t)data, (GLuint)data);
 
     glfwSwapBuffers(vis::window);
@@ -67,10 +66,15 @@ int Para::solve(Data &data)
 
   if(dt_dump != 0.0) {
     data.dump(format, t);
-    while(0 < evolve(data, dt_dump))
+    double t_old = t;
+    while(0 < data.evolve(t_old, t += dt_dump)) {
       data.dump(format, t);
-  } else
-    while(0 < evolve(data, DT_DUMP));
+      t_old = t;
+    }
+  } else {
+    double t_old = t;
+    while(0 < data.evolve(t_old, t += DT_DUMP));
+  }
 
   data.spec(format);
   return 0;

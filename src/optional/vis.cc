@@ -35,7 +35,7 @@ namespace vis {
   float a_spin = 0.999;
 }
 
-static GLuint shader[2], texture;
+static GLuint shaders[2], texture;
 
 static void error_callback(int err, const char *msg)
 {
@@ -44,8 +44,10 @@ static void error_callback(int err, const char *msg)
   error("[GLFW] %s\n", msg);
 }
 
-void vis::setup(int argc, char **argv)
+void vis::setup(int argc, char **argv, Para &para)
 {
+  vis::p = &para;
+
   if(!glfwInit())
     error("[GLFW] fail to initialize the OpenGL Framework\n");
 
@@ -68,7 +70,7 @@ void vis::setup(int argc, char **argv)
   if(GL_NO_ERROR != glGetError())
     error("vis::setup(): fail to setup visualization\n");
 
-  vis::mkshaders(shader);
+  vis::mkshaders(shaders);
   vis::mktexture(&texture);
 }
 
@@ -95,7 +97,7 @@ void vis::show(size_t n, GLuint vbo)
   glutWireSphere(1.0 + sqrt(1.0 - vis::a_spin * vis::a_spin), 32, 16);
 
   // Draw particles, i.e., photon locations
-  glUseProgram(shader[vis::shader]);
+  glUseProgram(shaders[vis::shader]);
 
   glEnable(GL_POINT_SPRITE_ARB);
   glEnable(GL_BLEND);

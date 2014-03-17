@@ -34,11 +34,10 @@ int main(int argc, char **argv)
   print("GRay: a massive parallel GRaysic integrator\n");
   debug("Debugging is turned on\n");
 
-#ifdef ENABLE_GL
-  vis::setup(argc, argv);
-#endif
-
   Para para(argc, argv);
+#ifdef ENABLE_GL
+  vis::setup(argc, argv, para);
+#endif
 
   Data data(n);
   data.init(t0);
