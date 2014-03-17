@@ -17,6 +17,7 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "../gray.h"
+#include <cmath>
 
 void Para::init(Const &c)
 {
@@ -27,18 +28,14 @@ void Para::init(Const &c)
   c.epsilon   = 1e-3;
   c.tolerance = 1e-1;
 
+  c.m_BH      = 4.3e6; // in unit of solar mass
+  c.ne_rho    = 1e6;
+  c.threshold = 5;
+  c.Tp_Te_d   = 3;
+  c.Tp_Te_w   = 3;
+  for(int i = 0; i < N_NU; ++i)
+    c.nu0[i] = pow(10.0, 9 + 0.5 * i);
+
   c.coord = NULL;
   c.field = NULL;
-
-  c.nr = c.ntheta = c.nphi = 0;
-  c.lnrmin = c.lnrmax = 0;
-
-  c.m_BH    = 4.3e6; // in unit of solar mass
-  c.Gamma   = 4.0 / 3;
-  c.Tp_Te_d = 3;
-  c.Tp_Te_w = 3;
-  c.T_w     = 0;
-  c.ne_rho  = 1e6;
-  for(int i = 0; i < N_NU; ++i)
-    c.nu0[i] = 0;
 }
