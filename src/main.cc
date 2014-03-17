@@ -17,99 +17,32 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
-#include "Kerr/harm.h"
-#include <cstdlib>
-#include <cstring>
-#include <para.h>
 
 #ifndef T_START
 #define T_START 0
-#endif
-
-#ifndef DT_DUMP
-#define DT_DUMP 1
 #endif
 
 #ifndef N_DEFAULT
 #define N_DEFAULT (512 * 512)
 #endif
 
-namespace global {
-  double t        = T_START;
-  double dt_dump  = DT_DUMP;
-  double dt_saved = 0;
-  const char *format = "%04d.raw";
-}
-
-static void cleanup()
-{
-  if(harm::field) cudaFree(harm::field);
-  if(harm::coord) cudaFree(harm::coord);
-}
-
 int main(int argc, char **argv)
 {
-  const char *name = NULL;
+  double t0 = T_START;
+  size_t n  = N_DEFAULT;
 
   print("GRay: a massive parallel GRaysic integrator\n");
   debug("Debugging is turned on\n");
 
+  Para para(argc, argv);
 #ifdef ENABLE_GL
-  setup(argc, argv);
+  vis::setup(argc, argv, para);
 #endif
 
-  int i = 1;
-  if(argc > i && argv[i][0] == '-') // `./gray -2` use the second device
-    optimize(atoi(argv[i++] + 1));
-  else
-    optimize(0);
-
-  size_t n = 0;
-  for(; i < argc; ++i) {
-    const char *arg = argv[i];
-    if(arg[1] != '=')
-      error("Unknown flag ""%s""\n", arg);
-    else {
-      switch(arg[0]) {
-      case 'N': n               = atoi(arg + 2); break;
-      case 'T': global::t       = atof(arg + 2); break;
-      case 'D': global::dt_dump = atof(arg + 2); break;
-      case 'O': global::format  =      arg + 2 ; break;
-      case 'H': name            =      arg + 2 ; break;
-      default :
-        if(!init_config(arg) || !prob_config(arg))
-          error("Unknown parameter ""%s""\n", arg);
-        break;
-      }
-      print("Set parameter ""%s""\n", arg);
-    }
-  }
-
-  if(name) {
-    using namespace harm;
-
-    char grid[256], *p;
-    strcpy(grid, name);
-    p = grid + strlen(grid);
-    while(p > grid && *p != '/') --p;
-    strcpy(*p == '/' ? p + 1 : p, "usgdump2d");
-
-    coord = load_coord(grid);
-    field = load_field(name);
-    if(coord && field && !atexit(cleanup))
-      print("Loaded harm data from \"%s\"\n", name);
-    else {
-      if(field) cudaFree(field);
-      if(coord) cudaFree(coord);
-      error("Fail to load harm data from \"%s\"", name);
-    }
-  }
-
-  Data data(n ? n : N_DEFAULT);
-  init(data);
+  Data data(n);
+  data.init(t0);
 
 #ifdef ENABLE_GL
-  vis((GLuint)data, (size_t)data);
   print("\
 Press 'ESC' or 'q' to quit, 'p' to pulse, 'r' to reverse the run, 's' to\n\
 to turn sprites on and off, and 'f' to enter and exit full screen\n\
@@ -118,5 +51,5 @@ to turn sprites on and off, and 'f' to enter and exit full screen\n\
   print("Press 'Ctrl C' to quit\n");
 #endif
 
-  return solve(data);
+  return para.solve(data);
 }

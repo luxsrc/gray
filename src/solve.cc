@@ -17,67 +17,66 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
-#include <para.h>
 
 #ifndef DT_DUMP
 #define DT_DUMP 1
 #endif
 
 #ifdef ENABLE_GL
-static Data *d = NULL;
-
-static void idle(void)
-{
-  static size_t count = 0;
-  static size_t delta = 32;
-  const  size_t limit = 1024;
-
-  if(global::dt_dump != 0.0) {
-    double ms;
-    if(count + delta < limit) {
-      ms = evolve(*d, global::dt_dump * delta / limit);
-      if(0 == ms) return;
-      count += delta;
-    } else {
-      ms = evolve(*d, global::dt_dump * (limit - count) / limit);
-      if(0 == ms) return;
-      count = 0;
-    }
-    if(ms < 20 && delta < limit) delta *= 2;
-    if(ms > 80 && delta > 1    ) delta /= 2;
-  }
-
-#if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
-  sense();
-#endif
-
-  glutPostRedisplay();
-}
-
-int solve(Data &data)
+int Para::solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
 
-  d = &data;
-  glutIdleFunc(idle);
-  glutMainLoop();
+  while(!glfwWindowShouldClose(vis::window)) {
+    static size_t count = 0;
+    static size_t delta = 32;
+    const  size_t limit = 1024;
 
-  spec(data); // TODO: check if glutMainLoop() actually exit...
+    if(dt_dump != 0.0) {
+      double t_old = t, ms;
+      if(count + delta < limit) {
+        ms = data.evolve(t_old, t += dt_dump * delta / limit);
+        if(0 == ms) break;
+        count += delta;
+      } else {
+	ms = data.evolve(t_old, t += dt_dump * (limit - count) / limit);
+        if(0 == ms) break;
+        count = 0;
+      }
+      if(ms < 20 && delta < limit) delta *= 2;
+      if(ms > 80 && delta > 1    ) delta /= 2;
+    }
+
+#if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
+    vis::sense();
+#endif
+    vis::show((size_t)data, (GLuint)data);
+
+    glfwSwapBuffers(vis::window);
+    glfwPollEvents();
+  }
+
+  data.spec(format); // TODO: check if glutMainLoop() actually exit...
   return 0;
 }
 #else
-int solve(Data &data)
+int Para::solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
 
-  if(global::dt_dump != 0.0) {
-    dump(data);
-    while(0 < evolve(data, global::dt_dump))
-      dump(data);
-  } else
-    while(0 < evolve(data, DT_DUMP));
+  if(dt_dump != 0.0) {
+    data.dump(format, t);
+    double t_old = t;
+    while(0 < data.evolve(t_old, t += dt_dump)) {
+      data.dump(format, t);
+      t_old = t;
+    }
+  } else {
+    double t_old = t;
+    while(0 < data.evolve(t_old, t += DT_DUMP));
+  }
 
-  spec(data);
+  data.spec(format);
   return 0;
 }
 #endif

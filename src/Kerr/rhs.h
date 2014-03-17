@@ -112,7 +112,7 @@ static inline __device__ real L_j_ff(real nu, real te, real ne)
   y *= nu / te; // ~ 1e-10
   f *= ne;      // ~ 1e-15
 
-  return (m_BH * f * Gaunt(x, y)) * (f / (sqrt(te) * exp(y) + (real)EPSILON));
+  return (c.m_BH * f * Gaunt(x, y)) * (f / (sqrt(te)*exp(y) + (real)EPSILON));
 }
 
 static inline __device__ real L_j_synchr(real nu, real te, real ne,
@@ -135,14 +135,14 @@ static inline __device__ real L_j_synchr(real nu, real te, real ne,
                       log(2 * te * te - (real)0.5) :
                       log_K2it(te);
 
-  return (m_BH * xx * exp(-cbrtx)) * (xx * exp(-log_K2)) * (f * ne * nus);
+  return (c.m_BH * xx * exp(-cbrtx)) * (xx * exp(-log_K2)) * (f * ne * nus);
 }
 
 static inline __device__ State rhs(const State &s, real t)
 {
   State d = {};
 
-  const real a2 = a_spin * a_spin;
+  const real a2 = c.a_spin * c.a_spin;
   const real r2 = s.r * s.r; // 1 FLOP
 
   real sin_theta, cos_theta, c2, cs, s2;
@@ -165,8 +165,8 @@ static inline __device__ State rhs(const State &s, real t)
 
     tmp    = R_SCHW * s.r / g22;
     g00    = tmp - 1;
-    g30    = -a_spin * tmp * s2;
-    g33_s2 = sum - a_spin * g30;
+    g30    = -c.a_spin * tmp * s2;
+    g33_s2 = sum - c.a_spin * g30;
     g33    = g33_s2 * s2;
 
     tmp    = 1 / (g33 * g00 - g30 * g30);
@@ -179,8 +179,8 @@ static inline __device__ State rhs(const State &s, real t)
 
     const real G222 = -a2 * cs;
     const real G200 =  a2 * d.r;
-    const real G230 = -a_spin * d.r * (g22 + a2 * s2);
-    const real G233 = -a_spin * G230 * s2 + g33_s2 * cs;
+    const real G230 = -c.a_spin * d.r * (g22 + a2 * s2);
+    const real G233 = -c.a_spin * G230 * s2 + g33_s2 * cs;
 
     d.r = G222 / Dlt; // use d.r as tmp, will be reused in the next block
 
@@ -195,8 +195,8 @@ static inline __device__ State rhs(const State &s, real t)
   {
     const real G111 = (s.r + (R_SCHW / 2 - s.r) * g11) / Dlt;
     const real G100 = -(R_SCHW / 2) * (r2 - a2 * c2) / (g22 * g22);
-    const real G130 = -a_spin * s2 * G100;
-    const real G133 = (s.r - a_spin * G130) * s2;
+    const real G130 = -c.a_spin * s2 * G100;
+    const real G133 = (s.r - c.a_spin * G130) * s2;
 
     d.kr = (+     G100 * d.t      * d.t
             -     G111 * s.kr     * s.kr
@@ -208,22 +208,22 @@ static inline __device__ State rhs(const State &s, real t)
 
   d.r     = s.kr;
   d.theta = s.ktheta;
-  if(!field) return d;
+  if(!c.field) return d;
 
   int h2, h3;
-  int itheta = ntheta * s.theta / (real)M_PI; // we want floor() here
-  if(itheta < 0) itheta = 0; else if(itheta > ntheta-1) itheta = ntheta-1;
+  int itheta = c.ntheta * s.theta / (real)M_PI; // we want floor() here
+  if(itheta < 0) itheta = 0; else if(itheta > c.ntheta-1) itheta = c.ntheta-1;
   {
-    int ir = round(nr * (log(s.r) - lnrmin) / (lnrmax - lnrmin));
-    if(ir < 0) ir = 0; else if(ir > nr-1) ir = nr-1;
+    int ir = round(c.nr * (log(s.r) - c.lnrmin) / (c.lnrmax - c.lnrmin));
+    if(ir < 0) ir = 0; else if(ir > c.nr-1) ir = c.nr-1;
 
     int iphi = (s.phi >= 0) ?
-      ((int)(nphi * s.phi / (real)(2 * M_PI) + (real)0.5) % ( nphi)):
-      ((int)(nphi * s.phi / (real)(2 * M_PI) - (real)0.5) % (-nphi));
-    if(iphi < 0) iphi += nphi;
+      ((int)(c.nphi * s.phi / (real)(2 * M_PI) + (real)0.5) % ( c.nphi)):
+      ((int)(c.nphi * s.phi / (real)(2 * M_PI) - (real)0.5) % (-c.nphi));
+    if(iphi < 0) iphi += c.nphi;
 
-    h2 = itheta * nr + ir;
-    h3 = (iphi * ntheta + itheta) * nr + ir;
+    h2 = itheta * c.nr + ir;
+    h3 = (iphi * c.ntheta + itheta) * c.nr + ir;
   }
 
   real ut, ur, utheta, uphi;
@@ -231,21 +231,21 @@ static inline __device__ State rhs(const State &s, real t)
 
   // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
   {
-    const real gKSP00 = coord[h2].gcov[0][0];
-    const real gKSP11 = coord[h2].gcov[1][1];
-    const real gKSP22 = coord[h2].gcov[2][2];
-    const real gKSP33 = coord[h2].gcov[3][3];
-    const real gKSP01 = coord[h2].gcov[0][1];
-    const real gKSP02 = coord[h2].gcov[0][2];
-    const real gKSP03 = coord[h2].gcov[0][3];
-    const real gKSP12 = coord[h2].gcov[1][2];
-    const real gKSP13 = coord[h2].gcov[1][3];
-    const real gKSP23 = coord[h2].gcov[2][3];
+    const real gKSP00 = c.coord[h2].gcov[0][0];
+    const real gKSP11 = c.coord[h2].gcov[1][1];
+    const real gKSP22 = c.coord[h2].gcov[2][2];
+    const real gKSP33 = c.coord[h2].gcov[3][3];
+    const real gKSP01 = c.coord[h2].gcov[0][1];
+    const real gKSP02 = c.coord[h2].gcov[0][2];
+    const real gKSP03 = c.coord[h2].gcov[0][3];
+    const real gKSP12 = c.coord[h2].gcov[1][2];
+    const real gKSP13 = c.coord[h2].gcov[1][3];
+    const real gKSP23 = c.coord[h2].gcov[2][3];
 
     // Vector u
-    ur     = field[h3].v1;
-    utheta = field[h3].v2;
-    uphi   = field[h3].v3;
+    ur     = c.field[h3].v1;
+    utheta = c.field[h3].v2;
+    uphi   = c.field[h3].v3;
     ut     = 1 / sqrt((real)EPSILON
                       -(gKSP00                   +
                         gKSP11 * ur     * ur     +
@@ -262,9 +262,9 @@ static inline __device__ State rhs(const State &s, real t)
     uphi   *= ut;
 
     // Vector B
-    br     = field[h3].B1;
-    btheta = field[h3].B2;
-    bphi   = field[h3].B3;
+    br     = c.field[h3].B1;
+    btheta = c.field[h3].B2;
+    bphi   = c.field[h3].B3;
     bt     = (br     * (gKSP01 * ut     + gKSP11 * ur    +
                         gKSP12 * utheta + gKSP13 * uphi) +
               btheta * (gKSP02 * ut     + gKSP12 * ur    +
@@ -283,19 +283,19 @@ static inline __device__ State rhs(const State &s, real t)
                                gKSP22 * btheta + gKSP23 * bphi) +
                      bphi   * (gKSP03 * bt     + gKSP13 * br    +
                                gKSP23 * btheta + gKSP33 * bphi));
-    const real ibeta = bb / (2 * (Gamma - 1) * field[h3].u + (real)EPSILON);
-    Tp_Te = (ibeta > 5) ? Tp_Te_w : Tp_Te_d;
+    const real ibeta = bb / (2 * (c.Gamma-1) * c.field[h3].u + (real)EPSILON);
+    Tp_Te = (ibeta > 5) ? c.Tp_Te_w : c.Tp_Te_d;
     b = sqrt(bb);
   }
 
   // Transform vector u and b from KSP to KS coordinates
   {
-    const real dxdxp00 = coord[h2].dxdxp[0][0];
-    const real dxdxp11 = coord[h2].dxdxp[1][1];
-    const real dxdxp12 = coord[h2].dxdxp[1][2];
-    const real dxdxp21 = coord[h2].dxdxp[2][1];
-    const real dxdxp22 = coord[h2].dxdxp[2][2];
-    const real dxdxp33 = coord[h2].dxdxp[3][3];
+    const real dxdxp00 = c.coord[h2].dxdxp[0][0];
+    const real dxdxp11 = c.coord[h2].dxdxp[1][1];
+    const real dxdxp12 = c.coord[h2].dxdxp[1][2];
+    const real dxdxp21 = c.coord[h2].dxdxp[2][1];
+    const real dxdxp22 = c.coord[h2].dxdxp[2][2];
+    const real dxdxp33 = c.coord[h2].dxdxp[3][3];
 
     real temp1, temp2;
 
@@ -317,7 +317,7 @@ static inline __device__ State rhs(const State &s, real t)
   // Transform vector u and b from KS to BL coordinates
   {
     const real temp0 = -R_SCHW * s.r / Dlt; // Note that s.r and Dlt are
-    const real temp3 = -a_spin       / Dlt; // evaluated at photon position
+    const real temp3 = -c.a_spin     / Dlt; // evaluated at photon position
 
     ut   += ur * temp0;
     uphi += ur * temp3;
@@ -338,15 +338,16 @@ static inline __device__ State rhs(const State &s, real t)
     bkcos =  (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) /
              (shift * b + (real)EPSILON);
 
-    b *= sqrt(ne_rho) *
+    b *= sqrt(c.ne_rho) *
          (real)(CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me));
-    ne = ne_rho      *  field[h3].rho;
-    te = field[h3].u / (field[h3].rho + (real)EPSILON) * (real)CONST_mp_me *
-      ((Tp_Te + 1) / (Tp_Te + 2) / (real)1.5 + Gamma - 1) / (Tp_Te + 1) / 2;
+    ne = c.ne_rho      *  c.field[h3].rho;
+    te = c.field[h3].u / (c.field[h3].rho + (real)EPSILON) *
+      (real)CONST_mp_me *
+      ((Tp_Te+1) / (Tp_Te+2) / (real)1.5 + c.Gamma - 1) / (Tp_Te+1) / 2;
   }
 
   for(int i = 0; i < N_NU; ++i) {
-    const real nu     = nu0[i] * shift;
+    const real nu     = c.nu0[i] * shift;
     const real B_nu   =   B_Planck(nu, te);
     const real L_j_nu = L_j_synchr(nu, te, ne, b, bkcos) + L_j_ff(nu, te, ne);
     if(L_j_nu > 0) {

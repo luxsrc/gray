@@ -1,5 +1,5 @@
-// Copyright (C) 2012,2013 Chi-kwan Chan
-// Copyright (C) 2012,2013 Steward Observatory
+// Copyright (C) 2012--2014 Chi-kwan Chan
+// Copyright (C) 2012--2014 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -25,7 +25,7 @@ static inline __device__ real xi(const State &s)
     tmp  = sin(s.theta);
     s2   = tmp * tmp ;
     r2   = s.r * s.r;
-    a2   = a_spin * a_spin;
+    a2   = c.a_spin * c.a_spin;
 
     sum  = r2 + a2;
     g22  = sum - a2 * s2; // = r2 + a2 * [cos(theta)]^2 = Sigma
@@ -33,8 +33,8 @@ static inline __device__ real xi(const State &s)
 
     tmp  = R_SCHW * s.r / g22;
     g00  = tmp - 1;
-    g30  = -a_spin * tmp * s2;
-    g33  = (sum - a_spin * g30) * s2;
+    g30  = -c.a_spin * tmp * s2;
+    g33  = (sum - c.a_spin * g30) * s2;
 
     tmp  = 1 / (g33 * g00 - g30 * g30);
     kt   = -(g33 + s.bimpact * g30) * tmp;
@@ -50,7 +50,7 @@ static inline __device__ real xi(const State &s)
 static inline __device__ real fixup(State &y, const State &s,
                                               const State &k, real dt)
 {
-  if(tolerance < xi(y)) {
+  if(c.tolerance < xi(y)) {
     dt /= 9;
     #pragma unroll
     EACH(y) = GET(s) + dt * GET(k); // fall back to forward Euler

@@ -59,10 +59,10 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
     if(d > 10.0) { // d may be NaN
       if(type != 2) {
         d_old  = d;
-        ly_old = global::ly;
+        ly_old = vis::ly;
         type   = 2;
       }
-      global::ly = ly_old * d_old / d;
+      vis::ly = ly_old * d_old / d;
     }
   } else if(hands.count() == 1 && hands[0].fingers().count() >= 4) {
     const Leap::FingerList fingers = hands[0].fingers();
@@ -73,14 +73,14 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
     pos /= (float)fingers.count();
 
     if(type != 1) {
-      ax_old = global::ax;
-      az_old = global::az;
+      ax_old = vis::ax;
+      az_old = vis::az;
       x_old  = -pos.x;
       z_old  =  pos.y;
       type   = 1;
     }
-    global::ax = ax_old + (-pos.x - x_old) / 2;
-    global::az = az_old + ( pos.y - z_old) / 2;
+    vis::ax = ax_old + (-pos.x - x_old) / 2;
+    vis::az = az_old + ( pos.y - z_old) / 2;
   } else if(hands.count() == 1 && hands[0].fingers().count() <= 1) {
     // Pause or run the simulation
     const Leap::GestureList gestures = frame.gestures();
@@ -103,23 +103,23 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
       }
 
     switch(direction) {
-    case -1: if(global::dt_dump != 0.0)
-	       global::dt_dump  = +fabs(global::dt_dump);
+    case -1: if(vis::dt_dump != 0.0)
+	       vis::dt_dump  = +fabs(vis::dt_dump);
 	     else {
-	       global::dt_dump  = +fabs(global::dt_saved);
-	       global::dt_saved = 0.0;
+	       vis::dt_dump  = +fabs(vis::dt_saved);
+	       vis::dt_saved = 0.0;
 	     }
 	     break;
-    case  0: if(global::dt_dump != 0.0) {
-               global::dt_saved = global::dt_dump;
-               global::dt_dump  = 0.0;
+    case  0: if(vis::dt_dump != 0.0) {
+               vis::dt_saved = vis::dt_dump;
+               vis::dt_dump  = 0.0;
 	     }
  	     break;
-    case  1: if(global::dt_dump != 0.0)
-	       global::dt_dump  = -fabs(global::dt_dump);
+    case  1: if(vis::dt_dump != 0.0)
+	       vis::dt_dump  = -fabs(vis::dt_dump);
 	     else {
-	       global::dt_dump  = -fabs(global::dt_saved);
-	       global::dt_saved = 0.0;
+	       vis::dt_dump  = -fabs(vis::dt_saved);
+	       vis::dt_saved = 0.0;
 	     }
 	     break;
     }
@@ -147,7 +147,7 @@ static void cleanup()
   print(" DONE\n");
 }
 
-void sense()
+void vis::sense()
 {
   if(!controller && !atexit(cleanup)) setup();
 }

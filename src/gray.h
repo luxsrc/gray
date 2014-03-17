@@ -20,85 +20,35 @@
 #define GRAY_H
 
 // Rename macros
-#ifdef EBUG
-#  define DEBUG 1
-#  undef   EBUG
-#endif
+#include "make.h"
 
-#ifdef OUBLE
-#  if OUBLE == 1
-#    define DOUBLE 1
-#  else
-#    define SINGLE 1
-#  endif
-#  undef OUBLE
-#else
-#  define MIXED 1
-#endif
-
-#ifdef ISABLE_GL
-#  undef ISABLE_GL
-#else
-#  define ENABLE_GL 1
-#  define INTEROPERABLE 1 // so class Data uses OpenGL buffer data
-#endif
-
-#ifdef ISABLE_PRIME
-#  undef ISABLE_PRIME
-#else
-#  define ENABLE_PRIME 1
-#endif
-
-#ifdef ISABLE_LEAP
-#  undef ISABLE_LEAP
-#else
-#  define ENABLE_LEAP 1
-#endif
-
-// Include system headers
+// Include system and optional headers
 #include <cuda_runtime_api.h> // C-style CUDA runtime API
+
 #ifdef ENABLE_GL
-#  ifdef __APPLE__
-#    include <GLUT/glut.h>
-#  else
-#    include <GL/glut.h>
-#  endif
+#include "optional/vis.h"
 #endif
 
 // Typedef real to make the source code precision independent
 #if defined(DOUBLE)
   typedef double  real;
   typedef double xreal;
-# define GL_REAL  GL_DOUBLE
-# define GL_XREAL GL_DOUBLE
 #elif defined(MIXED)
   typedef float   real;
   typedef double xreal;
-# define GL_REAL  GL_FLOAT
-# define GL_XREAL GL_DOUBLE
 #elif defined(SINGLE)
   typedef float   real;
   typedef float  xreal;
-# define GL_REAL  GL_FLOAT
-# define GL_XREAL GL_FLOAT
 #endif
 
-// Include problem specific headers
+// Include problem specific headers and main data objects
+#include <const.h> // problem specific constants
 #include <state.h> // problem specific state structure
+
+#include "data.h" // Data is an object that holds State
+#include "para.h" // Para is an object that holds Const
+
 #define NVAR (sizeof(State) / sizeof(real))
-
-// Include the Data class, which needs the State type
-#include "data.h"
-
-// Global variables
-namespace global {
-  extern double t, dt_dump, dt_saved;
-  extern const char *format;
-#ifdef ENABLE_GL
-  extern float ratio, ax, ly, az, a_spin;
-#endif
-  extern size_t bsz;
-}
 
 // Basic function prototypes
 extern void print(const char *, ...);
@@ -108,30 +58,12 @@ extern void error(const char *, ...);
 #else
 #  define debug(...) // do nothing
 #endif
-extern void optimize(int);
+extern void pick(int);
 
-// NiTE+OpenNI or Leap Motion related functions for natural interactions
-#if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
-extern void sense();
-#endif
-
-// OpenGL/GLUT functions
-#ifdef ENABLE_GL
-extern void setup(int &, char *[]);
-extern void vis(GLuint, size_t);
-#endif
-
-// GRay specific functions
-extern void   dump  (Data &);
-extern void   spec  (Data &);
-extern double evolve(Data &, double);
-extern void   init  (Data &);
-extern int    solve (Data &);
-
-// Dirty wrapper functions that allow us to configure the CUDA kernels
-extern bool init_config(const char *);
-extern bool init_config(char, real  );
-extern bool prob_config(const char *);
-extern bool prob_config(char, real  );
+// Synchronize host and constant device memory
+namespace core {
+  extern cudaError_t sync(size_t *);
+  extern cudaError_t sync(Const  *);
+}
 
 #endif // GRAY_H

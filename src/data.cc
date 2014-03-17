@@ -19,7 +19,7 @@
 #include "gray.h"
 #include <cstdlib>
 
-#ifdef INTEROPERABLE
+#ifdef ENABLE_GL
 #  include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 #endif
 
@@ -27,23 +27,28 @@ Data::Data(size_t n_input)
 {
   debug("Data::Data(%zu)\n", n_input);
 
-  const size_t sz = sizeof(State) * (n = n_input);
-  cudaError_t err = cudaErrorMemoryAllocation; // assume we will have problem
+  n   = n_input;
+  m   = NVAR;
+  bsz = 64;
+  gsz = (n - 1) / bsz + 1;
 
-#ifdef INTEROPERABLE
-  glGenBuffers(1, &vbo); // when INTEROPERABLE is enabled, we use
+  const size_t sz = sizeof(State) * n;
+  cudaError_t err;
+#ifdef ENABLE_GL
+  glGenBuffers(1, &vbo); // when ENABLE_GL is enabled, we use
                          // glBufferData() to allocate device memory
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sz, 0, GL_DYNAMIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+  if(GL_NO_ERROR != glGetError())
+    error("Data::Data(): fail to generate or bind vertex buffer object\n");
 
-  if(GL_NO_ERROR == glGetError())
-    err = cudaGraphicsGLRegisterBuffer(&res, vbo,
-                                       cudaGraphicsMapFlagsWriteDiscard);
+  err = cudaGraphicsGLRegisterBuffer(&res, vbo,
+                                     cudaGraphicsMapFlagsWriteDiscard);
   mapped = false; // hence, we need to map the device memory before using it
 #else
-  err = cudaMalloc((void **)&res, sz); // when INTEROPERABLE is disabled, we
-                                       // use cudaMalloc() to get device memory
+  err = cudaMalloc((void **)&res, sz); // when ENABLE_GL is disabled, we use
+                                       // cudaMalloc() to get device memory
   mapped = true; // hence, the memory is "always" mapped
 #endif
   if(cudaSuccess != err)
@@ -58,22 +63,19 @@ Data::~Data()
 {
   debug("Data::~Data()\n");
 
-  cudaError_t err;
-
-#ifdef INTEROPERABLE
-  err = cudaGraphicsUnregisterResource(res);
-  glDeleteBuffers(1, &vbo);
-#else
-  err = cudaFree((void *)res);
-#endif
   if(buf)
     free(buf);
 
-#ifdef INTEROPERABLE
-  if(cudaSuccess != err || GL_NO_ERROR != glGetError())
+  cudaError_t err;
+#ifdef ENABLE_GL
+  err = cudaGraphicsUnregisterResource(res);
+  glDeleteBuffers(1, &vbo); // try deleting even if res is not unregistered
+  if(cudaSuccess == err && GL_NO_ERROR != glGetError())
+    err = cudaErrorUnknown;
 #else
-  if(cudaSuccess != err)
+  err = cudaFree((void *)res);
 #endif
+  if(cudaSuccess != err)
     error("Data::~Data(): fail to free device memory [%s]\n",
           cudaGetErrorString(err));
 }

@@ -1,5 +1,5 @@
-// Copyright (C) 2012,2013 Chi-kwan Chan
-// Copyright (C) 2012,2013 Steward Observatory
+// Copyright (C) 2012--2014 Chi-kwan Chan
+// Copyright (C) 2012--2014 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -18,9 +18,9 @@
 
 #include "gray.h"
 
-cudaError_t Data::d2h()
+cudaError_t Data::dtoh()
 {
-  debug("Data::d2h()\n");
+  debug("Data::dtoh()\n");
 
   bool need_unmap = !mapped; // save the mapped state because device()
                              // will change it
@@ -29,13 +29,13 @@ cudaError_t Data::d2h()
 
   if(need_unmap)
     deactivate(); // deactivate only if resource was not mapped before
-                  // calling d2h()
+                  // calling dtoh()
   return err;
 }
 
-cudaError_t Data::h2d()
+cudaError_t Data::htod()
 {
-  debug("Data::h2d()\n");
+  debug("Data::htod()\n");
 
   bool need_unmap = !mapped; // save the mapped state because device()
                              // will change it
@@ -44,6 +44,6 @@ cudaError_t Data::h2d()
 
   if(need_unmap)
     deactivate(); // deactivate only if resource was not mapped before
-                  // calling d2h()
+                  // calling dtoh()
   return err;
 }

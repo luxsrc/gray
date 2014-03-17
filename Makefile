@@ -1,4 +1,5 @@
 CUDA_PATH = $(subst /bin/nvcc,,$(shell which nvcc))
+GLFW_PATH = /opt/local
 NITE_PATH = /usr/local/NiTE/2.2
 OPNI_PATH = /usr/local/OpenNI/2.2
 LEAP_PATH = /usr/local/LeapSDK
@@ -27,16 +28,23 @@ ifeq ($(GL),0) # use `make <prob> GL=0` to disable OpenGL visualization
 else
 	OPT += src/optional/{ctrl,shaders,texture,vis}.cc
 	ifeq ($(shell uname),Darwin)
-		LDFLAGS += $(addprefix -Xlinker ,\
-		             -framework Glut -framework OpenGL)
+		CPPFLAGS += -I$(GLFW_PATH)/include
+		LDFLAGS  += -L$(GLFW_PATH)/lib -lglfw \
+			      $(addprefix -Xlinker ,  \
+			        -framework Cocoa      \
+			        -framework Glut       \
+			        -framework OpenGL     \
+			        -framework IOKit      \
+			        -framework CoreVideo)
 	else
-		LDFLAGS += -lglut -lglu -lgl
+		CFLAGS  += `pkg-config --cflags glfw3`
+		LDFLAGS += `pkg-config --libs   glfw3`
 	endif
 
 	ifneq ($(PRIME),1) # use `make <prob> PRIME=1` to enable PrimeSense
 		CPPFLAGS += -DISABLE_PRIME
 	else
-		OPT += src/optional/nite.cc
+		OPT += src/optional/prime.cc
 		CPPFLAGS += -I$(NITE_PATH)/Include \
 	        	    -I$(OPNI_PATH)/Include
 		LDFLAGS  += -L$(NITE_PATH)/Redist  \

@@ -16,23 +16,30 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#define FLOP_GETDT 12
+#ifndef CONST_H
+#define CONST_H
 
-static inline __device__ real getdt(const State &s, real t,
-                                    const State &a, real dt_max)
-{
-  const real r_bh = 1 + sqrt(1 - c.a_spin * c.a_spin);
-  if(s.r < r_bh + c.epsilon
-#ifndef ENABLE_LEAP
-  || s.r > (real)1.2 * c.r_obs
-#endif
-     ) return 0; // 0 stops the integration
+#include "harm.h"
 
-  for(int i = 0; i < N_NU; ++i)
-    if(s.rad[i].tau > (real)6.90775527898)
-      return 0;
+#define DT_DUMP (-100)
+#define N_NU 32 // so sizeof(Const) == 248 for single and 432 for double
 
-  return min(c.dt_scale / (fabs(a.r / s.r) + fabs(a.theta) + fabs(a.phi)),
-             min(fabs((s.r - r_bh) / a.r / 2),
-                 1.0));
-}
+typedef struct {
+  // Parameters for geodesic integration
+  real r_obs;     // observer radius in GM/c^2
+  real i_obs;     // observer theta in degrees
+  real a_spin;    // dimensionless spin j/mc
+  real dt_scale;  // typical step size
+  real epsilon;   // stop photon
+  real tolerance; // if xi+1 > tolerance, fall back to forward Euler
+
+  // Parameters for radiative transfer
+  Coord *coord;
+  Field *field;
+  size_t nr, ntheta, nphi;
+  real   lnrmin, lnrmax;
+  real   m_BH, Gamma, Tp_Te_d, Tp_Te_w, T_w, ne_rho;
+  real   nu0[N_NU];
+} Const;
+
+#endif // CONST_H

@@ -17,7 +17,7 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "../gray.h"
-#include "harm.h"
+/*
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
@@ -184,3 +184,33 @@ Field *load_field(const char *name)
 
   return data;
 }
+
+static void cleanup()
+{
+  if(harm::field) cudaFree(harm::field);
+  if(harm::coord) cudaFree(harm::coord);
+}
+
+int main()
+{
+  if(name) {
+    using namespace harm;
+
+    char grid[256], *p;
+    strcpy(grid, name);
+    p = grid + strlen(grid);
+    while(p > grid && *p != '/') --p;
+    strcpy(*p == '/' ? p + 1 : p, "usgdump2d");
+
+    coord = load_coord(grid);
+    field = load_field(name);
+    if(coord && field && !atexit(cleanup))
+      print("Loaded harm data from \"%s\"\n", name);
+    else {
+      if(field) cudaFree(field);
+      if(coord) cudaFree(coord);
+      error("Fail to load harm data from \"%s\"", name);
+    }
+  }
+}
+*/

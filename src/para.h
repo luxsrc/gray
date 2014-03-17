@@ -1,5 +1,5 @@
-// Copyright (C) 2012--2014 Chi-kwan Chan
-// Copyright (C) 2012--2014 Steward Observatory
+// Copyright (C) 2014 Chi-kwan Chan
+// Copyright (C) 2014 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -16,20 +16,19 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef STATE_H
-#define STATE_H
+#ifndef PARA_H
+#define PARA_H
 
-#define HARM 1
-#define PARTICLE_TIME t
+class Para {
+  Const buf; // host buffer, device resource is defined as constant memory
 
-typedef struct {
-  real t, r, theta, phi;
-  real kr, ktheta;
-  real bimpact; // impact parameter defined as L / E, constant
-  struct {
-    real I;     // specific intensity
-    real tau;   // optical depth
-  } rad[N_NU];  // N_NU is now defined in const.h
-} State;
+ public:
+  Para(int, char **);
 
-#endif // STATE_H
+  double t, dt_dump;
+  const char *format;
+
+  int solve(Data &);
+};
+
+#endif // PARA_H
