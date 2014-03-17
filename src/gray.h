@@ -83,12 +83,14 @@
 # define GL_XREAL GL_FLOAT
 #endif
 
-// Include problem specific headers
+// Include problem specific headers and main data objects
+#include <const.h> // problem specific constants
 #include <state.h> // problem specific state structure
-#define NVAR (sizeof(State) / sizeof(real))
 
-// Include the Data class, which needs the State type
-#include "data.h"
+#include "para.h" // Para is an object that holds Const
+#include "data.h" // Data is an object that holds State
+
+#define NVAR (sizeof(State) / sizeof(real))
 
 // Global variables
 namespace global {
