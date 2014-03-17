@@ -1,5 +1,5 @@
-// Copyright (C) 2012,2013 Chi-kwan Chan
-// Copyright (C) 2012,2013 Steward Observatory
+// Copyright (C) 2012--2014 Chi-kwan Chan
+// Copyright (C) 2012--2014 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -28,14 +28,14 @@ namespace vis {
 
 static double last_x = 0, last_y = 0;
 
-void resize(GLFWwindow *win, int w, int h)
+void vis::resize(GLFWwindow *win, int w, int h)
 {
   vis::width  = w;
   vis::height = h;
   vis::ratio  = (double)w / (double)h;
 }
 
-void keyboard(GLFWwindow *win, int key, int code, int action, int mods)
+void vis::keyboard(GLFWwindow *win, int key, int code, int action, int mods)
 {
   if(GLFW_RELEASE != action) return; // do nothing
 
@@ -67,7 +67,7 @@ void keyboard(GLFWwindow *win, int key, int code, int action, int mods)
   }
 }
 
-void mouse(GLFWwindow *win, double x, double y)
+void vis::mouse(GLFWwindow *win, double x, double y)
 {
   if(GLFW_PRESS == glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_RIGHT))
     vis::ly -= 0.1 * (y - last_y);

@@ -40,10 +40,6 @@ static GLuint shader[2], texture;
 extern void mktexture(GLuint[]);
 extern void mkshaders(GLuint[]);
 
-extern void resize  (GLFWwindow *, int, int);
-extern void keyboard(GLFWwindow *, int, int, int, int);
-extern void mouse   (GLFWwindow *, double, double);
-
 static void error_callback(int err, const char *msg)
 {
   glfwDestroyWindow(vis::window);
@@ -63,9 +59,9 @@ void vis::setup(int argc, char **argv)
   }
 
   glfwSetErrorCallback     (error_callback);
-  glfwSetWindowSizeCallback(vis::window, resize);
-  glfwSetKeyCallback       (vis::window, keyboard);
-  glfwSetCursorPosCallback (vis::window, mouse);
+  glfwSetWindowSizeCallback(vis::window, vis::resize);
+  glfwSetKeyCallback       (vis::window, vis::keyboard);
+  glfwSetCursorPosCallback (vis::window, vis::mouse);
   glfwMakeContextCurrent   (vis::window);
 
   glEnable(GL_DEPTH_TEST);

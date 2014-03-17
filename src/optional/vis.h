@@ -37,6 +37,10 @@ namespace vis {
   extern void setup(int, char **);
   extern void show(GLuint, size_t);
 
+  extern void resize  (GLFWwindow *, int, int);
+  extern void keyboard(GLFWwindow *, int, int, int, int);
+  extern void mouse   (GLFWwindow *, double, double);
+
 #ifdef ENABLE_PRIME
   extern void sense();
   extern void track();
