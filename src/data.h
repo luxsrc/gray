@@ -22,6 +22,7 @@
 class Data {
   size_t n, m, gsz, bsz;
 #ifdef ENABLE_GL
+  void   setup(Para &); // implemented in "src/optional/vis.cc"
   GLuint vbo;
   struct cudaGraphicsResource *res;
 #else
@@ -37,8 +38,8 @@ class Data {
   State      *host();       // implemented in "src/interop.cc"
 
  public:
-  Data(size_t); // implemented in "src/data.cc"
-  ~Data();      // implemented in "src/data.cc"
+  Data(size_t, Para &); // implemented in "src/data.cc"
+  ~Data();              // implemented in "src/data.cc"
 
   cudaError_t init  (double);         // implemented in "src/core.cu"
   cudaError_t evolve(double, double); // implemented in "src/core.cu"

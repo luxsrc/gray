@@ -37,8 +37,6 @@ namespace vis {
   extern bool   draw_body;
   extern Para  *p;
 
-  extern void setup(int, char **, Para &);
-
   extern void mktexture(GLuint[]);
   extern void mkshaders(GLuint[]);
 

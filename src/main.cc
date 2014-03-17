@@ -35,11 +35,8 @@ int main(int argc, char **argv)
   debug("Debugging is turned on\n");
 
   Para para(argc, argv);
-#ifdef ENABLE_GL
-  vis::setup(argc, argv, para);
-#endif
 
-  Data data(n);
+  Data data(n, para);
   data.init(t0);
 
 #ifdef ENABLE_GL

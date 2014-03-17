@@ -44,14 +44,14 @@ static void error_callback(int err, const char *msg)
   error("[GLFW] %s\n", msg);
 }
 
-void vis::setup(int argc, char **argv, Para &para)
+void Data::setup(Para &para)
 {
   vis::p = &para;
 
   if(!glfwInit())
     error("[GLFW] fail to initialize the OpenGL Framework\n");
 
-  vis::window = glfwCreateWindow(512, 512, argv[0], NULL, NULL);
+  vis::window = glfwCreateWindow(512, 512, "GRay", NULL, NULL);
   if(!vis::window) {
     glfwTerminate();
     error("[GLFW] fail to create window\n");
