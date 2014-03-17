@@ -44,7 +44,7 @@ else
 	ifneq ($(PRIME),1) # use `make <prob> PRIME=1` to enable PrimeSense
 		CPPFLAGS += -DISABLE_PRIME
 	else
-		OPT += src/optional/nite.cc
+		OPT += src/optional/prime.cc
 		CPPFLAGS += -I$(NITE_PATH)/Include \
 	        	    -I$(OPNI_PATH)/Include
 		LDFLAGS  += -L$(NITE_PATH)/Redist  \
