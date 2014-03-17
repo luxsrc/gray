@@ -29,7 +29,8 @@ class Data {
   State  *res; // device resource
 #endif
   State  *buf; // host buffer
-  size_t *counter;
+  size_t *count_res;
+  size_t *count_buf;
   bool    mapped;
 
   cudaError_t sync(size_t *); // implemented in "src/core.cu"

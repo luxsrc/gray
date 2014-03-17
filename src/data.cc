@@ -53,15 +53,15 @@ Data::Data(size_t n_input, Para &para)
   mapped = true; // hence, the memory is "always" mapped
 #endif
   if(cudaSuccess == err)
-    err = cudaMalloc((void **)&counter, sizeof(size_t) * n);
+    err = cudaMalloc((void **)&count_res, sizeof(size_t) * n);
   if(cudaSuccess == err)
-    err = sync(counter);
+    err = sync(count_res);
   if(cudaSuccess != err)
     error("Data::Data(): fail to allocate device memory [%s]\n",
           cudaGetErrorString(err));
 
-  if(!(counter = (size_t *)malloc(sizeof(size_t) * n)) ||
-     !(buf     = (State  *)malloc(sz)))
+  if(!(count_buf = (size_t *)malloc(sizeof(size_t) * n)) ||
+     !(buf       = (State  *)malloc(sz)))
     error("Data::Data(): fail to allocate host memory\n");
 }
 
@@ -71,16 +71,21 @@ Data::~Data()
 
   if(buf)
     free(buf);
+  if(count_buf)
+    free(count_buf);
 
   cudaError_t err;
+  if(count_res)
+    err = cudaFree((void *)count_res);
+  if(cudaSuccess == err)
 #ifdef ENABLE_GL
-  err = cudaGraphicsUnregisterResource(res);
+    err = cudaGraphicsUnregisterResource(res);
   glDeleteBuffers(1, &vbo); // try deleting even if res is not unregistered
   if(cudaSuccess == err &&
      GL_NO_ERROR != glGetError())
     err = cudaErrorUnknown; // "cast" OpenGL error to CUDA unknown error
 #else
-  err = cudaFree((void *)res);
+    err = cudaFree((void *)res);
 #endif
   if(cudaSuccess != err)
     error("Data::~Data(): fail to free device memory [%s]\n",
