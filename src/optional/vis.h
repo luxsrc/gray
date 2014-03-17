@@ -33,6 +33,7 @@ namespace vis {
   extern int    width, height;
   extern float  ratio, ax, ly, az, a_spin;
   extern double dt_saved;
+  extern GLuint shaders[2];
   extern int    shader;
   extern bool   draw_body;
   extern Para  *p;
