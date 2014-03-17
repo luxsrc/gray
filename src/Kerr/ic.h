@@ -30,8 +30,8 @@ static inline __device__ State ic(const size_t i, size_t n, const real t)
   real kphi, alpha, beta;
   {
     const real deg2rad = M_PI / 180;
-    const real cos_obs = cos(deg2rad * i_obs);
-    const real sin_obs = sin(deg2rad * i_obs);
+    const real cos_obs = cos(deg2rad * c.i_obs);
+    const real sin_obs = sin(deg2rad * c.i_obs);
     const real scale   = 64;
     const real half    = .5;
 
@@ -40,9 +40,9 @@ static inline __device__ State ic(const size_t i, size_t n, const real t)
     alpha =  (i % n + half) / n - half;
     beta  = ((i / n + half) / m - half) * m / n;
 
-    x = r_obs * sin_obs - scale * beta * cos_obs;
-    y =                   scale * alpha         ;
-    z = r_obs * cos_obs + scale * beta * sin_obs;
+    x = c.r_obs * sin_obs - scale * beta * cos_obs;
+    y =                     scale * alpha         ;
+    z = c.r_obs * cos_obs + scale * beta * sin_obs;
 
     const real R2 = x * x + y * y;
 
@@ -50,7 +50,7 @@ static inline __device__ State ic(const size_t i, size_t n, const real t)
     s.theta = acos(z / s.r);
     s.phi   = atan2(y, x);
 
-    s.kr     = r_obs / s.r;
+    s.kr     = c.r_obs / s.r;
     s.ktheta = (s.kr * z / s.r - cos_obs) / sqrt(R2);
       kphi   = -sin_obs * y / R2;
   }
@@ -64,7 +64,7 @@ static inline __device__ State ic(const size_t i, size_t n, const real t)
       tmp = sin(s.theta);
       s2  = tmp * tmp;
       r2  = s.r * s.r;
-      a2  = a_spin * a_spin;
+      a2  = c.a_spin * c.a_spin;
 
       sum = r2 + a2;
       g22 = sum - a2 * s2; // = r2 + a2 * [cos(theta)]^2 = Sigma
@@ -72,8 +72,8 @@ static inline __device__ State ic(const size_t i, size_t n, const real t)
 
       tmp = R_SCHW * s.r / g22;
       g00 = tmp - 1;
-      g30 = -a_spin * tmp * s2;
-      g33 = (sum - a_spin * g30) * s2;
+      g30 = -c.a_spin * tmp * s2;
+      g33 = (sum - c.a_spin * g30) * s2;
     }
 
     real E, kt;
