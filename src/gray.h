@@ -45,8 +45,8 @@
 #include <const.h> // problem specific constants
 #include <state.h> // problem specific state structure
 
-#include "para.h" // Para is an object that holds Const
 #include "data.h" // Data is an object that holds State
+#include "para.h" // Para is an object that holds Const
 
 #define NVAR (sizeof(State) / sizeof(real))
 

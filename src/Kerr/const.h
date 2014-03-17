@@ -19,6 +19,8 @@
 #ifndef CONST_H
 #define CONST_H
 
+#include "harm.h"
+
 #define DT_DUMP (-100)
 #define N_NU 32 // so sizeof(Const) == 248 for single and 432 for double
 

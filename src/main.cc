@@ -17,7 +17,7 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
-#include "Kerr/harm.h"
+
 #include <cstdlib>
 #include <cstring>
 
@@ -32,12 +32,6 @@
 #ifndef N_DEFAULT
 #define N_DEFAULT (512 * 512)
 #endif
-
-static void cleanup()
-{
-  if(harm::field) cudaFree(harm::field);
-  if(harm::coord) cudaFree(harm::coord);
-}
 
 int main(int argc, char **argv)
 {
@@ -74,26 +68,6 @@ int main(int argc, char **argv)
         break;
       }
       print("Set parameter ""%s""\n", arg);
-    }
-  }
-
-  if(name) {
-    using namespace harm;
-
-    char grid[256], *p;
-    strcpy(grid, name);
-    p = grid + strlen(grid);
-    while(p > grid && *p != '/') --p;
-    strcpy(*p == '/' ? p + 1 : p, "usgdump2d");
-
-    coord = load_coord(grid);
-    field = load_field(name);
-    if(coord && field && !atexit(cleanup))
-      print("Loaded harm data from \"%s\"\n", name);
-    else {
-      if(field) cudaFree(field);
-      if(coord) cudaFree(coord);
-      error("Fail to load harm data from \"%s\"", name);
     }
   }
 
