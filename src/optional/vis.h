@@ -26,7 +26,7 @@
 #endif
 #include <GLFW/glfw3.h>
 
-namespace global {
+namespace vis {
   extern GLFWwindow *window;
   extern int    width, height;
   extern float  ratio, ax, ly, az, a_spin;

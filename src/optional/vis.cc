@@ -30,7 +30,7 @@
 
 #define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
 
-namespace global {
+namespace vis {
   GLFWwindow *window = NULL;
   float a_spin = 0.999;
 }
@@ -50,7 +50,7 @@ extern void track();
 
 static void error_callback(int err, const char *msg)
 {
-  glfwDestroyWindow(global::window);
+  glfwDestroyWindow(vis::window);
   glfwTerminate();
   error("[GLFW] %s\n", msg);
 }
@@ -60,17 +60,17 @@ void setup(int argc, char **argv)
   if(!glfwInit())
     error("[GLFW] fail to initialize the OpenGL Framework\n");
 
-  global::window = glfwCreateWindow(512, 512, argv[0], NULL, NULL);
-  if(!global::window) {
+  vis::window = glfwCreateWindow(512, 512, argv[0], NULL, NULL);
+  if(!vis::window) {
     glfwTerminate();
     error("[GLFW] fail to create window\n");
   }
 
   glfwSetErrorCallback     (error_callback);
-  glfwSetWindowSizeCallback(global::window, resize);
-  glfwSetKeyCallback       (global::window, keyboard);
-  glfwSetCursorPosCallback (global::window, mouse);
-  glfwMakeContextCurrent   (global::window);
+  glfwSetWindowSizeCallback(vis::window, resize);
+  glfwSetKeyCallback       (vis::window, keyboard);
+  glfwSetCursorPosCallback (vis::window, mouse);
+  glfwMakeContextCurrent   (vis::window);
 
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -85,28 +85,28 @@ void setup(int argc, char **argv)
 
 void display(size_t n, GLuint vbo)
 {
-  glViewport(0, 0, global::width, global::height);
+  glViewport(0, 0, vis::width, vis::height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(27.0, global::ratio, 1.0, 1.0e6);
+  gluPerspective(27.0, vis::ratio, 1.0, 1.0e6);
   glMatrixMode(GL_MODELVIEW);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #ifdef ENABLE_PRIME
-  if(global::draw_body) track();
+  if(vis::draw_body) track();
 #endif
   glLoadIdentity();
   glRotatef(-90, 1, 0, 0);
-  glTranslatef(0, -global::ly, 0);
-  glRotatef(-(global::az- 90), 1, 0, 0);
-  glRotatef(-(global::ax-270), 0, 0, 1);
+  glTranslatef(0, -vis::ly, 0);
+  glRotatef(-(vis::az- 90), 1, 0, 0);
+  glRotatef(-(vis::ax-270), 0, 0, 1);
 
   // Draw wire sphere, i.e., the "black hole"
   glColor3f(0.0, 1.0, 0.0);
-  glutWireSphere(1.0 + sqrt(1.0 - global::a_spin * global::a_spin), 32, 16);
+  glutWireSphere(1.0 + sqrt(1.0 - vis::a_spin * vis::a_spin), 32, 16);
 
   // Draw particles, i.e., photon locations
-  glUseProgram(shader[global::shader]);
+  glUseProgram(shader[vis::shader]);
 
   glEnable(GL_POINT_SPRITE_ARB);
   glEnable(GL_BLEND);

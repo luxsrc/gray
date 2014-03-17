@@ -29,7 +29,7 @@ int Para::solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
 
-  while(!glfwWindowShouldClose(global::window)) {
+  while(!glfwWindowShouldClose(vis::window)) {
     static size_t count = 0;
     static size_t delta = 32;
     const  size_t limit = 1024;
@@ -55,7 +55,7 @@ int Para::solve(Data &data)
 
     display((size_t)data, (GLuint)data);
 
-    glfwSwapBuffers(global::window);
+    glfwSwapBuffers(vis::window);
     glfwPollEvents();
   }
 
