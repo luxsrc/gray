@@ -20,67 +20,25 @@
 #define GRAY_H
 
 // Rename macros
-#ifdef EBUG
-#  define DEBUG 1
-#  undef   EBUG
-#endif
+#include "make.h"
 
-#ifdef OUBLE
-#  if OUBLE == 1
-#    define DOUBLE 1
-#  else
-#    define SINGLE 1
-#  endif
-#  undef OUBLE
-#else
-#  define MIXED 1
-#endif
-
-#ifdef ISABLE_GL
-#  undef ISABLE_GL
-#else
-#  define ENABLE_GL 1
-#endif
-
-#ifdef ISABLE_PRIME
-#  undef ISABLE_PRIME
-#else
-#  define ENABLE_PRIME 1
-#endif
-
-#ifdef ISABLE_LEAP
-#  undef ISABLE_LEAP
-#else
-#  define ENABLE_LEAP 1
-#endif
-
-// Include system headers
+// Include system and optional headers
 #include <cuda_runtime_api.h> // C-style CUDA runtime API
+
 #ifdef ENABLE_GL
-#  ifdef __APPLE__
-#    include <GLUT/glut.h>
-#  else
-#    include <GL/glut.h>
-#  endif
-#  include <GLFW/glfw3.h>
+#include "optional/vis.h"
 #endif
 
 // Typedef real to make the source code precision independent
 #if defined(DOUBLE)
   typedef double  real;
   typedef double xreal;
-# define GL_REAL  GL_DOUBLE
-# define GL_XREAL GL_DOUBLE
 #elif defined(MIXED)
   typedef float   real;
   typedef double xreal;
-# define GL_REAL  GL_FLOAT
-# define GL_XREAL GL_DOUBLE
 #elif defined(SINGLE)
   typedef float   real;
   typedef float  xreal;
-# define GL_REAL  GL_FLOAT
-# define GL_XREAL GL_FLOAT
 #endif
 
 // Include problem specific headers and main data objects
@@ -92,18 +50,6 @@
 
 #define NVAR (sizeof(State) / sizeof(real))
 
-// Global variables
-#ifdef ENABLE_GL
-namespace global {
-  extern GLFWwindow *window;
-  extern int    width, height;
-  extern float  ratio, ax, ly, az, a_spin;
-  extern double dt_saved;
-  extern int    shader;
-  extern bool   draw_body;
-}
-#endif
-
 // Basic function prototypes
 extern void print(const char *, ...);
 extern void error(const char *, ...);
@@ -114,25 +60,8 @@ extern void error(const char *, ...);
 #endif
 extern void pick(int);
 
-// NiTE+OpenNI or Leap Motion related functions for natural interactions
-#if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
-extern void sense();
-#endif
-
-// OpenGL/GLUT functions
-#ifdef ENABLE_GL
-extern void setup(int, char **);
-extern void vis(GLuint, size_t);
-#endif
-
 // GRay specific functions
 extern double evolve(Data &, double);
 extern void   init  (Data &);
-
-// Dirty wrapper functions that allow us to configure the CUDA kernels
-extern bool init_config(const char *);
-extern bool init_config(char, real  );
-extern bool prob_config(const char *);
-extern bool prob_config(char, real  );
 
 #endif // GRAY_H
