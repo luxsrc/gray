@@ -50,6 +50,12 @@
 
 #define NVAR (sizeof(State) / sizeof(real))
 
+// Scheme based functions to estimate performance
+namespace scheme {
+  extern double flop();
+  extern double rwsz();
+}
+
 // Global variables
 namespace global {
   extern double dt_dump;

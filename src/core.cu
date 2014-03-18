@@ -64,7 +64,7 @@ cudaError_t Data::init(double t0)
 #define GET(s)  ((real *)&(s))[index]
 #define EACH(s) for(int index = 0; index < NVAR; ++index) GET(s)
 #  include <fixup.h>      // define device function fixup()
-#  include "scheme/rk4.h" // define device function scheme()
+#  include "scheme/rk4.h" // define device function integrate()
 #undef GET
 #undef EACH
 
