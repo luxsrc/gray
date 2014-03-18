@@ -17,26 +17,9 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
-
 #ifdef ENABLE_GL
 #  include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 #endif
-
-cudaError_t Data::deactivate()
-{
-  debug("Data::deactivate()\n");
-
-  cudaError_t err = cudaSuccess;
-#ifdef ENABLE_GL
-  if(mapped) {
-    err = cudaGraphicsUnmapResources(1, &res, 0);
-    mapped = false;
-  }
-#else
-  // do nothing
-#endif
-  return err;
-}
 
 State *Data::device()
 {
@@ -66,4 +49,20 @@ State *Data::host()
   debug("Data::host()\n");
 
   return cudaSuccess == dtoh() ? buf : NULL;
+}
+
+cudaError_t Data::deactivate()
+{
+  debug("Data::deactivate()\n");
+
+  cudaError_t err = cudaSuccess;
+#ifdef ENABLE_GL
+  if(mapped) {
+    err = cudaGraphicsUnmapResources(1, &res, 0);
+    mapped = false;
+  }
+#else
+  // do nothing
+#endif
+  return err;
 }

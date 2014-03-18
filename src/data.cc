@@ -18,7 +18,6 @@
 
 #include "gray.h"
 #include <cstdlib>
-
 #ifdef ENABLE_GL
 #  include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 #endif
@@ -26,6 +25,7 @@
 Data::Data(size_t n_input, Para &para)
 {
   debug("Data::Data(%zu)\n", n_input);
+  cudaError_t err;
 
   n   = n_input;
   m   = NVAR;
@@ -33,7 +33,6 @@ Data::Data(size_t n_input, Para &para)
   gsz = (n - 1) / bsz + 1;
 
   const size_t sz = sizeof(State) * n;
-  cudaError_t err;
 #ifdef ENABLE_GL
   setup(para);
   glGenBuffers(1, &vbo); // when ENABLE_GL is enabled, we use
@@ -60,6 +59,13 @@ Data::Data(size_t n_input, Para &para)
     error("Data::Data(): fail to allocate device memory [%s]\n",
           cudaGetErrorString(err));
 
+  err = cudaEventCreate(&time0);
+  if(cudaSuccess == err)
+    err = cudaEventCreate(&time1);
+  if(cudaSuccess != err)
+    error("Data::Data(): fail to create timer [%s]\n",
+          cudaGetErrorString(err));
+
   if(!(count_buf = (size_t *)malloc(sizeof(size_t) * n)) ||
      !(buf       = (State  *)malloc(sz)))
     error("Data::Data(): fail to allocate host memory\n");
@@ -68,13 +74,21 @@ Data::Data(size_t n_input, Para &para)
 Data::~Data()
 {
   debug("Data::~Data()\n");
+  cudaError_t err;
 
   if(buf)
     free(buf);
   if(count_buf)
     free(count_buf);
+  // TODO: check errno for free() error?
 
-  cudaError_t err;
+  err = cudaEventDestroy(time1);
+  if(cudaSuccess == err)
+    err = cudaEventDestroy(time0);
+  if(cudaSuccess != err)
+    error("Para::~Para(): fail to destroy timer [%s]\n",
+          cudaGetErrorString(err));
+
   if(count_res)
     err = cudaFree((void *)count_res);
   if(cudaSuccess == err)

@@ -21,24 +21,31 @@
 
 class Data {
   size_t n, m, gsz, bsz;
+
 #ifdef ENABLE_GL
-  void   setup(Para &); // implemented in "src/optional/vis.cc"
   GLuint vbo;
   struct cudaGraphicsResource *res;
 #else
-  State  *res; // device resource
+  State *res; // device resource
 #endif
-  State  *buf; // host buffer
+  State *buf; // host buffer
+  bool   mapped;
+
   size_t *count_res;
   size_t *count_buf;
-  bool    mapped;
 
-  cudaError_t sync(size_t *); // implemented in "src/core.cu"
-  cudaError_t dtoh();         // implemented in "src/memcpy.cc"
-  cudaError_t htod();         // implemented in "src/memcpy.cc"
-  cudaError_t deactivate();   // implemented in "src/interop.cc"
+  cudaEvent_t time0;
+  cudaEvent_t time1;
+
+#ifdef ENABLE_GL
+  void        setup(Para &);  // implemented in "src/optional/vis.cc"
+#endif
   State      *device();       // implemented in "src/interop.cc"
   State      *host();         // implemented in "src/interop.cc"
+  cudaError_t deactivate();   // implemented in "src/interop.cc"
+  cudaError_t dtoh();         // implemented in "src/memcpy.cc"
+  cudaError_t htod();         // implemented in "src/memcpy.cc"
+  cudaError_t sync(size_t *); // implemented in "src/core.cu"
 
  public:
   Data(size_t, Para &); // implemented in "src/data.cc"
