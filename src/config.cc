@@ -18,19 +18,7 @@
 
 #include "gray.h"
 
-Para::Para()
+bool Para::config(const char *arg)
 {
-  debug("Para::Para()\n");
-  cudaError_t err;
-
-  init(buf);
-
-  if(cudaSuccess != (err = sync(&buf)))
-    error("Para::Para(): fail to synchronize parameters [%s]\n",
-          cudaGetErrorString(err));
-}
-
-Para::~Para()
-{
-  debug("Para::~Para()\n");
+  return false;
 }

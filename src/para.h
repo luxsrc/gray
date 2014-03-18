@@ -28,6 +28,8 @@ class Para {
  public:
   Para();
   ~Para();
+
+  bool config(const char *);
 };
 
 #endif // PARA_H

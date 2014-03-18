@@ -17,6 +17,11 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
+#include <cstdlib>
+
+#ifndef N_DEFAULT
+#define N_DEFAULT (512 * 512)
+#endif
 
 #ifndef T_START
 #define T_START 0
@@ -26,15 +31,12 @@
 #define DT_DUMP 1
 #endif
 
-#ifndef N_DEFAULT
-#define N_DEFAULT (512 * 512)
-#endif
-
 int main(int argc, char **argv)
 {
-  double t0 = T_START;
-  double dt = DT_DUMP;
-  size_t n  = N_DEFAULT;
+  int    gpu = 0;
+  size_t n   = N_DEFAULT;
+  double t0  = T_START;
+  double dt  = DT_DUMP;
 
   const char *format = "%03d.raw";
   const char *output = "out.raw";
@@ -52,11 +54,22 @@ to turn sprites on and off, and 'f' to enter and exit full screen\n\
 #endif
 
   Para para;
-  /* TODO: configure parameters and change n, t0, etc
-  for(int i = 1; i < argc; ++i)
-    para.config(argv[i]);
-  */
-  pick(0);
+  for(int i = 1; i < argc; ++i) {
+    const char *arg = argv[i], *val;
+
+         if((val = match("gpu",    arg))) gpu    = atoi(val);
+    else if((val = match("n",      arg))) n      = atoi(val);
+    else if((val = match("t0",     arg))) t0     = atof(val);
+    else if((val = match("dt",     arg))) dt     = atof(val);
+    else if((val = match("format", arg))) format =      val ;
+    else if((val = match("output", arg))) output =      val ;
+
+    if(val || para.config(arg))
+      print("Set parameter \"%s\"\n", arg);
+    else
+      print("Unknown argument \"%s\"\n", arg);
+  }
+  pick(gpu);
 
   Data data(n);
   data.init(t0);
