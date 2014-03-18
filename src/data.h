@@ -57,7 +57,7 @@ class Data {
   cudaError_t init  (double); // implemented in "src/core.cu"
   cudaError_t evolve(double); // implemented in "src/core.cu"
 
-  bool solve(double, float &, float &, float &);
+  size_t solve(double, float &, float &, float &);
 
   void dump(const char *); // implemented in "src/io.cc"
   void spec(const char *); // implemented in "src/io.cc"

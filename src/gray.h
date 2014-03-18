@@ -26,8 +26,11 @@
 #include <cuda_runtime_api.h> // C-style CUDA runtime API
 
 #ifdef ENABLE_GL
-#include "optional/vis.h"
+#  include "optional/vis.h"
 #endif
+
+#define DELTA 256
+#define LIMIT (DELTA * DELTA)
 
 // Typedef real to make the source code precision independent
 #if defined(DOUBLE)

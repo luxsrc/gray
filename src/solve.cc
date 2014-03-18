@@ -21,7 +21,7 @@
 #define MEMCPY(dst, src, sz) \
   cudaMemcpy(dst, src, sz, cudaMemcpyDeviceToHost) // for readability
 
-bool Data::solve(double dt, float &elapse, float &actual, float &peak)
+size_t Data::solve(double dt, float &elapse, float &actual, float &peak)
 {
   debug("Data::evlove(%g)\n", dt);
   cudaError_t err;
@@ -30,7 +30,26 @@ bool Data::solve(double dt, float &elapse, float &actual, float &peak)
     error("Data::solve(): fail to start timing [%s]\n",
           cudaGetErrorString(err));
 
+#ifdef ENABLE_GL
+  static size_t delta = DELTA;
+  static size_t count = LIMIT;
+
+  double dt_sub = dt / LIMIT;
+  if(count + delta < LIMIT) {
+    dt_sub *= delta;
+    count  += delta;
+  } else if(count == LIMIT) {
+    dt_sub *= delta;
+    count   = delta;
+  } else {
+    dt_sub *= LIMIT - count;
+    count   = LIMIT;
+  }
+
+  if(cudaSuccess != (err = evolve(dt_sub)))
+#else
   if(cudaSuccess != (err = evolve(dt)))
+#endif
     error("Data::solve(): fail to launch kernel [%s]\n",
           cudaGetErrorString(err));
 
@@ -54,5 +73,17 @@ bool Data::solve(double dt, float &elapse, float &actual, float &peak)
     peak   += max * bsz;
   }
 
-  return actual != 0.0;
+#ifdef ENABLE_GL
+  if(elapse < 20 && delta < LIMIT) delta *= 2;
+  if(elapse > 80 && delta > 1    ) delta /= 2;
+
+  show();
+  glfwPollEvents();
+  if(glfwWindowShouldClose(vis::window))
+    return 0;
+
+  return actual > 0.0 ? count : 0;
+#else
+  return actual > 0.0 ? LIMIT : 0;
+#endif
 }

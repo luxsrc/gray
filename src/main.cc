@@ -66,12 +66,12 @@ to turn sprites on and off, and 'f' to enter and exit full screen\n\
   data.dump(format);
 
   float ms, actual, peak;
-  while(data.solve(global::dt_dump, ms, actual, peak)) {
+  while(size_t c = data.solve(global::dt_dump, ms, actual, peak)) {
     print("t = %.2f; %.0fms/%.0fsteps ~ %.2f Gflops (%.2f%%), %.2fGB/s\n",
           data.t, ms, actual,
           1e-6 * scheme::flop() * actual / ms, 100 * actual / peak,
           1e-6 * (24 * sizeof(real) * actual + scheme::rwsz() * n) / ms);
-    data.dump(format);
+    data.dump(c == LIMIT ? format : NULL);
   }
 
   data.spec(output);
