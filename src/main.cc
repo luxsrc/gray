@@ -41,17 +41,13 @@ int main(int argc, char **argv)
   const char *format = "%03d.raw";
   const char *output = "out.raw";
 
-  print("GRay: a massive parallel GRaysic integrator\n");
-  debug("Debugging is turned on\n");
-
+  print("GRay: a massive parallel ODE integrator written in CUDA C/C++\n");
 #ifdef ENABLE_GL
-  print("\
-Press 'ESC' or 'q' to quit, 'p' to pulse, 'r' to reverse the run, 's' to\n\
-to turn sprites on and off, and 'f' to enter and exit full screen\n\
-");
+  print("Press 'q' to quit, 'p' and 'r' to pulse and reverse the run\n");
 #else
   print("Press 'Ctrl C' to quit\n");
 #endif
+  debug("Debugging is turned on\n");
 
   Para para;
   for(int i = 1; i < argc; ++i) {
@@ -69,7 +65,7 @@ to turn sprites on and off, and 'f' to enter and exit full screen\n\
     else
       print("Unknown argument \"%s\"\n", arg);
   }
-  pick(gpu);
+  pick(gpu); // TODO: print GPU info from main() instead of pick()?
 
   Data data(n);
   data.init(t0);
