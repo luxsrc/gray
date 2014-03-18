@@ -31,6 +31,7 @@ Data::Data(size_t n_input, Para &para)
   m   = NVAR;
   bsz = 64;
   gsz = (n - 1) / bsz + 1;
+  t   = 0.0;
 
   const size_t sz = sizeof(State) * n;
 #ifdef ENABLE_GL

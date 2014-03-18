@@ -46,11 +46,11 @@ static __global__ void kernel(State *s, const size_t n, const real t)
     s[i] = ic(i, n, t);
 }
 
-cudaError_t Data::init(double t)
+cudaError_t Data::init(double t0)
 {
-  debug("Data::init(%g)\n", t);
+  debug("Data::init(%g)\n", t0);
 
-  kernel<<<gsz, bsz>>>(device(), n, t);
+  kernel<<<gsz, bsz>>>(device(), n, t = t0);
 
   cudaError_t err = cudaDeviceSynchronize();
   if(cudaSuccess == err)
@@ -76,10 +76,11 @@ cudaError_t Data::init(double t)
 #  include "scheme/driver.h" // define global kernel function driver()
 #undef GET_TIME
 
-cudaError_t Data::evolve(double t0, double t1)
+cudaError_t Data::evolve(double dt)
 {
-  debug("Data::evolve(%g,%g)\n", t0, t1);
+  debug("Data::evolve(%g)\n", dt);
 
+  const double t0 = t, t1 = (t += dt);
   driver<<<gsz, bsz, bsz * sizeof(State)>>>(device(), n, t0, t1);
 
   cudaError_t err = cudaDeviceSynchronize();

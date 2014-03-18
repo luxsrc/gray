@@ -20,9 +20,9 @@
 #include <cstdlib>
 #include <cstdio>
 
-void Data::dump(const char *format, double t)
+void Data::dump(const char *format)
 {
-  debug("Data::dump()\n");
+  debug("Data::dump(""%s"")\n", format);
 
   char name[256];
   static int frame = 0;
@@ -39,7 +39,7 @@ void Data::dump(const char *format, double t)
 
 void Data::spec(const char *format)
 {
-  debug("Data::spec()\n");
+  debug("Data::spec(""%s"")\n", format);
 
 #ifdef HARM
   const State *h = host();

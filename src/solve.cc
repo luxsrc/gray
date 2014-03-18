@@ -33,13 +33,13 @@ int Para::solve(Data &data)
     const  size_t limit = 1024;
 
     if(dt_dump != 0.0) {
-      double t_old = t, ms;
+      double ms;
       if(count + delta < limit) {
-        ms = data.evolve(t_old, t += dt_dump * delta / limit);
+        ms = data.evolve(dt_dump * delta / limit);
         if(0 == ms) break;
         count += delta;
       } else {
-	ms = data.evolve(t_old, t += dt_dump * (limit - count) / limit);
+	ms = data.evolve(dt_dump * (limit - count) / limit);
         if(0 == ms) break;
         count = 0;
       }
@@ -65,16 +65,11 @@ int Para::solve(Data &data)
   debug("solve(*%p)\n", &data);
 
   if(dt_dump != 0.0) {
-    data.dump(format, t);
-    double t_old = t;
-    while(0 < data.evolve(t_old, t += dt_dump)) {
-      data.dump(format, t);
-      t_old = t;
-    }
-  } else {
-    double t_old = t;
-    while(0 < data.evolve(t_old, t += DT_DUMP));
-  }
+    data.dump(format);
+    while(0 < data.evolve(dt_dump))
+      data.dump(format);
+  } else
+    while(0 < data.evolve(DT_DUMP));
 
   data.spec(format);
   return 0;

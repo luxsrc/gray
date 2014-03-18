@@ -21,12 +21,18 @@
 
 Para::Para(int argc, char **argv)
 {
-  t = dt_dump = 0;
-  format = "%04d.raw";
+  debug("Para::Para(%d,%p)\n", argc, argv);
+  cudaError_t err;
 
   init(buf);
-  if(cudaSuccess != sync(&buf))
-    error("Para::Para(): fail to synchronize parameters\n");
+
+  err = sync(&buf);
+  if(cudaSuccess != err)
+    error("Para::Para(): fail to synchronize parameters [%s]\n",
+          cudaGetErrorString(err));
+
+  dt_dump = 0;
+  format  = "%04d.raw";
 
   for(int i = 1; i < argc; ++i) {
     if(strchr(argv[i], '='))
