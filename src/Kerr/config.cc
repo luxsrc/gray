@@ -17,8 +17,39 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "../gray.h"
+#include <cstring>
 #include <cstdlib>
+#include <cstdio>
 #include <cmath>
+
+static size_t fill(real *nu, const char *val)
+{
+  size_t n = 0;
+
+  if(FILE *file = fopen(val, "r")) { // a file is provided
+    double tmp;
+    while(n < N_NU && fscanf(file, "%lf", &tmp) > 0)
+      nu[n++] = tmp;
+    fclose(file);
+  } else { // hopefully a list of number
+    char *src = (char *)malloc(strlen(val) + 1);
+    strcpy(src, val);
+    char *tok = strtok(src, " \t\n,;");
+    while(n < N_NU && tok) {
+      nu[n++] = atof(tok);
+      tok = strtok(NULL, " \t\n,;");
+    }
+    free(src);
+  }
+
+  if(n) {
+    print("%zu freq: ", n);
+    for(int i = 0; i < n-1; print("%g,", nu[i++]));
+    print("%g\n", nu[n-1]);
+  }
+
+  return n;
+}
 
 void Para::define(Const &c)
 {
@@ -34,8 +65,7 @@ void Para::define(Const &c)
   c.threshold = 5;
   c.Tp_Te_d   = 3;
   c.Tp_Te_w   = 3;
-  for(int i = 0; i < N_NU; ++i)
-    c.nu0[i] = pow(10.0, 9 + 0.5 * i);
+  c.n_nu      = 0;
 
   c.coord = NULL;
   c.field = NULL;
@@ -50,7 +80,7 @@ const char *Para::config(Const &c, const char *arg)
   else if((val = match("ne", arg))) c.ne_rho  = atof(val);
   else if((val = match("rd", arg))) c.Tp_Te_d = atof(val);
   else if((val = match("rw", arg))) c.Tp_Te_w = atof(val);
-  // TODO: load nu0 and HARM data
+  else if((val = match("nu", arg))) c.n_nu    = fill(c.nu0, val);
 
   return val;
 }
