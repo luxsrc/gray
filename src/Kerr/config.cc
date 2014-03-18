@@ -80,7 +80,11 @@ const char *Para::config(Const &c, const char *arg)
   else if((val = match("ne", arg))) c.ne_rho  = atof(val);
   else if((val = match("rd", arg))) c.Tp_Te_d = atof(val);
   else if((val = match("rw", arg))) c.Tp_Te_w = atof(val);
-  else if((val = match("nu", arg))) c.n_nu    = fill(c.nu0, val);
+  else if((val = match("nu", arg))) {
+    c.n_nu = fill(c.nu0, val);
+    if(0 == c.n_nu)
+      return NULL; // make it an invalid argument if no frequency is read
+  }
 
   return val;
 }

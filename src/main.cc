@@ -63,7 +63,8 @@ int main(int argc, char **argv)
     if(val || para.config(arg))
       print("Set parameter \"%s\"\n", arg);
     else
-      print("Unknown argument \"%s\"\n", arg);
+      error("Unknown argument \"%s\"\n", arg); // it's wasteful to run the
+                                               // wrong simulation
   }
   pick(gpu); // TODO: print GPU info from main() instead of pick()?
 
