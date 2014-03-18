@@ -26,10 +26,7 @@ class Para {
   cudaError_t sync(Const *); // implemented in "src/core.cu"
 
  public:
-  Para(int, char **);
-
-  double dt_dump;
-  const char *format;
+  Para();
 
   int solve(Data &);
 };

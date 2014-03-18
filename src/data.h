@@ -39,7 +39,7 @@ class Data {
   cudaEvent_t time1;
 
 #ifdef ENABLE_GL
-  void        setup(Para &);  // implemented in "src/optional/vis.cc"
+  void        setup();        // implemented in "src/optional/vis.cc"
 #endif
   State      *device();       // implemented in "src/interop.cc"
   State      *host();         // implemented in "src/interop.cc"
@@ -49,16 +49,16 @@ class Data {
   cudaError_t sync(size_t *); // implemented in "src/core.cu"
 
  public:
-  Data(size_t, Para &); // implemented in "src/data.cc"
-  ~Data();              // implemented in "src/data.cc"
+  Data(size_t); // implemented in "src/data.cc"
+  ~Data();      // implemented in "src/data.cc"
 
   cudaError_t init  (double); // implemented in "src/core.cu"
   cudaError_t evolve(double); // implemented in "src/core.cu"
 
-  void dump(const char *);
-  void spec(const char *);
+  void dump(const char *); // implemented in "src/io.cc"
+  void spec(const char *); // implemented in "src/io.cc"
 #ifdef ENABLE_GL
-  void show(); // implemented in "src/optional/vis.cc"
+  void show();             // implemented in "src/optional/vis.cc"
 #endif
 };
 

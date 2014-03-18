@@ -22,7 +22,7 @@
 #  include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 #endif
 
-Data::Data(size_t n_input, Para &para)
+Data::Data(size_t n_input)
 {
   debug("Data::Data(%zu)\n", n_input);
   cudaError_t err;
@@ -35,7 +35,7 @@ Data::Data(size_t n_input, Para &para)
 
   const size_t sz = sizeof(State) * n;
 #ifdef ENABLE_GL
-  setup(para);
+  setup();
   glGenBuffers(1, &vbo); // when ENABLE_GL is enabled, we use
                          // glBufferData() to allocate device memory
   glBindBuffer(GL_ARRAY_BUFFER, vbo);

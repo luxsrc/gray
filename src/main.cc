@@ -26,6 +26,12 @@
 #define N_DEFAULT (512 * 512)
 #endif
 
+namespace global {
+        double dt_dump = DT_DUMP;
+  const char  *format  = "%03d.raw";
+  const char  *output  = "out.raw";
+}
+
 int main(int argc, char **argv)
 {
   double t0 = T_START;
@@ -34,9 +40,9 @@ int main(int argc, char **argv)
   print("GRay: a massive parallel GRaysic integrator\n");
   debug("Debugging is turned on\n");
 
-  Para para(argc, argv);
+  Para para;
 
-  Data data(n, para);
+  Data data(n);
   data.init(t0);
 
 #ifdef ENABLE_GL

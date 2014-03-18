@@ -50,6 +50,12 @@
 
 #define NVAR (sizeof(State) / sizeof(real))
 
+// Global variables
+namespace global {
+  extern double dt_dump;
+  extern const char *format, *output;
+}
+
 // Basic function prototypes
 extern void print(const char *, ...);
 extern void error(const char *, ...);

@@ -32,10 +32,8 @@ static void error_callback(int err, const char *msg)
   error("[GLFW] %s\n", msg);
 }
 
-void Data::setup(Para &para)
+void Data::setup()
 {
-  vis::p = &para;
-
   if(!glfwInit())
     error("[GLFW] fail to initialize the OpenGL Framework\n");
 

@@ -32,14 +32,14 @@ int Para::solve(Data &data)
     static size_t delta = 32;
     const  size_t limit = 1024;
 
-    if(dt_dump != 0.0) {
+    if(global::dt_dump != 0.0) {
       double ms;
       if(count + delta < limit) {
-        ms = data.evolve(dt_dump * delta / limit);
+        ms = data.evolve(global::dt_dump * delta / limit);
         if(0 == ms) break;
         count += delta;
       } else {
-	ms = data.evolve(dt_dump * (limit - count) / limit);
+	ms = data.evolve(global::dt_dump * (limit - count) / limit);
         if(0 == ms) break;
         count = 0;
       }
@@ -56,7 +56,7 @@ int Para::solve(Data &data)
     glfwPollEvents();
   }
 
-  data.spec(format); // TODO: check if glutMainLoop() actually exit...
+  data.spec(global::output); // TODO: check if glutMainLoop() actually exit...
   return 0;
 }
 #else
@@ -64,14 +64,14 @@ int Para::solve(Data &data)
 {
   debug("solve(*%p)\n", &data);
 
-  if(dt_dump != 0.0) {
-    data.dump(format);
-    while(0 < data.evolve(dt_dump))
-      data.dump(format);
+  if(global::dt_dump != 0.0) {
+    data.dump(global::format);
+    while(0 < data.evolve(global::dt_dump))
+      data.dump(global::format);
   } else
     while(0 < data.evolve(DT_DUMP));
 
-  data.spec(format);
+  data.spec(global::output);
   return 0;
 }
 #endif

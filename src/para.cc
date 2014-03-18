@@ -19,9 +19,9 @@
 #include "gray.h"
 #include <cstring>
 
-Para::Para(int argc, char **argv)
+Para::Para()
 {
-  debug("Para::Para(%d,%p)\n", argc, argv);
+  debug("Para::Para()\n");
   cudaError_t err;
 
   init(buf);
@@ -31,9 +31,7 @@ Para::Para(int argc, char **argv)
     error("Para::Para(): fail to synchronize parameters [%s]\n",
           cudaGetErrorString(err));
 
-  dt_dump = 0;
-  format  = "%04d.raw";
-
+  /*
   for(int i = 1; i < argc; ++i) {
     if(strchr(argv[i], '='))
       print("Set parameter ""%s""\n", argv[i]);
@@ -41,7 +39,6 @@ Para::Para(int argc, char **argv)
       error("Invalid argument ""%s""\n", argv[i]);
   }
 
-  /*
   int i = 1;
   if(argc > i && argv[i][0] == '-') // `./gray -2` use the second device
     pick(atoi(argv[i++] + 1));
