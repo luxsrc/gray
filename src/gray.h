@@ -59,7 +59,6 @@ namespace scheme {
 // Global variables
 namespace global {
   extern double dt_dump;
-  extern const char *format, *output;
 }
 
 // Basic function prototypes

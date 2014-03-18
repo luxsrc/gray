@@ -31,15 +31,16 @@
 #endif
 
 namespace global {
-        double dt_dump = DT_DUMP;
-  const char  *format  = "%03d.raw";
-  const char  *output  = "out.raw";
+  double dt_dump = DT_DUMP;
 }
 
 int main(int argc, char **argv)
 {
   double t0 = T_START;
   size_t n  = N_DEFAULT;
+
+  const char *format = "%03d.raw";
+  const char *output = "out.raw";
 
   print("GRay: a massive parallel GRaysic integrator\n");
   debug("Debugging is turned on\n");
@@ -62,11 +63,11 @@ to turn sprites on and off, and 'f' to enter and exit full screen\n\
 
   Data data(n);
   data.init(t0);
-  data.dump(global::format);
+  data.dump(format);
 
   while(data.solve(global::dt_dump))
-    data.dump (global::format);
+    data.dump(format);
 
-  data.spec(global::output);
+  data.spec(output);
   return 0;
 }
