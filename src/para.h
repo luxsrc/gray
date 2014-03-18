@@ -22,9 +22,10 @@
 class Para {
   Const buf; // host buffer, device resource is defined as constant memory
 
-  void        define(Const &);              // implemented in "src/*/config.cc"
-  const char *config(Const &, const char *);// implemented in "src/*/config.cc"
-  cudaError_t sync  (Const *);              // implemented in "src/core.cu"
+  cudaError_t sync(Const *); // implemented in "src/core.cu"
+
+  void define(Const &);               // implemented in "src/*/config.cc"
+  bool config(Const &, const char *); // implemented in "src/*/config.cc"
 
  public:
   Para();
