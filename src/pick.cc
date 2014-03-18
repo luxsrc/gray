@@ -20,6 +20,9 @@
 
 void pick(int device)
 {
+  debug("pick(%d)\n", device);
+  cudaError_t err;
+
   int n_devices;
   cudaGetDeviceCount(&n_devices);
 
@@ -31,16 +34,16 @@ void pick(int device)
   print("%d GPU%s found --- running on GPU %u\n",
         n_devices, n_devices == 1 ? " is" : "s are", device);
 
-  cudaError_t err = cudaSetDevice(device);
-  if(cudaSuccess != err)
-    error("pick(): fail to switch to device %d [%s]\n",
-          device, cudaGetErrorString(err));
+  if(cudaSuccess != (err = cudaSetDevice(device)))
+    error("pick(): fail to switch to device %d [%s]\n", device,
+          cudaGetErrorString(err));
 
   double gsz, ssz;
   cudaDeviceProp prop;
   cudaGetDeviceProperties(&prop, device);
   gsz = prop.totalGlobalMem;
   ssz = prop.sharedMemPerBlock;
+
   print("\"%s\" with %gMiB global and %gKiB shared memory\n",
         prop.name, gsz / 1048576.0, ssz / 1024.0);
 }

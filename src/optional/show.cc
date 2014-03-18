@@ -1,5 +1,5 @@
-// Copyright (C) 2012--2014 Chi-kwan Chan
-// Copyright (C) 2012--2014 Steward Observatory
+// Copyright (C) 2014 Chi-kwan Chan
+// Copyright (C) 2014 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -28,54 +28,16 @@
 #define COLOR_POINTER_OFFSET  3
 #endif
 
-#define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
-
 namespace vis {
-  GLFWwindow *window = NULL;
   float a_spin = 0.999;
 }
 
-static GLuint shaders[2], texture;
-
-static void error_callback(int err, const char *msg)
+int Data::show()
 {
-  glfwDestroyWindow(vis::window);
-  glfwTerminate();
-  error("[GLFW] %s\n", msg);
-}
+#if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
+  vis::sense();
+#endif
 
-void vis::setup(int argc, char **argv, Para &para)
-{
-  vis::p = &para;
-
-  if(!glfwInit())
-    error("[GLFW] fail to initialize the OpenGL Framework\n");
-
-  vis::window = glfwCreateWindow(512, 512, argv[0], NULL, NULL);
-  if(!vis::window) {
-    glfwTerminate();
-    error("[GLFW] fail to create window\n");
-  }
-
-  glfwSetErrorCallback     (error_callback);
-  glfwSetWindowSizeCallback(vis::window, vis::resize);
-  glfwSetKeyCallback       (vis::window, vis::keyboard);
-  glfwSetCursorPosCallback (vis::window, vis::mouse);
-  glfwMakeContextCurrent   (vis::window);
-
-  glEnable(GL_DEPTH_TEST);
-  glClearColor(0.0, 0.0, 0.0, 1.0);
-  glEnable(GL_VERTEX_PROGRAM_POINT_SIZE_NV);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-  if(GL_NO_ERROR != glGetError())
-    error("vis::setup(): fail to setup visualization\n");
-
-  vis::mkshaders(shaders);
-  vis::mktexture(&texture);
-}
-
-void vis::show(size_t n, GLuint vbo)
-{
   glViewport(0, 0, vis::width, vis::height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -97,7 +59,7 @@ void vis::show(size_t n, GLuint vbo)
   glutWireSphere(1.0 + sqrt(1.0 - vis::a_spin * vis::a_spin), 32, 16);
 
   // Draw particles, i.e., photon locations
-  glUseProgram(shaders[vis::shader]);
+  glUseProgram(vis::shaders[vis::shader]);
 
   glEnable(GL_POINT_SPRITE_ARB);
   glEnable(GL_BLEND);
@@ -121,5 +83,9 @@ void vis::show(size_t n, GLuint vbo)
   // DONE
   glUseProgram(0);
   if(GL_NO_ERROR != glGetError())
-    error("vis::show(): fail to visualize simulation\n");
+    error("Data::show(): fail to visualize simulation\n");
+
+  glfwSwapBuffers(vis::window);
+
+  return vis::direction;
 }

@@ -284,7 +284,7 @@ static inline __device__ State rhs(const State &s, real t)
                      bphi   * (gKSP03 * bt     + gKSP13 * br    +
                                gKSP23 * btheta + gKSP33 * bphi));
     const real ibeta = bb / (2 * (c.Gamma-1) * c.field[h3].u + (real)EPSILON);
-    Tp_Te = (ibeta > 5) ? c.Tp_Te_w : c.Tp_Te_d;
+    Tp_Te = (ibeta > c.threshold) ? c.Tp_Te_w : c.Tp_Te_d;
     b = sqrt(bb);
   }
 

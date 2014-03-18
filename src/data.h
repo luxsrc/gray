@@ -21,6 +21,7 @@
 
 class Data {
   size_t n, m, gsz, bsz;
+
 #ifdef ENABLE_GL
   GLuint vbo;
   struct cudaGraphicsResource *res;
@@ -30,27 +31,39 @@ class Data {
   State *buf; // host buffer
   bool   mapped;
 
-  cudaError_t dtoh();
-  cudaError_t htod();
+  size_t *count_res;
+  size_t *count_buf;
+
+  cudaEvent_t time0;
+  cudaEvent_t time1;
+
+#ifdef ENABLE_GL
+  cudaError_t setup(GLuint *, size_t);// implemented in "src/optional/setup.cc"
+  cudaError_t cleanup(GLuint *);      // implemented in "src/optional/setup.cc"
+#endif
+  State      *device();       // implemented in "src/interop.cc"
+  State      *host();         // implemented in "src/interop.cc"
+  cudaError_t deactivate();   // implemented in "src/interop.cc"
+  cudaError_t dtoh();         // implemented in "src/memcpy.cc"
+  cudaError_t htod();         // implemented in "src/memcpy.cc"
+  cudaError_t sync(size_t *); // implemented in "src/core.cu"
 
  public:
-  Data(size_t);
-  ~Data();
+  Data(size_t); // implemented in "src/data.cc"
+  ~Data();      // implemented in "src/data.cc"
 
-  operator size_t() { return n; }
+  double t;
+
+  cudaError_t init  (double); // implemented in "src/core.cu"
+  cudaError_t evolve(double); // implemented in "src/core.cu"
+
+  size_t solve(double, float &, float &, float &);
+
+  void dump(const char *); // implemented in "src/io.cc"
+  void spec(const char *); // implemented in "src/io.cc"
 #ifdef ENABLE_GL
-  operator GLuint() { return vbo; }
+  int  show();             // implemented in "src/optional/vis.cc"
 #endif
-
-  cudaError_t init  (double);
-  cudaError_t evolve(double, double);
-
-  State *device();
-  State *host();
-  void   deactivate();
-
-  void dump(const char *, double);
-  void spec(const char *);
 };
 
 #endif // DATA_H

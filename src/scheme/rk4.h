@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-static inline __device__ real scheme(State &y, real t, real dt)
+static inline __device__ real integrate(State &y, real t, real dt)
 {
   const State s = y; // create a constant copy
 
@@ -45,7 +45,7 @@ static inline __device__ real scheme(State &y, real t, real dt)
   return fixup(y, s, k1, dt);
 }
 
-static double flop(void)
+double scheme::flop(void)
 {
   return 4 + 12 * NVAR + 4 * FLOP_RHS + FLOP_GETDT;
 }

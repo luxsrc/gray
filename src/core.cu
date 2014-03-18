@@ -18,19 +18,21 @@
 
 #include "gray.h"
 
-static __device__ __constant__ size_t *count = NULL;
+static __device__ __constant__ struct Counter {size_t *er;} count = {};
 
-cudaError_t core::sync(size_t *p)
+cudaError_t Data::sync(size_t *p)
 {
-  debug("core::sync(%p)\n", p);
+  debug("Data::sync(%p)\n", p);
+
   return cudaMemcpyToSymbol(count, &p, sizeof(size_t *));
 }
 
 static __device__ __constant__ Const c = {};
 
-cudaError_t core::sync(Const *p)
+cudaError_t Para::sync(Const *p)
 {
-  debug("core::sync(%p)\n", p);
+  debug("Para::sync(%p)\n", p);
+
   return cudaMemcpyToSymbol(c, p, sizeof(Const));
 }
 
@@ -39,18 +41,21 @@ cudaError_t core::sync(Const *p)
 static __global__ void kernel(State *s, const size_t n, const real t)
 {
   const size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+
   if(i < n)
     s[i] = ic(i, n, t);
 }
 
-cudaError_t Data::init(double t)
+cudaError_t Data::init(double t0)
 {
-  debug("Data::init(%f)\n", t);
+  debug("Data::init(%g)\n", t0);
+  cudaError_t err;
 
-  kernel<<<gsz, bsz>>>(device(), n, t);
+  kernel<<<gsz, bsz>>>(device(), n, t = t0);
 
-  cudaError_t err = cudaDeviceSynchronize();
-  deactivate();
+  err = cudaDeviceSynchronize();
+  if(cudaSuccess == err)
+    err = deactivate();
   return err;
 }
 
@@ -60,7 +65,7 @@ cudaError_t Data::init(double t)
 #define GET(s)  ((real *)&(s))[index]
 #define EACH(s) for(int index = 0; index < NVAR; ++index) GET(s)
 #  include <fixup.h>      // define device function fixup()
-#  include "scheme/rk4.h" // define device function scheme()
+#  include "scheme/rk4.h" // define device function integrate()
 #undef GET
 #undef EACH
 
@@ -72,13 +77,16 @@ cudaError_t Data::init(double t)
 #  include "scheme/driver.h" // define global kernel function driver()
 #undef GET_TIME
 
-cudaError_t Data::evolve(double t0, double t1)
+cudaError_t Data::evolve(double dt)
 {
-  debug("Data::evolve(%g,%g)\n", t0, t1);
+  debug("Data::evolve(%g)\n", dt);
+  cudaError_t err;
 
+  const double t0 = t, t1 = (t += dt);
   driver<<<gsz, bsz, bsz * sizeof(State)>>>(device(), n, t0, t1);
 
-  cudaError_t err = cudaDeviceSynchronize();
-  deactivate();
+  err = cudaDeviceSynchronize();
+  if(cudaSuccess == err)
+    err = deactivate();
   return err;
 }

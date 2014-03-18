@@ -26,7 +26,7 @@ endif
 ifeq ($(GL),0) # use `make <prob> GL=0` to disable OpenGL visualization
 	CPPFLAGS += -DISABLE_GL
 else
-	OPT += src/optional/{ctrl,shaders,texture,vis}.cc
+	OPT += src/optional/{ctrl,setup,shaders,show,texture}.cc
 	ifeq ($(shell uname),Darwin)
 		CPPFLAGS += -I$(GLFW_PATH)/include
 		LDFLAGS  += -L$(GLFW_PATH)/lib -lglfw \
@@ -99,13 +99,8 @@ the beginning of this \"Makefile\"."
 
 	@mkdir -p bin
 	@echo -n 'Compiling $@... '
-	@if ls src/$@/*.c? &> /dev/null; then                        \
-	   $(NVCC) src/*.{cu,cc} src/$@/*.c?                         \
-	     $(OPT) $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/GRay-$@; \
-	 else                                                        \
-	   $(NVCC) src/*.{cu,cc}                                     \
-	     $(OPT) $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/GRay-$@; \
-	 fi
+	@$(NVCC) src/*.c? src/$@/*.c? \
+	   $(OPT) $(CPPFLAGS) $(LDFLAGS) $(CFLAGS) -o bin/GRay-$@
 
 ifeq ($(PRIME),1)
 	@install_name_tool -change libNiTE2.dylib \

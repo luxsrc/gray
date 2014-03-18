@@ -19,8 +19,6 @@
 #ifndef VIS_H
 #define VIS_H // Translate macros that are passed from the Makefile
 
-class Para;
-
 #ifdef __APPLE__
 #  include <GLUT/glut.h>
 #else
@@ -32,13 +30,10 @@ namespace vis {
   extern GLFWwindow *window;
   extern int    width, height;
   extern float  ratio, ax, ly, az, a_spin;
-  extern double dt_saved;
+  extern int    direction, saved;
+  extern GLuint shaders[2];
   extern int    shader;
   extern bool   draw_body;
-  extern Para  *p;
-
-  extern void setup(int, char **, Para &);
-  extern void show(size_t, GLuint);
 
   extern void mktexture(GLuint[]);
   extern void mkshaders(GLuint[]);

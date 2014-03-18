@@ -18,64 +18,70 @@
 
 #include "gray.h"
 #include <cstdlib>
-
 #ifdef ENABLE_GL
 #  include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 #endif
 
+#define REG_BUFFER    cudaGraphicsGLRegisterBuffer     // for readability
+#define WRITE_DISCARD cudaGraphicsMapFlagsWriteDiscard // for readability
+
 Data::Data(size_t n_input)
 {
   debug("Data::Data(%zu)\n", n_input);
+  cudaError_t err;
 
   n   = n_input;
   m   = NVAR;
   bsz = 64;
   gsz = (n - 1) / bsz + 1;
+  t   = 0.0;
 
-  const size_t sz = sizeof(State) * n;
-  cudaError_t err;
+  const size_t ssz = sizeof(State)  * n;
+  const size_t csz = sizeof(size_t) * n;
 #ifdef ENABLE_GL
-  glGenBuffers(1, &vbo); // when ENABLE_GL is enabled, we use
-                         // glBufferData() to allocate device memory
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sz, 0, GL_DYNAMIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  if(GL_NO_ERROR != glGetError())
-    error("Data::Data(): fail to generate or bind vertex buffer object\n");
-
-  err = cudaGraphicsGLRegisterBuffer(&res, vbo,
-                                     cudaGraphicsMapFlagsWriteDiscard);
-  mapped = false; // hence, we need to map the device memory before using it
+  mapped = false; // we need to map the device memory before using it
+  if(cudaSuccess != (err = setup(&vbo, ssz)) ||
+     cudaSuccess != (err = REG_BUFFER(&res, vbo, WRITE_DISCARD)) ||
 #else
-  err = cudaMalloc((void **)&res, sz); // when ENABLE_GL is disabled, we use
-                                       // cudaMalloc() to get device memory
-  mapped = true; // hence, the memory is "always" mapped
+  mapped = true; // the memory is "always" mapped
+  if(cudaSuccess != (err = cudaMalloc((void **)&res, ssz)) ||
 #endif
-  if(cudaSuccess != err)
+     cudaSuccess != (err = cudaMalloc((void **)&count_res, csz)) ||
+     cudaSuccess != (err = sync(count_res)))
     error("Data::Data(): fail to allocate device memory [%s]\n",
           cudaGetErrorString(err));
 
-  if(!(buf = (State *)malloc(sz)))
+  if(cudaSuccess != (err = cudaEventCreate(&time0)) ||
+     cudaSuccess != (err = cudaEventCreate(&time1)))
+    error("Data::Data(): fail to create timer [%s]\n",
+          cudaGetErrorString(err));
+
+  if(!(buf       = (State  *)malloc(ssz)) ||
+     !(count_buf = (size_t *)malloc(csz)))
     error("Data::Data(): fail to allocate host memory\n");
 }
 
 Data::~Data()
 {
   debug("Data::~Data()\n");
-
-  if(buf)
-    free(buf);
-
   cudaError_t err;
+
+  free(count_buf);
+  free(buf);
+  // TODO: check errno for free() error?
+
+  if(cudaSuccess != (err = cudaEventDestroy(time1)) ||
+     cudaSuccess != (err = cudaEventDestroy(time0)))
+    error("Para::~Para(): fail to destroy timer [%s]\n",
+          cudaGetErrorString(err));
+
+  if(cudaSuccess != (err = cudaFree((void *)count_res)) ||
 #ifdef ENABLE_GL
-  err = cudaGraphicsUnregisterResource(res);
-  glDeleteBuffers(1, &vbo); // try deleting even if res is not unregistered
-  if(cudaSuccess == err && GL_NO_ERROR != glGetError())
-    err = cudaErrorUnknown;
+     cudaSuccess != (err = cudaGraphicsUnregisterResource(res)) ||
+     cudaSuccess != (err = cleanup(&vbo)))
 #else
-  err = cudaFree((void *)res);
+     cudaSuccess != (err = cudaFree((void *)res)))
 #endif
-  if(cudaSuccess != err)
     error("Data::~Data(): fail to free device memory [%s]\n",
           cudaGetErrorString(err));
 }

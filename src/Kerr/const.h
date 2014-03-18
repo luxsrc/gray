@@ -34,12 +34,13 @@ typedef struct {
   real tolerance; // if xi+1 > tolerance, fall back to forward Euler
 
   // Parameters for radiative transfer
+  real m_BH, ne_rho, threshold, Tp_Te_d, Tp_Te_w; // TODO: use const T_w
+  real nu0[N_NU];
+
   Coord *coord;
   Field *field;
   size_t nr, ntheta, nphi;
-  real   lnrmin, lnrmax;
-  real   m_BH, Gamma, Tp_Te_d, Tp_Te_w, T_w, ne_rho;
-  real   nu0[N_NU];
+  real   lnrmin, lnrmax, Gamma;
 } Const;
 
 #endif // CONST_H

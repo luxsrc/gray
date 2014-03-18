@@ -26,8 +26,11 @@
 #include <cuda_runtime_api.h> // C-style CUDA runtime API
 
 #ifdef ENABLE_GL
-#include "optional/vis.h"
+#  include "optional/vis.h"
 #endif
+
+#define DELTA 256
+#define LIMIT (DELTA * DELTA)
 
 // Typedef real to make the source code precision independent
 #if defined(DOUBLE)
@@ -50,6 +53,12 @@
 
 #define NVAR (sizeof(State) / sizeof(real))
 
+// Scheme based functions to estimate performance
+namespace scheme {
+  extern double flop();
+  extern double rwsz();
+}
+
 // Basic function prototypes
 extern void print(const char *, ...);
 extern void error(const char *, ...);
@@ -59,11 +68,5 @@ extern void error(const char *, ...);
 #  define debug(...) // do nothing
 #endif
 extern void pick(int);
-
-// Synchronize host and constant device memory
-namespace core {
-  extern cudaError_t sync(size_t *);
-  extern cudaError_t sync(Const  *);
-}
 
 #endif // GRAY_H

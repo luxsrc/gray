@@ -19,12 +19,11 @@
 #include "../gray.h"
 
 namespace vis {
-  int    width = 512, height = 512;
-  float  ratio = 1, ax = 330, ly = -70, az = 90;
-  double dt_saved  = 0;
-  int    shader    = 1;
-  bool   draw_body = true;
-  Para  *p         = NULL;
+  int   width = 512, height = 512;
+  float ratio = 1, ax = 330, ly = -70, az = 90;
+  int   direction = 1, saved = 0;
+  int   shader = 1;
+  bool  draw_body = true;
 }
 
 static double last_x = 0, last_y = 0;
@@ -54,16 +53,16 @@ void vis::keyboard(GLFWwindow *win, int key, int code, int action, int mods)
     if(++vis::shader >= 2) vis::shader = 0;
     break;
   case 'r': case 'R':
-    if(p->dt_dump == 0.0)
-      vis::dt_saved *= -1; // fall through
+    if(vis::direction == 0)
+      vis::saved *= -1; // fall through
     else {
-      p->dt_dump *= -1;
+      vis::direction *= -1;
       break;
     }
   case 'p': case 'P':
-    const double temp = vis::dt_saved;
-    vis::dt_saved = p->dt_dump;
-    p->dt_dump = temp;
+    const double temp = vis::saved;
+    vis::saved = vis::direction;
+    vis::direction = temp;
     break;
   }
 }

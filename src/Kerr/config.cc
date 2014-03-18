@@ -16,18 +16,26 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PARA_H
-#define PARA_H
+#include "../gray.h"
+#include <cmath>
 
-class Para {
-  Const buf; // host buffer, device resource is defined as constant memory
+void Para::init(Const &c)
+{
+  c.r_obs     = 1000;
+  c.i_obs     = 30;
+  c.a_spin    = 0.999;
+  c.dt_scale  = 1.0 / 32;
+  c.epsilon   = 1e-3;
+  c.tolerance = 1e-1;
 
-  void        init(Const &); // implemented in "src/*/config.cc"
-  cudaError_t sync(Const *); // implemented in "src/core.cu"
+  c.m_BH      = 4.3e6; // in unit of solar mass
+  c.ne_rho    = 1e6;
+  c.threshold = 5;
+  c.Tp_Te_d   = 3;
+  c.Tp_Te_w   = 3;
+  for(int i = 0; i < N_NU; ++i)
+    c.nu0[i] = pow(10.0, 9 + 0.5 * i);
 
- public:
-  Para();
-  ~Para();
-};
-
-#endif // PARA_H
+  c.coord = NULL;
+  c.field = NULL;
+}
