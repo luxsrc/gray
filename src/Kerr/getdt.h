@@ -23,16 +23,17 @@ static inline __device__ real getdt(const State &s, real t,
 {
   const real r_bh = 1 + sqrt(1 - c.a_spin * c.a_spin);
   if(s.r < r_bh + c.epsilon
-#ifndef ENABLE_LEAP
+#ifndef ENABLE_GL
   || s.r > (real)1.2 * c.r_obs
 #endif
      ) return 0; // 0 stops the integration
 
-  for(int i = 0; i < N_NU; ++i)
-    if(s.rad[i].tau > (real)6.90775527898)
-      return 0;
+  if(c.field)
+    for(int i = 0; i < N_NU; ++i)
+      if(s.rad[i].tau > (real)6.90775527898)
+        return 0;
 
   return min(c.dt_scale / (fabs(a.r / s.r) + fabs(a.theta) + fabs(a.phi)),
              min(fabs((s.r - r_bh) / a.r / 2),
-                 1.0));
+                 min(fabs(dt_max), 1.0)));
 }
