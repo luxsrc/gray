@@ -21,22 +21,26 @@
 #  include <cuda_gl_interop.h> // OpenGL interoperability runtime API
 #endif
 
+#define MAP_POINTER cudaGraphicsResourceGetMappedPointer // for readability
+
 State *Data::device()
 {
   debug("Data::device()\n");
-
 #ifdef ENABLE_GL
+  cudaError_t err;
+
   State *head = NULL;
   size_t size = 0;
 
   if(!mapped) {
-    if(cudaSuccess != cudaGraphicsMapResources(1, &res, 0))
-      error("Data::device(): fail to map OpenGL resource\n");
+    if(cudaSuccess != (err = cudaGraphicsMapResources(1, &res, 0)))
+      error("Data::device(): fail to map OpenGL resource [%s]\n",
+            cudaGetErrorString(err));
     mapped = true;
   }
-  if(cudaSuccess !=
-     cudaGraphicsResourceGetMappedPointer((void **)&head, &size, res))
-    error("Data::device(): fail to get pointer for mapped resource\n");
+  if(cudaSuccess != (err = MAP_POINTER((void **)&head, &size, res)))
+    error("Data::device(): fail to get pointer for mapped resource [%s]\n",
+          cudaGetErrorString(err));
 
   return head;
 #else
@@ -47,15 +51,20 @@ State *Data::device()
 State *Data::host()
 {
   debug("Data::host()\n");
+  cudaError_t err;
 
-  return cudaSuccess == dtoh() ? buf : NULL;
+  if(cudaSuccess != (err = dtoh()))
+    error("Data::device(): fail to copy device memory to host [%s]\n",
+          cudaGetErrorString(err));
+
+  return buf;
 }
 
 cudaError_t Data::deactivate()
 {
   debug("Data::deactivate()\n");
+  cudaError_t err = cudaSuccess; // ensure initialization
 
-  cudaError_t err = cudaSuccess;
 #ifdef ENABLE_GL
   if(mapped) {
     err = cudaGraphicsUnmapResources(1, &res, 0);

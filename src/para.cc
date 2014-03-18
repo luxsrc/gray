@@ -26,8 +26,7 @@ Para::Para()
 
   init(buf);
 
-  err = sync(&buf);
-  if(cudaSuccess != err)
+  if(cudaSuccess != (err = sync(&buf)))
     error("Para::Para(): fail to synchronize parameters [%s]\n",
           cudaGetErrorString(err));
 

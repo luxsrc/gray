@@ -49,10 +49,11 @@ static __global__ void kernel(State *s, const size_t n, const real t)
 cudaError_t Data::init(double t0)
 {
   debug("Data::init(%g)\n", t0);
+  cudaError_t err;
 
   kernel<<<gsz, bsz>>>(device(), n, t = t0);
 
-  cudaError_t err = cudaDeviceSynchronize();
+  err = cudaDeviceSynchronize();
   if(cudaSuccess == err)
     err = deactivate();
   return err;
@@ -79,11 +80,12 @@ cudaError_t Data::init(double t0)
 cudaError_t Data::evolve(double dt)
 {
   debug("Data::evolve(%g)\n", dt);
+  cudaError_t err;
 
   const double t0 = t, t1 = (t += dt);
   driver<<<gsz, bsz, bsz * sizeof(State)>>>(device(), n, t0, t1);
 
-  cudaError_t err = cudaDeviceSynchronize();
+  err = cudaDeviceSynchronize();
   if(cudaSuccess == err)
     err = deactivate();
   return err;

@@ -58,6 +58,8 @@ to turn sprites on and off, and 'f' to enter and exit full screen\n\
   for(int i = 1; i < argc; ++i)
     para.config(argv[i]);
   */
+  pick(0);
+
   Data data(n);
   data.init(t0);
   data.dump(global::format);

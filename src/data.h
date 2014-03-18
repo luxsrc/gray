@@ -39,7 +39,8 @@ class Data {
   cudaEvent_t time1;
 
 #ifdef ENABLE_GL
-  void        setup();        // implemented in "src/optional/vis.cc"
+  cudaError_t setup(GLuint *, size_t);// implemented in "src/optional/setup.cc"
+  cudaError_t cleanup(GLuint *);      // implemented in "src/optional/setup.cc"
 #endif
   State      *device();       // implemented in "src/interop.cc"
   State      *host();         // implemented in "src/interop.cc"

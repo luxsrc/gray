@@ -18,7 +18,7 @@
 
 #include "gray.h"
 
-static double ms    = 40; // assume 25 fps
+static float  ms    = 40; // assume 25 fps
 static size_t count = 0;
 static size_t delta = 1024;
 const  size_t limit = 1048576;
@@ -42,34 +42,26 @@ bool Data::solve(double dt)
     }
 
     if(dt_sub != 0.0) {
-      err = cudaEventRecord(time0, 0);
-      if(cudaSuccess != err)
+      if(cudaSuccess != (err = cudaEventRecord(time0, 0)))
 	error("Data::solve(): fail to record event [%s]\n",
               cudaGetErrorString(err));
 
-      err = evolve(dt_sub);
-      if(cudaSuccess != err)
+      if(cudaSuccess != (err = evolve(dt_sub)))
 	error("Data::solve(): fail to launch kernel [%s]\n",
 	      cudaGetErrorString(err));
 
-      err = cudaEventRecord(time1, 0);
-      if(cudaSuccess != err)
+      if(cudaSuccess != (err = cudaEventRecord(time1, 0)))
 	error("Data::solve(): fail to record event [%s]\n",
               cudaGetErrorString(err));
 
-      err = cudaEventSynchronize(time1);
-      if(cudaSuccess == err) {
-	float fms;
-	err = cudaEventElapsedTime(&fms, time0, time1);
-	ms  = fms;
-      }
-      if(cudaSuccess != err)
+      if(cudaSuccess != (err = cudaEventSynchronize(time1)) ||
+         cudaSuccess != (err = cudaEventElapsedTime(&ms, time0, time1)))
 	error("Data::solve(): fail to obtain elapsed time [%s]\n",
 	      cudaGetErrorString(err));
 
-      err = cudaMemcpy(count_buf, count_res, sizeof(size_t) * n,
-                       cudaMemcpyDeviceToHost);
-      if(cudaSuccess != err)
+      if(cudaSuccess != (err = cudaMemcpy(count_buf, count_res,
+                                          sizeof(size_t) * n,
+                                          cudaMemcpyDeviceToHost)))
         error("Data::solve(): fail to copy memory from device to host [%s]\n",
 	      cudaGetErrorString(err));
 
@@ -88,20 +80,14 @@ bool Data::solve(double dt)
       if(actual)
 	print("t =%7.2f; "
 	      "%.0f ms/%.0f steps ~%7.2f Gflops (%.2f%%), %7.2fGB/s\n",
-	      t,
-	      ms,
-	      actual,
+	      t, ms, actual,
 	      1e-6 * scheme::flop() * actual / ms,
-	      100 * actual / peak,
+	      100  * actual / peak,
 	      1e-6 * (24 * sizeof(real) * actual + scheme::rwsz() * n) / ms);
     }
 
 #ifdef ENABLE_GL
-#if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
-    vis::sense();
-#endif
     show();
-    glfwSwapBuffers(vis::window);
     glfwPollEvents();
     if(glfwWindowShouldClose(vis::window))
       return false;

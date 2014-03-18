@@ -34,6 +34,10 @@ namespace vis {
 
 void Data::show()
 {
+#if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
+  vis::sense();
+#endif
+
   glViewport(0, 0, vis::width, vis::height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -80,4 +84,6 @@ void Data::show()
   glUseProgram(0);
   if(GL_NO_ERROR != glGetError())
     error("Data::show(): fail to visualize simulation\n");
+
+  glfwSwapBuffers(vis::window);
 }

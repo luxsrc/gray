@@ -32,7 +32,7 @@ static void error_callback(int err, const char *msg)
   error("[GLFW] %s\n", msg);
 }
 
-void Data::setup()
+cudaError_t Data::setup(GLuint *vbop, size_t sz)
 {
   if(!glfwInit())
     error("[GLFW] fail to initialize the OpenGL Framework\n");
@@ -59,4 +59,18 @@ void Data::setup()
   GLuint texture;
   vis::mktexture(    &texture);
   vis::mkshaders(vis::shaders);
+
+  glGenBuffers(1, vbop);
+  glBindBuffer(GL_ARRAY_BUFFER, *vbop);
+  glBufferData(GL_ARRAY_BUFFER, sz, 0, GL_DYNAMIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  return GL_NO_ERROR == glGetError() ? cudaSuccess : cudaErrorUnknown;
+}
+
+cudaError_t Data::cleanup(GLuint *vbop)
+{
+  glDeleteBuffers(1, vbop); // try deleting even if res is not unregistered
+
+  return GL_NO_ERROR == glGetError() ? cudaSuccess : cudaErrorUnknown;
 }
