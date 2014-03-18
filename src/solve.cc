@@ -18,81 +18,41 @@
 
 #include "gray.h"
 
-static float  ms    = 40; // assume 25 fps
-static size_t count = 0;
-static size_t delta = 1024;
-const  size_t limit = 1048576;
+#define MEMCPY(dst, src, sz) \
+  cudaMemcpy(dst, src, sz, cudaMemcpyDeviceToHost) // for readability
 
-bool Data::solve(double dt)
+bool Data::solve(double dt, float &elapse, float &actual, float &peak)
 {
   debug("Data::evlove(%g)\n", dt);
   cudaError_t err;
 
-  do {
-    if(ms < 20 && delta < limit) delta *= 2;
-    if(ms > 80 && delta > 1    ) delta /= 2;
+  if(cudaSuccess != (err = cudaEventRecord(time0, 0)))
+    error("Data::solve(): fail to start timing [%s]\n",
+          cudaGetErrorString(err));
 
-    double dt_sub;
-    if(count + delta < limit) {
-      dt_sub = dt * delta / limit;
-      count += delta;
-    } else {
-      dt_sub = dt * (limit - count) / limit;
-      count  = 0;
+  if(cudaSuccess != (err = evolve(dt)))
+    error("Data::solve(): fail to launch kernel [%s]\n",
+          cudaGetErrorString(err));
+
+  if(cudaSuccess != (err = cudaEventRecord(time1, 0))                   ||
+     cudaSuccess != (err = cudaEventSynchronize(time1))                 ||
+     cudaSuccess != (err = cudaEventElapsedTime(&elapse, time0, time1)) ||
+     cudaSuccess != (err = MEMCPY(count_buf, count_res, sizeof(size_t) * n)))
+    error("Data::solve(): fail to estimate performance [%s]\n",
+          cudaGetErrorString(err));
+
+  actual = 0;
+  peak   = 0;
+  for(size_t j = 0, h = 0; j < gsz; ++j) {
+    size_t sum = 0, max = 0;
+    for(size_t i = 0; i < bsz; ++i, ++h) {
+      const size_t x = (h < n) ? count_buf[h] : 0;
+      sum += x;
+      if(max < x) max = x;
     }
+    actual += sum;
+    peak   += max * bsz;
+  }
 
-    if(dt_sub != 0.0) {
-      if(cudaSuccess != (err = cudaEventRecord(time0, 0)))
-	error("Data::solve(): fail to record event [%s]\n",
-              cudaGetErrorString(err));
-
-      if(cudaSuccess != (err = evolve(dt_sub)))
-	error("Data::solve(): fail to launch kernel [%s]\n",
-	      cudaGetErrorString(err));
-
-      if(cudaSuccess != (err = cudaEventRecord(time1, 0)))
-	error("Data::solve(): fail to record event [%s]\n",
-              cudaGetErrorString(err));
-
-      if(cudaSuccess != (err = cudaEventSynchronize(time1)) ||
-         cudaSuccess != (err = cudaEventElapsedTime(&ms, time0, time1)))
-	error("Data::solve(): fail to obtain elapsed time [%s]\n",
-	      cudaGetErrorString(err));
-
-      if(cudaSuccess != (err = cudaMemcpy(count_buf, count_res,
-                                          sizeof(size_t) * n,
-                                          cudaMemcpyDeviceToHost)))
-        error("Data::solve(): fail to copy memory from device to host [%s]\n",
-	      cudaGetErrorString(err));
-
-      double actual = 0, peak = 0;
-      for(size_t j = 0, h = 0; j < gsz; ++j) {
-	size_t sum = 0, max = 0;
-	for(size_t i = 0; i < bsz; ++i, ++h) {
-	  const size_t x = (h < n) ? count_buf[h] : 0;
-	  sum += x;
-	  if(max < x) max = x;
-	}
-	actual += sum;
-	peak   += max * bsz;
-      }
-
-      if(actual)
-	print("t =%7.2f; "
-	      "%.0f ms/%.0f steps ~%7.2f Gflops (%.2f%%), %7.2fGB/s\n",
-	      t, ms, actual,
-	      1e-6 * scheme::flop() * actual / ms,
-	      100  * actual / peak,
-	      1e-6 * (24 * sizeof(real) * actual + scheme::rwsz() * n) / ms);
-    }
-
-#ifdef ENABLE_GL
-    show();
-    glfwPollEvents();
-    if(glfwWindowShouldClose(vis::window))
-      return false;
-#endif
-  } while(count);
-
-  return true;
+  return actual != 0.0;
 }

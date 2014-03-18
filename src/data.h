@@ -21,7 +21,6 @@
 
 class Data {
   size_t n, m, gsz, bsz;
-  double t;
 
 #ifdef ENABLE_GL
   GLuint vbo;
@@ -53,10 +52,13 @@ class Data {
   Data(size_t); // implemented in "src/data.cc"
   ~Data();      // implemented in "src/data.cc"
 
+  double t;
+
   cudaError_t init  (double); // implemented in "src/core.cu"
   cudaError_t evolve(double); // implemented in "src/core.cu"
 
-  bool solve(double);      // implemented in "src/solve.cc"
+  bool solve(double, float &, float &, float &);
+
   void dump(const char *); // implemented in "src/io.cc"
   void spec(const char *); // implemented in "src/io.cc"
 #ifdef ENABLE_GL
