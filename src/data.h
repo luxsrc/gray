@@ -55,6 +55,7 @@ class Data {
   cudaError_t init  (double); // implemented in "src/core.cu"
   cudaError_t evolve(double); // implemented in "src/core.cu"
 
+  bool solve(double);      // implemented in "src/solve.cc"
   void dump(const char *); // implemented in "src/io.cc"
   void spec(const char *); // implemented in "src/io.cc"
 #ifdef ENABLE_GL

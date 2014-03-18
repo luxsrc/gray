@@ -27,8 +27,6 @@ class Para {
 
  public:
   Para();
-
-  int solve(Data &);
 };
 
 #endif // PARA_H

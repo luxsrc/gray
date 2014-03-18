@@ -22,6 +22,10 @@
 #define T_START 0
 #endif
 
+#ifndef DT_DUMP
+#define DT_DUMP 1
+#endif
+
 #ifndef N_DEFAULT
 #define N_DEFAULT (512 * 512)
 #endif
@@ -40,11 +44,6 @@ int main(int argc, char **argv)
   print("GRay: a massive parallel GRaysic integrator\n");
   debug("Debugging is turned on\n");
 
-  Para para;
-
-  Data data(n);
-  data.init(t0);
-
 #ifdef ENABLE_GL
   print("\
 Press 'ESC' or 'q' to quit, 'p' to pulse, 'r' to reverse the run, 's' to\n\
@@ -54,5 +53,18 @@ to turn sprites on and off, and 'f' to enter and exit full screen\n\
   print("Press 'Ctrl C' to quit\n");
 #endif
 
-  return para.solve(data);
+  Para para;
+  /* TODO: configure parameters and change n, t0, etc
+  for(int i = 1; i < argc; ++i)
+    para.config(argv[i]);
+  */
+  Data data(n);
+  data.init(t0);
+  data.dump(global::format);
+
+  while(data.solve(global::dt_dump))
+    data.dump (global::format);
+
+  data.spec(global::output);
+  return 0;
 }

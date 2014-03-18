@@ -18,60 +18,95 @@
 
 #include "gray.h"
 
-#ifndef DT_DUMP
-#define DT_DUMP 1
-#endif
+static double ms    = 40; // assume 25 fps
+static size_t count = 0;
+static size_t delta = 1024;
+const  size_t limit = 1048576;
 
-#ifdef ENABLE_GL
-int Para::solve(Data &data)
+bool Data::solve(double dt)
 {
-  debug("solve(*%p)\n", &data);
+  debug("Data::evlove(%g)\n", dt);
+  cudaError_t err;
 
-  while(!glfwWindowShouldClose(vis::window)) {
-    static size_t count = 0;
-    static size_t delta = 32;
-    const  size_t limit = 1024;
+  do {
+    if(ms < 20 && delta < limit) delta *= 2;
+    if(ms > 80 && delta > 1    ) delta /= 2;
 
-    if(global::dt_dump != 0.0) {
-      double ms;
-      if(count + delta < limit) {
-        ms = data.evolve(global::dt_dump * delta / limit);
-        if(0 == ms) break;
-        count += delta;
-      } else {
-	ms = data.evolve(global::dt_dump * (limit - count) / limit);
-        if(0 == ms) break;
-        count = 0;
-      }
-      if(ms < 20 && delta < limit) delta *= 2;
-      if(ms > 80 && delta > 1    ) delta /= 2;
+    double dt_sub;
+    if(count + delta < limit) {
+      dt_sub = dt * delta / limit;
+      count += delta;
+    } else {
+      dt_sub = dt * (limit - count) / limit;
+      count  = 0;
     }
 
+    if(dt_sub != 0.0) {
+      err = cudaEventRecord(time0, 0);
+      if(cudaSuccess != err)
+	error("Data::solve(): fail to record event [%s]\n",
+              cudaGetErrorString(err));
+
+      err = evolve(dt_sub);
+      if(cudaSuccess != err)
+	error("Data::solve(): fail to launch kernel [%s]\n",
+	      cudaGetErrorString(err));
+
+      err = cudaEventRecord(time1, 0);
+      if(cudaSuccess != err)
+	error("Data::solve(): fail to record event [%s]\n",
+              cudaGetErrorString(err));
+
+      err = cudaEventSynchronize(time1);
+      if(cudaSuccess == err) {
+	float fms;
+	err = cudaEventElapsedTime(&fms, time0, time1);
+	ms  = fms;
+      }
+      if(cudaSuccess != err)
+	error("Data::solve(): fail to obtain elapsed time [%s]\n",
+	      cudaGetErrorString(err));
+
+      err = cudaMemcpy(count_buf, count_res, sizeof(size_t) * n,
+                       cudaMemcpyDeviceToHost);
+      if(cudaSuccess != err)
+        error("Data::solve(): fail to copy memory from device to host [%s]\n",
+	      cudaGetErrorString(err));
+
+      double actual = 0, peak = 0;
+      for(size_t j = 0, h = 0; j < gsz; ++j) {
+	size_t sum = 0, max = 0;
+	for(size_t i = 0; i < bsz; ++i, ++h) {
+	  const size_t x = (h < n) ? count_buf[h] : 0;
+	  sum += x;
+	  if(max < x) max = x;
+	}
+	actual += sum;
+	peak   += max * bsz;
+      }
+
+      if(actual)
+	print("t =%7.2f; "
+	      "%.0f ms/%.0f steps ~%7.2f Gflops (%.2f%%), %7.2fGB/s\n",
+	      t,
+	      ms,
+	      actual,
+	      1e-6 * scheme::flop() * actual / ms,
+	      100 * actual / peak,
+	      1e-6 * (24 * sizeof(real) * actual + scheme::rwsz() * n) / ms);
+    }
+
+#ifdef ENABLE_GL
 #if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
     vis::sense();
 #endif
-    data.show();
-
+    show();
     glfwSwapBuffers(vis::window);
     glfwPollEvents();
-  }
-
-  data.spec(global::output); // TODO: check if glutMainLoop() actually exit...
-  return 0;
-}
-#else
-int Para::solve(Data &data)
-{
-  debug("solve(*%p)\n", &data);
-
-  if(global::dt_dump != 0.0) {
-    data.dump(global::format);
-    while(0 < data.evolve(global::dt_dump))
-      data.dump(global::format);
-  } else
-    while(0 < data.evolve(DT_DUMP));
-
-  data.spec(global::output);
-  return 0;
-}
+    if(glfwWindowShouldClose(vis::window))
+      return false;
 #endif
+  } while(count);
+
+  return true;
+}
