@@ -22,7 +22,7 @@
 
 void Data::dump(const char *format)
 {
-  debug("Data::dump(""%s"")\n", format);
+  debug("Data::dump(\"%s\")\n", format);
 
   char name[256];
   static int frame = 0;
@@ -39,7 +39,7 @@ void Data::dump(const char *format)
 
 void Data::spec(const char *format)
 {
-  debug("Data::spec(""%s"")\n", format);
+  debug("Data::spec(\"%s\")\n", format);
 
 #ifdef HARM
   const State *h = host();

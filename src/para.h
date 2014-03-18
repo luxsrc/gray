@@ -27,6 +27,7 @@ class Para {
 
  public:
   Para();
+  ~Para();
 };
 
 #endif // PARA_H

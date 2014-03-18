@@ -34,9 +34,9 @@ Para::Para()
   /*
   for(int i = 1; i < argc; ++i) {
     if(strchr(argv[i], '='))
-      print("Set parameter ""%s""\n", argv[i]);
+      print("Set parameter \"%s\"\n", argv[i]);
     else
-      error("Invalid argument ""%s""\n", argv[i]);
+      error("Invalid argument \"%s\"\n", argv[i]);
   }
 
   int i = 1;
@@ -49,7 +49,7 @@ Para::Para()
   for(; i < argc; ++i) {
     const char *arg = argv[i];
     if(arg[1] != '=')
-      error("Unknown flag ""%s""\n", arg);
+      error("Unknown flag \"%s\"\n", arg);
     else {
       switch(arg[0]) {
       case 'N': n            = atoi(arg + 2); break;
@@ -59,11 +59,16 @@ Para::Para()
       case 'H': name         =      arg + 2 ; break;
       default :
         if(!init_config(arg) || !prob_config(arg))
-          error("Unknown parameter ""%s""\n", arg);
+          error("Unknown parameter \"%s\"\n", arg);
         break;
       }
-      print("Set parameter ""%s""\n", arg);
+      print("Set parameter \"%s\"\n", arg);
     }
   }
   */
+}
+
+Para::~Para()
+{
+  debug("Para::~Para()\n");
 }
