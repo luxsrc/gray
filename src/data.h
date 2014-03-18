@@ -62,7 +62,7 @@ class Data {
   void dump(const char *); // implemented in "src/io.cc"
   void spec(const char *); // implemented in "src/io.cc"
 #ifdef ENABLE_GL
-  void show();             // implemented in "src/optional/vis.cc"
+  int  show();             // implemented in "src/optional/vis.cc"
 #endif
 };
 

@@ -30,7 +30,7 @@ namespace vis {
   extern GLFWwindow *window;
   extern int    width, height;
   extern float  ratio, ax, ly, az, a_spin;
-  extern double dt_saved;
+  extern int    direction, saved;
   extern GLuint shaders[2];
   extern int    shader;
   extern bool   draw_body;

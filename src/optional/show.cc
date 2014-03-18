@@ -32,7 +32,7 @@ namespace vis {
   float a_spin = 0.999;
 }
 
-void Data::show()
+int Data::show()
 {
 #if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
   vis::sense();
@@ -86,4 +86,6 @@ void Data::show()
     error("Data::show(): fail to visualize simulation\n");
 
   glfwSwapBuffers(vis::window);
+
+  return vis::direction;
 }

@@ -59,11 +59,6 @@ namespace scheme {
   extern double rwsz();
 }
 
-// Global variables
-namespace global {
-  extern double dt_dump;
-}
-
 // Basic function prototypes
 extern void print(const char *, ...);
 extern void error(const char *, ...);

@@ -31,6 +31,7 @@ size_t Data::solve(double dt, float &elapse, float &actual, float &peak)
           cudaGetErrorString(err));
 
 #ifdef ENABLE_GL
+  static int    direction = 1;
   static size_t delta = DELTA;
   static size_t count = LIMIT;
 
@@ -46,7 +47,8 @@ size_t Data::solve(double dt, float &elapse, float &actual, float &peak)
     count   = LIMIT;
   }
 
-  if(cudaSuccess != (err = evolve(dt_sub)))
+  if(direction   != 0 &&
+     cudaSuccess != (err = evolve(direction * dt_sub)))
 #else
   if(cudaSuccess != (err = evolve(dt)))
 #endif
@@ -77,7 +79,7 @@ size_t Data::solve(double dt, float &elapse, float &actual, float &peak)
   if(elapse < 20 && delta < LIMIT) delta *= 2;
   if(elapse > 80 && delta > 1    ) delta /= 2;
 
-  show();
+  direction = show();
   glfwPollEvents();
   if(glfwWindowShouldClose(vis::window))
     return 0;
