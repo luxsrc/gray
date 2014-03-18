@@ -17,9 +17,10 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "../gray.h"
+#include <cstdlib>
 #include <cmath>
 
-void Para::init(Const &c)
+void Para::define(Const &c)
 {
   c.r_obs     = 1000;
   c.i_obs     = 30;
@@ -38,4 +39,18 @@ void Para::init(Const &c)
 
   c.coord = NULL;
   c.field = NULL;
+}
+
+const char *Para::config(Const &c, const char *arg)
+{
+  const char *val;
+
+       if((val = match("i",  arg))) c.i_obs   = atof(val);
+  else if((val = match("a",  arg))) c.a_spin  = atof(val);
+  else if((val = match("ne", arg))) c.ne_rho  = atof(val);
+  else if((val = match("rd", arg))) c.Tp_Te_d = atof(val);
+  else if((val = match("rw", arg))) c.Tp_Te_w = atof(val);
+  // TODO: load nu0 and HARM data
+
+  return val;
 }
