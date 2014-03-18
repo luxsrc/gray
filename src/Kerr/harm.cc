@@ -17,42 +17,31 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "../gray.h"
-/*
 #include <cstdlib>
-#include <cstring>
+#include <cstdio>
 #include <cmath>
 
-namespace harm {
-  double t = 0, R0 = 2;
-  size_t n1 = 0, n2 = 0, n3 = 0;
-  real   lnrmin = 0, lnrmax = 0;
-  Coord *coord = NULL;
-  Field *field = NULL;
-}
-
-Coord *load_coord(const char *name)
+Coord *harm::load_coord(Const &c, const char *name)
 {
-  using namespace harm;
-
-  double Gamma  = 4.0 / 3.0;
-  double a_spin = 0.999;
-  Coord *data   = NULL;
-  FILE  *file   = fopen(name, "r");
+  Coord *data = NULL;
+  FILE  *file = fopen(name, "r");
 
   if(!file)
     error("ERROR: fail to open file \"%s\".\n", name);
   else {
+    double Gamma, a_spin;
     fseek(file, 12, SEEK_CUR);
-    fread(&n1, sizeof(size_t), 1, file);
-    fread(&n2, sizeof(size_t), 1, file);
-    fread(&n3, sizeof(size_t), 1, file);
+    fread(&c.nr,     sizeof(size_t), 1, file);
+    fread(&c.ntheta, sizeof(size_t), 1, file);
+    fread(&c.nphi,   sizeof(size_t), 1, file);
     fseek(file, 56, SEEK_CUR);
-    fread(&Gamma,  sizeof(double), 1, file);
-    fread(&a_spin, sizeof(double), 1, file);
-    fread(&R0,     sizeof(double), 1, file);
-    fseek(file, 44, SEEK_CUR);
+    fread(&Gamma,    sizeof(double), 1, file);
+    fread(&a_spin,   sizeof(double), 1, file);
+    fseek(file, 52, SEEK_CUR);
+    c.Gamma  = Gamma;
+    c.a_spin = a_spin;
 
-    size_t count = n1 * n2;
+    size_t count = c.nr * c.ntheta;
     Coord *host;
     if(!(host = (Coord *)malloc(sizeof(Coord) * count)))
       error("ERROR: fail to allocate host memory\n");
@@ -70,13 +59,13 @@ Coord *load_coord(const char *name)
           fseek(file, 3  * sizeof(size_t), SEEK_CUR);
           fread(&temp, sizeof(double), 1, file);
           fseek(file, 21 * sizeof(double), SEEK_CUR);
-          harm::lnrmin = temp;
+          c.lnrmin = temp;
         } else if(i == count-1) {
           double temp;
           fseek(file, 3  * sizeof(size_t), SEEK_CUR);
           fread(&temp, sizeof(double), 1, file);
           fseek(file, 21 * sizeof(double), SEEK_CUR);
-          harm::lnrmax = temp;
+          c.lnrmax = temp;
         } else
           fseek(file, 3 * sizeof(size_t) + 22 * sizeof(double), SEEK_CUR);
 
@@ -107,21 +96,16 @@ Coord *load_coord(const char *name)
     fclose(file);
   }
 
-  if(!init_config('G', Gamma) || !prob_config('G', Gamma))
-    error("load_coord(): fail to set Gamma\n");
-  if(!init_config('a', a_spin) || !prob_config('a', a_spin))
-    error("load_coord(): fail to set a_spin\n");
-
+  print("Data size = %zu x %zu x %zu\n",
+        c.nr, c.ntheta, c.nphi);
   print("Gamma = %g, spin parameter a = %g, rmin = %g, rmax = %g\n",
-        Gamma, a_spin, exp(harm::lnrmin), exp(harm::lnrmax));
+        c.Gamma, c.a_spin, exp(c.lnrmin), exp(c.lnrmax));
 
   return data;
 }
 
-Field *load_field(const char *name)
+Field *harm::load_field(Const &c, const char *name)
 {
-  using namespace harm;
-
   real max_den = 0, max_eng = 0, max_T = 0, max_v = 0, max_B = 0;
 
   Field *data = NULL;
@@ -130,10 +114,15 @@ Field *load_field(const char *name)
   if(!file)
     error("ERROR: fail to open file \"%s\".\n", name);
   else {
-    fscanf(file, "%lf %zu %zu %zu", &t, &n1, &n2, &n3);
+    double time;
+    size_t n1, n2, n3;
+    fscanf(file, "%lf %zu %zu %zu", &time, &n1, &n2, &n3);
     while('\n' != fgetc(file));
 
-    size_t count = n1 * n2 * n3;
+    if(n1 != c.nr || n2 != c.ntheta || n3 != c.nphi)
+      return NULL;
+
+    size_t count = c.nr * c.ntheta * c.nphi;
     Field *host;
     if(!(host = (Field *)malloc(sizeof(Field) * count)))
       error("ERROR: fail to allocate host memory\n");
@@ -174,7 +163,6 @@ Field *load_field(const char *name)
     fclose(file);
   }
 
-  print("Data size = %zu x %zu x %zu\n", n1, n2, n3);
   print("Maximum density        = %g\n"
         "Maximum energy         = %g\n"
         "Maximum temperature    = %g\n"
@@ -184,33 +172,3 @@ Field *load_field(const char *name)
 
   return data;
 }
-
-static void cleanup()
-{
-  if(harm::field) cudaFree(harm::field);
-  if(harm::coord) cudaFree(harm::coord);
-}
-
-int main()
-{
-  if(name) {
-    using namespace harm;
-
-    char grid[256], *p;
-    strcpy(grid, name);
-    p = grid + strlen(grid);
-    while(p > grid && *p != '/') --p;
-    strcpy(*p == '/' ? p + 1 : p, "usgdump2d");
-
-    coord = load_coord(grid);
-    field = load_field(name);
-    if(coord && field && !atexit(cleanup))
-      print("Loaded harm data from \"%s\"\n", name);
-    else {
-      if(field) cudaFree(field);
-      if(coord) cudaFree(coord);
-      error("Fail to load harm data from \"%s\"", name);
-    }
-  }
-}
-*/

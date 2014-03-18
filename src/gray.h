@@ -68,5 +68,6 @@ extern void error(const char *, ...);
 #  define debug(...) // do nothing
 #endif
 extern void pick(int);
+extern const char *match(const char *, const char *);
 
 #endif // GRAY_H

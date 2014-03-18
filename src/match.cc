@@ -17,34 +17,19 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
+#include <cstring>
 
-Para::Para()
+const char *match(const char *sym, const char *arg)
 {
-  debug("Para::Para()\n");
-  cudaError_t err;
+  const size_t l = strlen(sym);
+  const size_t n = strlen(arg);
 
-  define(buf);
+  if(l + 1 > n || '=' != arg[l])
+    return NULL;
 
-  if(cudaSuccess != (err = sync(&buf)))
-    error("Para::Para(): fail to synchronize parameters [%s]\n",
-          cudaGetErrorString(err));
-}
+  for(size_t i = 0; i < l; ++i)
+    if(sym[i] != arg[i])
+      return NULL;
 
-Para::~Para()
-{
-  debug("Para::~Para()\n");
-}
-
-bool Para::config(const char *arg)
-{
-  debug("Para::config(\"%s\")\n", arg);
-  cudaError_t err;
-
-  if(config(buf, arg)) {
-    if(cudaSuccess != (err = sync(&buf)))
-      error("Para::Para(): fail to synchronize parameters [%s]\n",
-            cudaGetErrorString(err));
-    return true;
-  } else
-    return false;
+  return arg + l + 1;
 }
