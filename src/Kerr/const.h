@@ -41,7 +41,7 @@ typedef struct {
   Coord *coord;
   Field *field;
   size_t nr, ntheta, nphi;
-  real   lnrmin, lnrmax, Gamma;
+  real   Gamma;
 } Const;
 
 namespace harm {
