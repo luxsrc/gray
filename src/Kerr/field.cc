@@ -22,69 +22,58 @@
 
 Field *harm::load_field(Const &c, const char *name)
 {
-  real max_den = 0, max_eng = 0, max_T = 0, max_v = 0, max_B = 0;
+  cudaError_t err;
 
-  Field *data = NULL;
-  FILE  *file = fopen(name, "r");
-
+  FILE *file = fopen(name, "r");
   if(!file)
     error("ERROR: fail to open file \"%s\".\n", name);
-  else {
-    double time;
-    size_t n1, n2, n3;
-    fscanf(file, "%lf %zu %zu %zu", &time, &n1, &n2, &n3);
-    while('\n' != fgetc(file));
 
-    if(n1 != c.nr || n2 != c.ntheta || n3 != c.nphi)
-      return NULL;
+  double time;
+  size_t n1, n2, n3, count, sz;
+  fscanf(file, "%lf %zu %zu %zu", &time, &n1, &n2, &n3);
+  while('\n' != fgetc(file));
+  count = c.nr * c.ntheta * c.nphi;
+  sz    = sizeof(Field) * count;
+  if(n1 != c.nr || n2 != c.ntheta || n3 != c.nphi)
+    error("ERROR: inconsistent grid size\n");
 
-    size_t count = c.nr * c.ntheta * c.nphi;
-    Field *host;
-    if(!(host = (Field *)malloc(sizeof(Field) * count)))
-      error("ERROR: fail to allocate host memory\n");
-    else if(cudaSuccess != cudaMalloc((void **)&data, sizeof(Field) * count)) {
-      free(host);
-      error("ERROR: fail to allocate device memory\n");
-    } else {
-      fread(host, sizeof(Field), count, file);
+  Field *host;
+  if(!(host = (Field *)malloc(sz)))
+    error("ERROR: fail to allocate host memory\n");
+  fread(host, sizeof(Field), count, file);
+  fclose(file);
 
-      for(size_t i = 0; i < count; ++i) {
-        const real v = sqrt(host[i].v1 * host[i].v1 +
-                            host[i].v2 * host[i].v2 +
-                            host[i].v3 * host[i].v3);
-        const real B = sqrt(host[i].B1 * host[i].B1 +
-                            host[i].B2 * host[i].B2 +
-                            host[i].B3 * host[i].B3);
-        const real T = host[i].u / host[i].rho;
+  real dmax = 0, Emax = 0, Tmax = 0, vmax = 0, Bmax = 0;
+  for(size_t i = 0; i < count; ++i) {
+    const real v = sqrt(host[i].v1 * host[i].v1 +
+                        host[i].v2 * host[i].v2 +
+                        host[i].v3 * host[i].v3);
+    const real B = sqrt(host[i].B1 * host[i].B1 +
+                        host[i].B2 * host[i].B2 +
+                        host[i].B3 * host[i].B3);
+    const real T = host[i].u / host[i].rho;
 
-        if(max_den < host[i].rho) max_den = host[i].rho;
-        if(max_eng < host[i].u  ) max_eng = host[i].u;
-        if(max_T   < T          ) max_T   = T;
-        if(max_v   < v          ) max_v   = v;
-        if(max_B   < B          ) max_B   = B;
-      }
-
-      cudaError_t err =
-        cudaMemcpy((void **)data, (void **)host,
-                   sizeof(Field) * count, cudaMemcpyHostToDevice);
-      free(host);
-
-      if(cudaSuccess != err) {
-        cudaFree(data);
-        data = NULL;
-        error("ERROR: fail to copy data from host to device\n");
-      }
-    }
-
-    fclose(file);
+    if(dmax < host[i].rho) dmax = host[i].rho;
+    if(Emax < host[i].u  ) Emax = host[i].u;
+    if(Tmax < T          ) Tmax = T;
+    if(vmax < v          ) vmax = v;
+    if(Bmax < B          ) Bmax = B;
   }
+
+  Field *data;
+  if(cudaSuccess != (err = cudaMalloc((void **)&data, sz)) ||
+     cudaSuccess != (err = cudaMemcpy((void **)data, (void **)host,
+                                      sz, cudaMemcpyHostToDevice)))
+    error("ERROR: fail to allocate device memory [%s]\n",
+          cudaGetErrorString(err));
+  free(host);
 
   print("Maximum density        = %g\n"
         "Maximum energy         = %g\n"
         "Maximum temperature    = %g\n"
         "Maximum speed          = %g\n"
         "Maximum magnetic field = %g\n",
-        max_den, max_eng, max_T, max_v, max_B);
+        dmax, Emax, Tmax, vmax, Bmax);
 
   return data;
 }
