@@ -38,8 +38,7 @@ State *Data::device()
 
   State *head = NULL;
   size_t size = 0;
-  if(cudaSuccess != (err = MAP_POINTER((void **)&head, &size, res)) ||
-     cudaSuccess != (err = cudaDeviceSynchronize()))
+  if(cudaSuccess != (err = MAP_POINTER((void **)&head, &size, res)))
     error("Data::device(): fail to get pointer for mapped resource [%s]\n",
           cudaGetErrorString(err));
 
