@@ -18,7 +18,6 @@
 
 #include "../gray.h"
 #include <cstdlib>
-#include <cstdio>
 #include <cmath>
 
 Coord *harm::load_coord(Const &c, const char *name)

@@ -23,6 +23,7 @@
 #include "make.h"
 
 // Include system and optional headers
+#include <cstdio>
 #include <cuda_runtime_api.h> // C-style CUDA runtime API
 
 #ifdef ENABLE_GL

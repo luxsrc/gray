@@ -48,6 +48,8 @@ class Data {
   cudaError_t htod();         // implemented in "src/memcpy.cc"
   cudaError_t sync(size_t *); // implemented in "src/core.cu"
 
+  void output(const State *, FILE *); // implemented in "src/*/output.cc"
+
  public:
   Data(size_t); // implemented in "src/data.cc"
   ~Data();      // implemented in "src/data.cc"

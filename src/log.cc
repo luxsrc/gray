@@ -19,7 +19,6 @@
 #include "gray.h"
 #include <cstdlib>
 #include <cstdarg>
-#include <cstdio>
 
 void print(const char *format, ...)
 {

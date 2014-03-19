@@ -18,7 +18,6 @@
 
 #include "gray.h"
 #include <cstdlib>
-#include <cstdio>
 
 void Data::snapshot(const char *format)
 {
@@ -47,30 +46,10 @@ void Data::output(const char *name)
   else
     return;
 
-#ifdef HARM
-  const State *h = host();
-
-  float *I = (float *)malloc(sizeof(float) * n * N_NU);
-  double total[N_NU] = {};
-  if(!I)
-    error("ERROR: fail to allocate buffer\n");
-  else
-    for(int i = 0; i < N_NU; ++i) {
-      total[i] = 0;
-      for(size_t j = 0; j < n; ++j) {
-        const real tmp = h[j].rad[i].I;
-        I[i*n+j]  = tmp; // real to float
-        total[i] += tmp;
-      }
-    }
-
   FILE *file = fopen(name, "w");
-  for(int i = 0; i < N_NU-1; ++i) fprintf(file, "%15e ", total[i] / n);
-  fprintf(file, "%15e\n", total[N_NU-1] / n);
-  fwrite(&n, sizeof(size_t), 1,        file);
-  fwrite( I, sizeof(float),  n * N_NU, file);
-  fclose(file);
-
-  free(I);
-#endif
+  if(file) {
+    output(host(), file);
+    fclose(file);
+  } else
+    error("Data::output(): fail to create file \"%s\"\n", name);
 }
