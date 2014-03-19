@@ -220,7 +220,8 @@ static inline __device__ State rhs(const State &s, real t)
     int iphi = (s.phi >= 0) ?
       ((int)(c.nphi * s.phi / (real)(2 * M_PI) + (real)0.5) % ( c.nphi)):
       ((int)(c.nphi * s.phi / (real)(2 * M_PI) - (real)0.5) % (-c.nphi));
-    if(iphi < 0) iphi += c.nphi;
+    while(iphi <       0) iphi += c.nphi;
+    while(iphi >= c.nphi) iphi -= c.nphi;
 
     h2 = itheta * c.nr + ir;
     h3 = (iphi * c.ntheta + itheta) * c.nr + ir;
