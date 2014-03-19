@@ -17,65 +17,75 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
-#include <para.h>
 
-#ifndef DT_DUMP
-#define DT_DUMP 1
-#endif
+#define MEMCPY(dst, src, sz) \
+  cudaMemcpy(dst, src, sz, cudaMemcpyDeviceToHost) // for readability
+
+size_t Data::solve(double dt, float &elapse, float &actual, float &peak)
+{
+  debug("Data::evlove(%g)\n", dt);
+  cudaError_t err;
+
+  if(cudaSuccess != (err = cudaEventRecord(time0, 0)))
+    error("Data::solve(): fail to start timing [%s]\n",
+          cudaGetErrorString(err));
 
 #ifdef ENABLE_GL
-extern void display(size_t, GLuint);
+  static int    direction = 1;
+  static size_t delta = DELTA;
+  static size_t count = LIMIT;
 
-int solve(Data &data)
-{
-  debug("solve(*%p)\n", &data);
-
-  while(!glfwWindowShouldClose(global::window)) {
-    static size_t count = 0;
-    static size_t delta = 32;
-    const  size_t limit = 1024;
-
-    if(global::dt_dump != 0.0) {
-      double ms;
-      if(count + delta < limit) {
-        ms = evolve(data, global::dt_dump * delta / limit);
-        if(0 == ms) break;
-        count += delta;
-      } else {
-        ms = evolve(data, global::dt_dump * (limit - count) / limit);
-        if(0 == ms) break;
-        count = 0;
-      }
-      if(ms < 20 && delta < limit) delta *= 2;
-      if(ms > 80 && delta > 1    ) delta /= 2;
-    }
-
-#if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
-    sense();
-#endif
-
-    display((size_t)data, (GLuint)data);
-
-    glfwSwapBuffers(global::window);
-    glfwPollEvents();
+  double dt_sub = dt / LIMIT;
+  if(count + delta < LIMIT) {
+    dt_sub *= delta;
+    count  += delta;
+  } else if(count == LIMIT) {
+    dt_sub *= delta;
+    count   = delta;
+  } else {
+    dt_sub *= LIMIT - count;
+    count   = LIMIT;
   }
 
-  data.spec(global::format); // TODO: check if glutMainLoop() actually exit...
-  return 0;
-}
+  if(direction   != 0 &&
+     cudaSuccess != (err = evolve(direction * dt_sub)))
 #else
-int solve(Data &data)
-{
-  debug("solve(*%p)\n", &data);
-
-  if(global::dt_dump != 0.0) {
-    data.dump(global::format, global::t);
-    while(0 < evolve(data, global::dt_dump))
-      data.dump(global::format, global::t);
-  } else
-    while(0 < evolve(data, DT_DUMP));
-
-  data.spec(global::format);
-  return 0;
-}
+  if(cudaSuccess != (err = evolve(dt)))
 #endif
+    error("Data::solve(): fail to launch kernel [%s]\n",
+          cudaGetErrorString(err));
+
+  if(cudaSuccess != (err = cudaEventRecord(time1, 0))                   ||
+     cudaSuccess != (err = cudaEventSynchronize(time1))                 ||
+     cudaSuccess != (err = cudaEventElapsedTime(&elapse, time0, time1)) ||
+     cudaSuccess != (err = MEMCPY(count_buf, count_res, sizeof(size_t) * n)))
+    error("Data::solve(): fail to estimate performance [%s]\n",
+          cudaGetErrorString(err));
+
+  actual = 0;
+  peak   = 0;
+  for(size_t j = 0, h = 0; j < gsz; ++j) {
+    size_t sum = 0, max = 0;
+    for(size_t i = 0; i < bsz; ++i, ++h) {
+      const size_t x = (h < n) ? count_buf[h] : 0;
+      sum += x;
+      if(max < x) max = x;
+    }
+    actual += sum;
+    peak   += max * bsz;
+  }
+
+#ifdef ENABLE_GL
+  if(elapse < 20 && delta < LIMIT) delta *= 2;
+  if(elapse > 80 && delta > 1    ) delta /= 2;
+
+  direction = show();
+  glfwPollEvents();
+  if(glfwWindowShouldClose(vis::window))
+    return 0;
+
+  return actual > 0.0 ? count : 0;
+#else
+  return actual > 0.0 ? LIMIT : 0;
+#endif
+}

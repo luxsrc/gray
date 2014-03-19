@@ -31,10 +31,10 @@ static GLuint compile(const char *src, GLenum type)
   return s;
 }
 
-void mkshaders(GLuint shader[3])
+void vis::mkshaders(GLuint shaders[])
 {
-  shader[0] = glCreateProgram();
-  glAttachShader(shader[0], compile(STRING(
+  shaders[0] = glCreateProgram();
+  glAttachShader(shaders[0], compile(STRING(
     void main()
     {
       vec4 r;
@@ -42,10 +42,10 @@ void mkshaders(GLuint shader[3])
       gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * r;
     }
   ), GL_VERTEX_SHADER));
-  glLinkProgram(shader[0]);
+  glLinkProgram(shaders[0]);
 
-  shader[1] = glCreateProgram();
-  glAttachShader(shader[1], compile(STRING(
+  shaders[1] = glCreateProgram();
+  glAttachShader(shaders[1], compile(STRING(
     void main()
     {
       vec4 r;
@@ -56,7 +56,7 @@ void mkshaders(GLuint shader[3])
       gl_TexCoord[0] = gl_MultiTexCoord0;
     }
   ), GL_VERTEX_SHADER));
-  glAttachShader(shader[1], compile(STRING(
+  glAttachShader(shaders[1], compile(STRING(
     uniform sampler2D splatTexture;
     void main()
     {
@@ -64,8 +64,8 @@ void mkshaders(GLuint shader[3])
                    * texture2D(splatTexture, gl_TexCoord[0].st);
     }
   ), GL_FRAGMENT_SHADER));
-  glLinkProgram(shader[1]);
+  glLinkProgram(shaders[1]);
 
   if(GL_NO_ERROR != glGetError())
-    error("mkshaders(): fail to compile shader\n");
+    error("vis::mkshaders(): fail to compile shader\n");
 }

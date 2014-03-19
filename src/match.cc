@@ -1,5 +1,5 @@
-// Copyright (C) 2012--2014 Chi-kwan Chan
-// Copyright (C) 2012--2014 Steward Observatory
+// Copyright (C) 2014 Chi-kwan Chan
+// Copyright (C) 2014 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -16,20 +16,20 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef STATE_H
-#define STATE_H
+#include "gray.h"
+#include <cstring>
 
-#define HARM 1
-#define PARTICLE_TIME t
+const char *match(const char *sym, const char *arg)
+{
+  const size_t l = strlen(sym);
+  const size_t n = strlen(arg);
 
-typedef struct {
-  real t, r, theta, phi;
-  real kr, ktheta;
-  real bimpact; // impact parameter defined as L / E, constant
-  struct {
-    real I;     // specific intensity
-    real tau;   // optical depth
-  } rad[N_NU];  // N_NU is now defined in const.h
-} State;
+  if(l + 1 > n || '=' != arg[l])
+    return NULL;
 
-#endif // STATE_H
+  for(size_t i = 0; i < l; ++i)
+    if(sym[i] != arg[i])
+      return NULL;
+
+  return arg + l + 1;
+}

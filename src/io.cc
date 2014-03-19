@@ -20,9 +20,12 @@
 #include <cstdlib>
 #include <cstdio>
 
-void Data::dump(const char *format, double t)
+void Data::dump(const char *format)
 {
-  debug("Data::dump()\n");
+  if(format && *format)
+    debug("Data::dump(\"%s\")\n", format);
+  else
+    return;
 
   char name[256];
   static int frame = 0;
@@ -39,13 +42,16 @@ void Data::dump(const char *format, double t)
 
 void Data::spec(const char *format)
 {
-  debug("Data::spec()\n");
+  if(format && *format)
+    debug("Data::spec(\"%s\")\n", format);
+  else
+    return;
 
 #ifdef HARM
   const State *h = host();
 
   float *I = (float *)malloc(sizeof(float) * n * N_NU);
-  double total[N_NU];
+  double total[N_NU] = {};
   if(!I)
     error("ERROR: fail to allocate buffer\n");
   else

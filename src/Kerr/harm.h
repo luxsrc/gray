@@ -19,8 +19,6 @@
 #ifndef HARM_H
 #define HARM_H
 
-#include <cstdio>
-
 typedef struct {
   // size_t i, j, k;
   // double x1, x2, x3;
@@ -43,16 +41,5 @@ typedef struct {
   float v1, v2, v3;
   float B1, B2, B3;
 } Field;
-
-namespace harm {
-  extern double t,  R0;
-  extern size_t n1, n2, n3;
-  extern real   lnrmin, lnrmax;
-  extern Coord *coord;
-  extern Field *field;
-}
-
-extern Coord *load_coord(const char *);
-extern Field *load_field(const char *);
 
 #endif // HARM_H

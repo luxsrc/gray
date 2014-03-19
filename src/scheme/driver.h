@@ -38,27 +38,27 @@ static __global__ void driver(State *state, size_t n, real t, real target)
 
     if(t < target)
       while(GET_TIME < target) {
-        const real dt = scheme(s, t, target - t);
+        const real dt = integrate(s, t, target - t);
         if(0 == dt) break;
         t += dt;
         c += 1;
       }
     else
       while(GET_TIME > target) {
-        const real dt = scheme(s, t, target - t);
+        const real dt = integrate(s, t, target - t);
         if(0 == dt) break;
         t += dt;
         c += 1;
       }
 
-    count[blockIdx.x * blockDim.x + threadIdx.x] = c;
+    count.er[blockIdx.x * blockDim.x + threadIdx.x] = c;
   }
 
   __syncthreads();
   copy((real *)state, (real *)shared, NVAR * n);
 }
 
-static double rwsz(void)
+double scheme::rwsz(void)
 {
   return 2 * sizeof(State) + sizeof(size_t);
 }

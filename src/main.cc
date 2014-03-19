@@ -17,10 +17,11 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gray.h"
-#include "Kerr/harm.h"
 #include <cstdlib>
-#include <cstring>
-#include <para.h>
+
+#ifndef N_DEFAULT
+#define N_DEFAULT (512 * 512)
+#endif
 
 #ifndef T_START
 #define T_START 0
@@ -30,93 +31,56 @@
 #define DT_DUMP 1
 #endif
 
-#ifndef N_DEFAULT
-#define N_DEFAULT (512 * 512)
-#endif
-
-namespace global {
-  double t        = T_START;
-  double dt_dump  = DT_DUMP;
-  double dt_saved = 0;
-  const char *format = "%04d.raw";
-}
-
-static void cleanup()
-{
-  if(harm::field) cudaFree(harm::field);
-  if(harm::coord) cudaFree(harm::coord);
-}
-
 int main(int argc, char **argv)
 {
-  const char *name = NULL;
+  int    gpu = 0;
+  size_t n   = N_DEFAULT;
+  double t0  = T_START;
+  double dt  = DT_DUMP;
 
-  print("GRay: a massive parallel GRaysic integrator\n");
-  debug("Debugging is turned on\n");
+  const char *format = "%03d.raw";
+  const char *output = "out.raw";
 
+  print("GRay: a massive parallel ODE integrator written in CUDA C/C++\n");
 #ifdef ENABLE_GL
-  setup(argc, argv);
-#endif
-
-  int i = 1;
-  if(argc > i && argv[i][0] == '-') // `./gray -2` use the second device
-    pick(atoi(argv[i++] + 1));
-  else
-    pick(0);
-
-  size_t n = 0;
-  for(; i < argc; ++i) {
-    const char *arg = argv[i];
-    if(arg[1] != '=')
-      error("Unknown flag ""%s""\n", arg);
-    else {
-      switch(arg[0]) {
-      case 'N': n               = atoi(arg + 2); break;
-      case 'T': global::t       = atof(arg + 2); break;
-      case 'D': global::dt_dump = atof(arg + 2); break;
-      case 'O': global::format  =      arg + 2 ; break;
-      case 'H': name            =      arg + 2 ; break;
-      default :
-        if(!init_config(arg) || !prob_config(arg))
-          error("Unknown parameter ""%s""\n", arg);
-        break;
-      }
-      print("Set parameter ""%s""\n", arg);
-    }
-  }
-
-  if(name) {
-    using namespace harm;
-
-    char grid[256], *p;
-    strcpy(grid, name);
-    p = grid + strlen(grid);
-    while(p > grid && *p != '/') --p;
-    strcpy(*p == '/' ? p + 1 : p, "usgdump2d");
-
-    coord = load_coord(grid);
-    field = load_field(name);
-    if(coord && field && !atexit(cleanup))
-      print("Loaded harm data from \"%s\"\n", name);
-    else {
-      if(field) cudaFree(field);
-      if(coord) cudaFree(coord);
-      error("Fail to load harm data from \"%s\"", name);
-    }
-  }
-
-  Data data(n ? n : N_DEFAULT);
-  init(data);
-
-#ifdef ENABLE_GL
-  //vis((GLuint)data, (size_t)data);
-  print("\
-Press 'ESC' or 'q' to quit, 'p' to pulse, 'r' to reverse the run, 's' to\n\
-to turn sprites on and off, and 'f' to enter and exit full screen\n\
-");
+  print("Press 'q' to quit, 'p' and 'r' to pulse and reverse the run\n");
 #else
   print("Press 'Ctrl C' to quit\n");
 #endif
+  debug("Debugging is turned on\n");
 
-  return solve(data);
+  Para para;
+  for(int i = 1; i < argc; ++i) {
+    const char *arg = argv[i], *val;
+
+         if((val = match("gpu",    arg))) gpu    = atoi(val);
+    else if((val = match("n",      arg))) n      = atoi(val);
+    else if((val = match("t0",     arg))) t0     = atof(val);
+    else if((val = match("dt",     arg))) dt     = atof(val);
+    else if((val = match("format", arg))) format =      val ;
+    else if((val = match("output", arg))) output =      val ;
+
+    if(val || para.config(arg))
+      print("Set parameter \"%s\"\n", arg);
+    else
+      error("Unknown argument \"%s\"\n", arg); // it's wasteful to run the
+                                               // wrong simulation
+  }
+  pick(gpu); // TODO: print GPU info from main() instead of pick()?
+
+  Data data(n);
+  data.init(t0);
+  data.dump(format);
+
+  float ms, actual, peak;
+  while(size_t c = data.solve(dt, ms, actual, peak)) {
+    print("t = %.2f; %.0f ms/%.0f steps ~ %.2f Gflops (%.2f%%), %.2f GB/s\n",
+          data.t, ms, actual,
+          1e-6 * scheme::flop() * actual / ms, 100 * actual / peak,
+          1e-6 * (24 * sizeof(real) * actual + scheme::rwsz() * n) / ms);
+    data.dump(c == LIMIT ? format : NULL);
+  }
+
+  data.spec(output);
+  return 0;
 }

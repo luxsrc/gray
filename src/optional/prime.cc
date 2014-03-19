@@ -1,5 +1,5 @@
-// Copyright (C) 2012,2013 Chi-kwan Chan
-// Copyright (C) 2012,2013 Steward Observatory
+// Copyright (C) 2012--2014 Chi-kwan Chan
+// Copyright (C) 2012--2014 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -33,10 +33,10 @@ static void setup()
   print("Making sense...");
 
   if(nite::STATUS_OK != nite::NiTE::initialize())
-    error("sense(): fail to initialize NiTE\n");
+    error("vis::sense(): fail to initialize PrimeSense\n");
 
   if(nite::STATUS_OK != tracker.create())
-    error("sense(): fail to create user tracker\n");
+    error("vis::sense(): fail to create user tracker\n");
 
   first = false;
 
@@ -48,7 +48,7 @@ static void cleanup()
   nite::NiTE::shutdown();
 }
 
-void sense()
+void vis::sense()
 {
   if(first && !atexit(cleanup)) setup();
 
@@ -113,30 +113,30 @@ void sense()
         const float d  = sqrt(dx * dx + dy * dy);
         if(!left_old || !right_old) {
           d_old = d;
-          ly_old = global::ly;
+          ly_old = vis::ly;
         }
-        global::ly = ly_old * d_old / d;
+        vis::ly = ly_old * d_old / d;
       } else if(left) {
         if(!left_old)
           x_old = upper[0].x;
         if(upper[0].x < x_old - 50)
-          global::dt_dump = -fabs(global::dt_dump);
+          vis::dt_dump = -fabs(vis::dt_dump);
         else if(upper[0].x > x_old + 50)
-          global::dt_dump =  fabs(global::dt_dump);
+          vis::dt_dump =  fabs(vis::dt_dump);
         else {
-          const double temp = global::dt_saved;
-          global::dt_saved = global::dt_dump;
-          global::dt_dump = temp;
+          const double temp = vis::dt_saved;
+          vis::dt_saved = vis::dt_dump;
+          vis::dt_dump = temp;
         }
       } else if(right) {
         if(!right_old) {
-          ax_old = global::ax;
-          az_old = global::az;
+          ax_old = vis::ax;
+          az_old = vis::az;
           x_old = upper[5].x;
           z_old = upper[5].y;
         }
-        global::ax = ax_old + (upper[5].x - x_old) / 2;
-        global::az = az_old + (upper[5].y - z_old) / 2;
+        vis::ax = ax_old + (upper[5].x - x_old) / 2;
+        vis::az = az_old + (upper[5].y - z_old) / 2;
       }
 
       left_old  = left;
@@ -146,10 +146,10 @@ void sense()
   }
 }
 
-void track()
+void vis::track()
 {
   glLoadIdentity();
-  glTranslatef(global::ratio - 0.1f, 1 - 0.1f, -5.0f);
+  glTranslatef(vis::ratio - 0.1f, 1 - 0.1f, -5.0f);
 
   if(head.z != 0) {
     glColor3f(1, 1, 0);

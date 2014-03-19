@@ -18,32 +18,33 @@
 
 #include "gray.h"
 
-void pick(int device)
+Para::Para()
 {
-  debug("pick(%d)\n", device);
+  debug("Para::Para()\n");
   cudaError_t err;
 
-  int n_devices;
-  cudaGetDeviceCount(&n_devices);
+  define(buf);
 
-  if(n_devices < 1)
-    error("pick(): no GPU is found on this machine\n");
-  if(n_devices <= device)
-    error("pick(): %u is an invalid GPU id\n");
-
-  print("%d GPU%s found --- running on GPU %u\n",
-        n_devices, n_devices == 1 ? " is" : "s are", device);
-
-  if(cudaSuccess != (err = cudaSetDevice(device)))
-    error("pick(): fail to switch to device %d [%s]\n", device,
+  if(cudaSuccess != (err = sync(&buf)))
+    error("Para::Para(): fail to synchronize parameters [%s]\n",
           cudaGetErrorString(err));
+}
 
-  double gsz, ssz;
-  cudaDeviceProp prop;
-  cudaGetDeviceProperties(&prop, device);
-  gsz = prop.totalGlobalMem;
-  ssz = prop.sharedMemPerBlock;
+Para::~Para()
+{
+  debug("Para::~Para()\n");
+}
 
-  print("\"%s\" with %gMiB global and %gKiB shared memory\n",
-        prop.name, gsz / 1048576.0, ssz / 1024.0);
+bool Para::config(const char *arg)
+{
+  debug("Para::config(\"%s\")\n", arg);
+  cudaError_t err;
+
+  if(config(buf, arg)) {
+    if(cudaSuccess != (err = sync(&buf)))
+      error("Para::Para(): fail to synchronize parameters [%s]\n",
+            cudaGetErrorString(err));
+    return true;
+  } else
+    return false;
 }

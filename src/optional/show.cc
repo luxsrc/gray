@@ -1,5 +1,5 @@
-// Copyright (C) 2012--2014 Chi-kwan Chan
-// Copyright (C) 2012--2014 Steward Observatory
+// Copyright (C) 2014 Chi-kwan Chan
+// Copyright (C) 2014 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -28,85 +28,38 @@
 #define COLOR_POINTER_OFFSET  3
 #endif
 
-#define GL_VERTEX_PROGRAM_POINT_SIZE_NV 0x8642
-
-namespace global {
-  GLFWwindow *window = NULL;
+namespace vis {
   float a_spin = 0.999;
 }
 
-static GLuint shader[2], texture;
-
-extern void mktexture(GLuint[]);
-extern void mkshaders(GLuint[]);
-
-extern void resize  (GLFWwindow *, int, int);
-extern void keyboard(GLFWwindow *, int, int, int, int);
-extern void mouse   (GLFWwindow *, double, double);
-
-#ifdef ENABLE_PRIME
-extern void track();
+int Data::show()
+{
+#if defined(ENABLE_PRIME) || defined(ENABLE_LEAP)
+  vis::sense();
 #endif
 
-static void error_callback(int err, const char *msg)
-{
-  glfwDestroyWindow(global::window);
-  glfwTerminate();
-  error("[GLFW] %s\n", msg);
-}
-
-void setup(int argc, char **argv)
-{
-  if(!glfwInit())
-    error("[GLFW] fail to initialize the OpenGL Framework\n");
-
-  global::window = glfwCreateWindow(512, 512, argv[0], NULL, NULL);
-  if(!global::window) {
-    glfwTerminate();
-    error("[GLFW] fail to create window\n");
-  }
-
-  glfwSetErrorCallback     (error_callback);
-  glfwSetWindowSizeCallback(global::window, resize);
-  glfwSetKeyCallback       (global::window, keyboard);
-  glfwSetCursorPosCallback (global::window, mouse);
-  glfwMakeContextCurrent   (global::window);
-
-  glEnable(GL_DEPTH_TEST);
-  glClearColor(0.0, 0.0, 0.0, 1.0);
-  glEnable(GL_VERTEX_PROGRAM_POINT_SIZE_NV);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-  if(GL_NO_ERROR != glGetError())
-    error("vis(): fail to setup visualization\n");
-
-  mkshaders(shader);
-  mktexture(&texture);
-}
-
-void display(size_t n, GLuint vbo)
-{
-  glViewport(0, 0, global::width, global::height);
+  glViewport(0, 0, vis::width, vis::height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(27.0, global::ratio, 1.0, 1.0e6);
+  gluPerspective(27.0, vis::ratio, 1.0, 1.0e6);
   glMatrixMode(GL_MODELVIEW);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #ifdef ENABLE_PRIME
-  if(global::draw_body) track();
+  if(vis::draw_body) vis::track();
 #endif
   glLoadIdentity();
   glRotatef(-90, 1, 0, 0);
-  glTranslatef(0, -global::ly, 0);
-  glRotatef(-(global::az- 90), 1, 0, 0);
-  glRotatef(-(global::ax-270), 0, 0, 1);
+  glTranslatef(0, -vis::ly, 0);
+  glRotatef(-(vis::az- 90), 1, 0, 0);
+  glRotatef(-(vis::ax-270), 0, 0, 1);
 
   // Draw wire sphere, i.e., the "black hole"
   glColor3f(0.0, 1.0, 0.0);
-  glutWireSphere(1.0 + sqrt(1.0 - global::a_spin * global::a_spin), 32, 16);
+  glutWireSphere(1.0 + sqrt(1.0 - vis::a_spin * vis::a_spin), 32, 16);
 
   // Draw particles, i.e., photon locations
-  glUseProgram(shader[global::shader]);
+  glUseProgram(vis::shaders[vis::shader]);
 
   glEnable(GL_POINT_SPRITE_ARB);
   glEnable(GL_BLEND);
@@ -130,5 +83,9 @@ void display(size_t n, GLuint vbo)
   // DONE
   glUseProgram(0);
   if(GL_NO_ERROR != glGetError())
-    error("callback: display(): fail to visualize simulation\n");
+    error("Data::show(): fail to visualize simulation\n");
+
+  glfwSwapBuffers(vis::window);
+
+  return vis::direction;
 }
