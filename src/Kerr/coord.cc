@@ -81,8 +81,7 @@ Coord *harm::load_coord(Const &c, const char *name)
 
   Coord *data;
   if(cudaSuccess != (err = cudaMalloc((void **)&data, sz)) ||
-     cudaSuccess != (err = cudaMemcpy((void **)data, (void **)host,
-                                      sz, cudaMemcpyHostToDevice)))
+     cudaSuccess != (err = cudaMemcpy(data, host, sz, cudaMemcpyHostToDevice)))
     error("ERROR: fail to allocate device memory [%s]\n",
           cudaGetErrorString(err));
   free(host);

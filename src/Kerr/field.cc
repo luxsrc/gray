@@ -43,7 +43,7 @@ Field *harm::load_field(Const &c, const char *name)
   fread(host, sizeof(Field), count, file);
   fclose(file);
 
-  real dmax = 0, Emax = 0, Tmax = 0, vmax = 0, Bmax = 0;
+  real dmax = 0, Emax = 0, vmax = 0, Bmax = 0, Tmax = 0;
   for(size_t i = 0; i < count; ++i) {
     const real v = sqrt(host[i].v1 * host[i].v1 +
                         host[i].v2 * host[i].v2 +
@@ -55,15 +55,14 @@ Field *harm::load_field(Const &c, const char *name)
 
     if(dmax < host[i].rho) dmax = host[i].rho;
     if(Emax < host[i].u  ) Emax = host[i].u;
-    if(Tmax < T          ) Tmax = T;
     if(vmax < v          ) vmax = v;
     if(Bmax < B          ) Bmax = B;
+    if(Tmax < T          ) Tmax = T;
   }
 
   Field *data;
   if(cudaSuccess != (err = cudaMalloc((void **)&data, sz)) ||
-     cudaSuccess != (err = cudaMemcpy((void **)data, (void **)host,
-                                      sz, cudaMemcpyHostToDevice)))
+     cudaSuccess != (err = cudaMemcpy(data, host, sz, cudaMemcpyHostToDevice)))
     error("ERROR: fail to allocate device memory [%s]\n",
           cudaGetErrorString(err));
   free(host);
