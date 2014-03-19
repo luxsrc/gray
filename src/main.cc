@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 
   float ms, actual, peak;
   while(size_t c = data.solve(dt, ms, actual, peak)) {
-    print("t = %.2f; %.0fms/%.0fsteps ~ %.2f Gflops (%.2f%%), %.2fGB/s\n",
+    print("t = %.2f; %.0f ms/%.0f steps ~ %.2f Gflops (%.2f%%), %.2f GB/s\n",
           data.t, ms, actual,
           1e-6 * scheme::flop() * actual / ms, 100 * actual / peak,
           1e-6 * (24 * sizeof(real) * actual + scheme::rwsz() * n) / ms);
