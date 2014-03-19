@@ -116,7 +116,7 @@ static inline __device__ real L_j_ff(real nu, real te, real ne)
 }
 
 static inline __device__ real L_j_synchr(real nu, real te, real ne,
-                                       real B,  real cos_theta)
+                                         real B,  real cos_theta)
 {
   const real nus = te * te * B * sqrt(1 - cos_theta * cos_theta) *
                    (real)(CONST_e / (9 * M_PI * CONST_me * CONST_c)); // ~ 1e5
@@ -212,15 +212,29 @@ static inline __device__ State rhs(const State &s, real t)
 
   int h2, h3;
   {
-    int ir = round(c.nr * (log(s.r) - c.lnrmin) / (c.lnrmax - c.lnrmin));
-    if(ir < 0) ir = 0; else if(ir > c.nr-1) ir = c.nr-1;
+    int  ir = 0;
+    real dr = fabs(c.coord[0].r - s.r);
+    while(ir < c.nr-1) {
+      const real tmp = fabs(c.coord[ir+1].r - s.r);
+      if(tmp > dr)
+	break;
+      dr = tmp;
+      ++ir;
+    }
 
-    int itheta = c.ntheta * s.theta / (real)M_PI; // we want floor() here
-    if(itheta < 0) itheta = 0; else if(itheta > c.ntheta-1) itheta = c.ntheta-1;
+    int  itheta = 0;
+    real dtheta = fabs(c.coord[ir].theta - s.theta);
+    while(itheta < c.ntheta-1) {
+      const real tmp = fabs(c.coord[(itheta+1) * c.nr + ir].theta - s.theta);
+      if(tmp > dtheta)
+        break;
+      dtheta = tmp;
+      ++itheta;
+    }
 
     int iphi = (s.phi >= 0) ?
-      (int)(c.nphi*s.phi / (real)(2*M_PI) + (real)0.5) % ( (int)c.nphi):
-      (int)(c.nphi*s.phi / (real)(2*M_PI) - (real)0.5) % (-(int)c.nphi);
+      (int)(c.nphi * s.phi / (real)(2 * M_PI) + (real)0.5) % ( (int)c.nphi):
+      (int)(c.nphi * s.phi / (real)(2 * M_PI) - (real)0.5) % (-(int)c.nphi);
     if(iphi < 0) iphi += c.nphi;
 
     h2 = itheta * c.nr + ir;
