@@ -19,7 +19,6 @@
 #ifndef STATE_H
 #define STATE_H
 
-#define HARM 1
 #define PARTICLE_TIME t
 
 typedef struct {

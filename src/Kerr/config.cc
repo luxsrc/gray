@@ -19,7 +19,6 @@
 #include "../gray.h"
 #include <cstring>
 #include <cstdlib>
-#include <cstdio>
 #include <cmath>
 
 static size_t fill(real *nu, const char *val)

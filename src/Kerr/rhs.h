@@ -211,17 +211,17 @@ static inline __device__ State rhs(const State &s, real t)
   if(!c.field) return d;
 
   int h2, h3;
-  int itheta = c.ntheta * s.theta / (real)M_PI; // we want floor() here
-  if(itheta < 0) itheta = 0; else if(itheta > c.ntheta-1) itheta = c.ntheta-1;
   {
     int ir = round(c.nr * (log(s.r) - c.lnrmin) / (c.lnrmax - c.lnrmin));
     if(ir < 0) ir = 0; else if(ir > c.nr-1) ir = c.nr-1;
 
+    int itheta = c.ntheta * s.theta / (real)M_PI; // we want floor() here
+    if(itheta < 0) itheta = 0; else if(itheta > c.ntheta-1) itheta = c.ntheta-1;
+
     int iphi = (s.phi >= 0) ?
-      ((int)(c.nphi * s.phi / (real)(2 * M_PI) + (real)0.5) % ( c.nphi)):
-      ((int)(c.nphi * s.phi / (real)(2 * M_PI) - (real)0.5) % (-c.nphi));
-    while(iphi <       0) iphi += c.nphi;
-    while(iphi >= c.nphi) iphi -= c.nphi;
+      (int)(c.nphi*s.phi / (real)(2*M_PI) + (real)0.5) % ( (int)c.nphi):
+      (int)(c.nphi*s.phi / (real)(2*M_PI) - (real)0.5) % (-(int)c.nphi);
+    if(iphi < 0) iphi += c.nphi;
 
     h2 = itheta * c.nr + ir;
     h3 = (iphi * c.ntheta + itheta) * c.nr + ir;
