@@ -22,78 +22,72 @@
 
 Coord *harm::load_coord(Const &c, const char *name)
 {
-  Coord *data = NULL;
-  FILE  *file = fopen(name, "r");
+  cudaError_t err;
 
+  FILE *file = fopen(name, "r");
   if(!file)
     error("ERROR: fail to open file \"%s\".\n", name);
-  else {
-    double Gamma, a_spin;
-    fseek(file, 12, SEEK_CUR);
-    fread(&c.nr,     sizeof(size_t), 1, file);
-    fread(&c.ntheta, sizeof(size_t), 1, file);
-    fread(&c.nphi,   sizeof(size_t), 1, file);
-    fseek(file, 56, SEEK_CUR);
-    fread(&Gamma,    sizeof(double), 1, file);
-    fread(&a_spin,   sizeof(double), 1, file);
+
+  size_t count, sz;
+  fseek(file, 12, SEEK_CUR);
+  fread(&c.nr,     sizeof(size_t), 1, file);
+  fread(&c.ntheta, sizeof(size_t), 1, file);
+  fread(&c.nphi,   sizeof(size_t), 1, file);
+  count = c.nr * c.ntheta;
+  sz    = sizeof(Coord) * count;
+
+  double Gamma, a_spin;
+  fseek(file, 56, SEEK_CUR);
+  fread(&Gamma,    sizeof(double), 1, file);
+  fread(&a_spin,   sizeof(double), 1, file);
+  fseek(file, 52, SEEK_CUR);
+  c.Gamma  = Gamma;
+  c.a_spin = a_spin;
+
+  Coord *host;
+  if(!(host = (Coord *)malloc(sz)))
+    error("ERROR: fail to allocate host memory\n");
+  for(size_t i = 0; i < count; ++i) {
+    double in[16];
+
+    fseek(file, 4, SEEK_CUR);
+
+    if(i == 0) {
+      double temp;
+      fseek(file, 3  * sizeof(size_t), SEEK_CUR);
+      fread(&temp, sizeof(double), 1, file);
+      fseek(file, 21 * sizeof(double), SEEK_CUR);
+      c.lnrmin = temp;
+    } else if(i == count-1) {
+      double temp;
+      fseek(file, 3  * sizeof(size_t), SEEK_CUR);
+      fread(&temp, sizeof(double), 1, file);
+      fseek(file, 21 * sizeof(double), SEEK_CUR);
+      c.lnrmax = temp;
+    } else
+      fseek(file, 3 * sizeof(size_t) + 22 * sizeof(double), SEEK_CUR);
+
+    fread(in, sizeof(double), 16, file);
+    for(size_t j = 0; j < 16; ++j)
+      (&(host[i].gcov[0][0]))[j] = in[j];
+
+    fseek(file, 5 * sizeof(double), SEEK_CUR);
+
+    fread(in, sizeof(double), 16, file);
+    for(size_t j = 0; j < 16; ++j)
+      (&(host[i].dxdxp[0][0]))[j] = in[j];
+
     fseek(file, 52, SEEK_CUR);
-    c.Gamma  = Gamma;
-    c.a_spin = a_spin;
-
-    size_t count = c.nr * c.ntheta;
-    Coord *host;
-    if(!(host = (Coord *)malloc(sizeof(Coord) * count)))
-      error("ERROR: fail to allocate host memory\n");
-    else if(cudaSuccess != cudaMalloc((void **)&data,sizeof(Coord) * count)) {
-      free(host);
-      error("ERROR: fail to allocate device memory\n");
-    } else {
-      for(size_t i = 0; i < count; ++i) {
-        double in[16];
-
-        fseek(file, 4, SEEK_CUR);
-
-        if(i == 0) {
-          double temp;
-          fseek(file, 3  * sizeof(size_t), SEEK_CUR);
-          fread(&temp, sizeof(double), 1, file);
-          fseek(file, 21 * sizeof(double), SEEK_CUR);
-          c.lnrmin = temp;
-        } else if(i == count-1) {
-          double temp;
-          fseek(file, 3  * sizeof(size_t), SEEK_CUR);
-          fread(&temp, sizeof(double), 1, file);
-          fseek(file, 21 * sizeof(double), SEEK_CUR);
-          c.lnrmax = temp;
-        } else
-          fseek(file, 3 * sizeof(size_t) + 22 * sizeof(double), SEEK_CUR);
-
-        fread(in, sizeof(double), 16, file);
-        for(size_t j = 0; j < 16; ++j)
-          (&(host[i].gcov[0][0]))[j] = in[j];
-
-        fseek(file, 5 * sizeof(double), SEEK_CUR);
-        fread(in, sizeof(double), 16, file);
-        for(size_t j = 0; j < 16; ++j)
-          (&(host[i].dxdxp[0][0]))[j] = in[j];
-
-        fseek(file, 52, SEEK_CUR);
-      }
-
-      cudaError_t err =
-        cudaMemcpy((void **)data, (void **)host,
-                   sizeof(Coord) * count, cudaMemcpyHostToDevice);
-      free(host);
-
-      if(cudaSuccess != err) {
-        cudaFree(data);
-        data = NULL;
-        error("ERROR: fail to copy data from host to device\n");
-      }
-    }
-
-    fclose(file);
   }
+  fclose(file);
+
+  Coord *data;
+  if(cudaSuccess != (err = cudaMalloc((void **)&data, sz)) ||
+     cudaSuccess != (err = cudaMemcpy((void **)data, (void **)host,
+                                      sz, cudaMemcpyHostToDevice)))
+    error("ERROR: fail to allocate device memory [%s]\n",
+          cudaGetErrorString(err));
+  free(host);
 
   print("Data size = %zu x %zu x %zu\n"
         "Gamma = %g, spin parameter a = %g, rmin = %g, rmax = %g\n",
