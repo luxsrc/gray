@@ -51,7 +51,7 @@ void Data::spec(const char *format)
   const State *h = host();
 
   float *I = (float *)malloc(sizeof(float) * n * N_NU);
-  double total[N_NU];
+  double total[N_NU] = {};
   if(!I)
     error("ERROR: fail to allocate buffer\n");
   else

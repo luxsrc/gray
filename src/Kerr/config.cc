@@ -44,7 +44,7 @@ static size_t fill(real *nu, const char *val)
 
   if(n) {
     print("%zu freq: ", n);
-    for(int i = 0; i < n-1; print("%g,", nu[i++]));
+    for(size_t i = 0; i < n-1; print("%g,", nu[i++]));
     print("%g\n", nu[n-1]);
   }
 
