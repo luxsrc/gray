@@ -38,8 +38,8 @@ int main(int argc, char **argv)
   double t0  = T_START;
   double dt  = DT_DUMP;
 
-  const char *format = "%03d.raw";
-  const char *output = "out.raw";
+  const char *format = NULL; // no snapshot by default
+  const char *name   = "out.raw";
 
   print("GRay: a massive parallel ODE integrator written in CUDA C/C++\n");
 #ifdef ENABLE_GL
@@ -53,12 +53,12 @@ int main(int argc, char **argv)
   for(int i = 1; i < argc; ++i) {
     const char *arg = argv[i], *val;
 
-         if((val = match("gpu",    arg))) gpu    = atoi(val);
-    else if((val = match("n",      arg))) n      = atoi(val);
-    else if((val = match("t0",     arg))) t0     = atof(val);
-    else if((val = match("dt",     arg))) dt     = atof(val);
-    else if((val = match("format", arg))) format =      val ;
-    else if((val = match("output", arg))) output =      val ;
+         if((val = match("gpu",      arg))) gpu    = atoi(val);
+    else if((val = match("n",        arg))) n      = atoi(val);
+    else if((val = match("t0",       arg))) t0     = atof(val);
+    else if((val = match("dt",       arg))) dt     = atof(val);
+    else if((val = match("snapshot", arg))) format =      val ;
+    else if((val = match("output",   arg))) name   =      val ;
 
     if(val || para.config(arg))
       print("Set parameter \"%s\"\n", arg);
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 
   Data data(n);
   data.init(t0);
-  data.dump(format);
+  data.snapshot(format);
 
   float ms, actual, peak;
   while(size_t c = data.solve(dt, ms, actual, peak)) {
@@ -78,9 +78,9 @@ int main(int argc, char **argv)
           data.t, ms, actual,
           1e-6 * scheme::flop() * actual / ms, 100 * actual / peak,
           1e-6 * (24 * sizeof(real) * actual + scheme::rwsz() * n) / ms);
-    data.dump(c == LIMIT ? format : NULL);
+    data.snapshot(c == LIMIT ? format : NULL);
   }
 
-  data.spec(output);
+  data.output(name);
   return 0;
 }

@@ -59,10 +59,10 @@ class Data {
 
   size_t solve(double, float &, float &, float &);
 
-  void dump(const char *); // implemented in "src/io.cc"
-  void spec(const char *); // implemented in "src/io.cc"
+  void snapshot(const char *); // implemented in "src/io.cc"
+  void output  (const char *); // implemented in "src/io.cc"
 #ifdef ENABLE_GL
-  int  show();             // implemented in "src/optional/vis.cc"
+  int  show(); // implemented in "src/optional/vis.cc"
 #endif
 };
 

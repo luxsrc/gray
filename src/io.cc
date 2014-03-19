@@ -20,10 +20,10 @@
 #include <cstdlib>
 #include <cstdio>
 
-void Data::dump(const char *format)
+void Data::snapshot(const char *format)
 {
   if(format && *format)
-    debug("Data::dump(\"%s\")\n", format);
+    debug("Data::snapshot(\"%s\")\n", format);
   else
     return;
 
@@ -40,10 +40,10 @@ void Data::dump(const char *format)
   fclose(file);
 }
 
-void Data::spec(const char *format)
+void Data::output(const char *name)
 {
-  if(format && *format)
-    debug("Data::spec(\"%s\")\n", format);
+  if(name && *name)
+    debug("Data::output(\"%s\")\n", name);
   else
     return;
 
@@ -63,9 +63,6 @@ void Data::spec(const char *format)
         total[i] += tmp;
       }
     }
-
-  char name[256];
-  snprintf(name, sizeof(name), format, -1);
 
   FILE *file = fopen(name, "w");
   for(int i = 0; i < N_NU-1; ++i) fprintf(file, "%15e ", total[i] / n);
