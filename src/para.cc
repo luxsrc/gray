@@ -33,6 +33,17 @@ Para::Para()
 Para::~Para()
 {
   debug("Para::~Para()\n");
+  cudaError_t err;
+
+  if(buf.coord &&
+     cudaSuccess != (err = cudaFree(buf.coord)))
+    error("Para::~Para(): fail to free device coord [%s]\n",
+          cudaGetErrorString(err));
+
+  if(buf.field &&
+     cudaSuccess != (err = cudaFree(buf.field)))
+    error("Para::~Para(): fail to free device field [%s]\n",
+          cudaGetErrorString(err));
 }
 
 bool Para::config(const char *arg)

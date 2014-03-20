@@ -56,8 +56,8 @@ cudaError_t Para::sync(Const *p)
   }
   err = cudaMemcpyToSymbol(c, p, sizeof(Const));
 
-  p->coord = coord; // restore the host address of coord
-  p->field = field; // restore the host address of field
+  free(coord); // free the host coord
+  free(field); // free the host field
 
   return err;
 }

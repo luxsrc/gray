@@ -21,9 +21,6 @@
 
 bool harm::load(Const &c, const char *dump)
 {
-  if(c.coord) cudaFree(c.coord);
-  if(c.field) cudaFree(c.field);
-
   char grid[1024], *p;
   strcpy(grid, dump);
   p = grid + strlen(grid);
