@@ -18,24 +18,20 @@
 
 #include "gray.h"
 
-void pick(int device)
+void Para::device(int device)
 {
-  debug("pick(%d)\n", device);
+  debug("Para::device(%d)\n", device);
   cudaError_t err;
 
   int n_devices;
   cudaGetDeviceCount(&n_devices);
 
   if(n_devices < 1)
-    error("pick(): no GPU is found on this machine\n");
+    error("Para::device(): no GPU is found on this machine\n");
   if(n_devices <= device)
-    error("pick(): %u is an invalid GPU id\n");
-
-  print("%d GPU%s found --- running on GPU %u\n",
-        n_devices, n_devices == 1 ? " is" : "s are", device);
-
+    error("Para::device(): %u is an invalid GPU id\n");
   if(cudaSuccess != (err = cudaSetDevice(device)))
-    error("pick(): fail to switch to device %d [%s]\n", device,
+    error("Para::device(): fail to switch to device %d [%s]\n", device,
           cudaGetErrorString(err));
 
   double gsz, ssz;
@@ -44,6 +40,8 @@ void pick(int device)
   gsz = prop.totalGlobalMem;
   ssz = prop.sharedMemPerBlock;
 
+  print("%d GPU%s found --- running on GPU %u\n",
+        n_devices, n_devices == 1 ? " is" : "s are", device);
   print("\"%s\" with %gMiB global and %gKiB shared memory\n",
         prop.name, gsz / 1048576.0, ssz / 1024.0);
 }

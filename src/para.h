@@ -32,6 +32,7 @@ class Para {
   ~Para();
 
   bool config(const char *);
+  void device(int);
 };
 
 #endif // PARA_H
