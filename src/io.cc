@@ -26,7 +26,7 @@ void Data::snapshot(const char *format)
   else
     return;
 
-  char name[256];
+  char name[1024];
   static int frame = 0;
   snprintf(name, sizeof(name), format, frame++);
 
