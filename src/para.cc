@@ -33,18 +33,22 @@ Para::Para()
 Para::~Para()
 {
   debug("Para::~Para()\n");
+  cudaError_t err;
+
+  if(buf.coord &&
+     cudaSuccess != (err = cudaFree(buf.coord)))
+    error("Para::~Para(): fail to free device coord [%s]\n",
+          cudaGetErrorString(err));
+
+  if(buf.field &&
+     cudaSuccess != (err = cudaFree(buf.field)))
+    error("Para::~Para(): fail to free device field [%s]\n",
+          cudaGetErrorString(err));
 }
 
 bool Para::config(const char *arg)
 {
   debug("Para::config(\"%s\")\n", arg);
-  cudaError_t err;
 
-  if(config(buf, arg)) {
-    if(cudaSuccess != (err = sync(&buf)))
-      error("Para::Para(): fail to synchronize parameters [%s]\n",
-            cudaGetErrorString(err));
-    return true;
-  } else
-    return false;
+  return config(buf, arg);
 }

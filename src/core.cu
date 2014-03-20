@@ -32,8 +32,34 @@ static __device__ __constant__ Const c = {};
 cudaError_t Para::sync(Const *p)
 {
   debug("Para::sync(%p)\n", p);
+  cudaError_t err;
 
-  return cudaMemcpyToSymbol(c, p, sizeof(Const));
+  Coord *coord = p->coord; // save the host address of coord
+  Field *field = p->field; // save the host address of field
+
+  if(coord && field) {
+    size_t sz;
+
+    sz = sizeof(Coord) * p->nr * p->ntheta;
+    if(cudaSuccess != (err = cudaMalloc((void **)&p->coord, sz)) ||
+       cudaSuccess != (err = cudaMemcpy(p->coord, coord, sz,
+                                        cudaMemcpyHostToDevice)))
+      error("Para::sync(): fail to allocate device memory [%s]\n",
+            cudaGetErrorString(err));
+
+    sz = sizeof(Field) * p->nr * p->ntheta * p->nphi;
+    if(cudaSuccess != (err = cudaMalloc((void **)&p->field, sz)) ||
+       cudaSuccess != (err = cudaMemcpy(p->field, field, sz,
+                                        cudaMemcpyHostToDevice)))
+      error("Para::sync(): fail to allocate device memory [%s]\n",
+            cudaGetErrorString(err));
+  }
+  err = cudaMemcpyToSymbol(c, p, sizeof(Const));
+
+  free(coord); // free the host coord
+  free(field); // free the host field
+
+  return err;
 }
 
 #include <ic.h> // define device function ic()

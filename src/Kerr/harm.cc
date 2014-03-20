@@ -16,23 +16,31 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PARA_H
-#define PARA_H
+#include "../gray.h"
+#include <cstring>
 
-class Para {
-  Const buf; // host buffer, device resource is defined as constant memory
+bool harm::load(Const &c, const char *dump)
+{
+  char grid[1024], *p;
+  strcpy(grid, dump);
+  p = grid + strlen(grid);
+  while(p > grid && *p != '/') --p;
+  strcpy(*p == '/' ? p + 1 : p, "usgdump2d");
 
-  cudaError_t sync(Const *); // implemented in "src/core.cu"
+  c.coord = harm::load_coord(c, grid);
+  c.field = harm::load_field(c, dump);
 
-  void define(Const &);               // implemented in "src/*/config.cc"
-  bool config(Const &, const char *); // implemented in "src/*/config.cc"
-
- public:
-  Para();
-  ~Para();
-
-  bool config(const char *);
-  void device(int);
-};
-
-#endif // PARA_H
+  if(c.coord && c.field) {
+    print("\
+Loaded harm grid from \"%s\"\n\
+        and data from \"%s\"\n\
+", grid, dump);
+    return true;
+  } else {
+    print("\
+Failed to load harm grid from \"%s\"\n\
+                 or data from \"%s\"\n\
+", grid, dump);
+    return false;
+  }
+}

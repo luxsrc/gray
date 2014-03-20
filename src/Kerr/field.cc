@@ -22,23 +22,20 @@
 
 Field *harm::load_field(Const &c, const char *name)
 {
-  cudaError_t err;
-
   FILE *file = fopen(name, "r");
   if(!file)
     error("ERROR: fail to open file \"%s\".\n", name);
 
   double time;
-  size_t n1, n2, n3, count, sz;
+  size_t n1, n2, n3, count;
   fscanf(file, "%lf %zu %zu %zu", &time, &n1, &n2, &n3);
   while('\n' != fgetc(file));
   count = c.nr * c.ntheta * c.nphi;
-  sz    = sizeof(Field) * count;
   if(n1 != c.nr || n2 != c.ntheta || n3 != c.nphi)
     error("ERROR: inconsistent grid size\n");
 
   Field *host;
-  if(!(host = (Field *)malloc(sz)))
+  if(!(host = (Field *)malloc(sizeof(Field) * count)))
     error("ERROR: fail to allocate host memory\n");
   fread(host, sizeof(Field), count, file);
   fclose(file);
@@ -60,13 +57,6 @@ Field *harm::load_field(Const &c, const char *name)
     if(Tmax < T          ) Tmax = T;
   }
 
-  Field *data;
-  if(cudaSuccess != (err = cudaMalloc((void **)&data, sz)) ||
-     cudaSuccess != (err = cudaMemcpy(data, host, sz, cudaMemcpyHostToDevice)))
-    error("ERROR: fail to allocate device memory [%s]\n",
-          cudaGetErrorString(err));
-  free(host);
-
   print("Maximum density        = %g\n"
         "Maximum energy         = %g\n"
         "Maximum temperature    = %g\n"
@@ -74,5 +64,5 @@ Field *harm::load_field(Const &c, const char *name)
         "Maximum magnetic field = %g\n",
         dmax, Emax, Tmax, vmax, Bmax);
 
-  return data;
+  return host;
 }
