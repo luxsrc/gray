@@ -54,6 +54,7 @@ typedef struct {
 namespace harm {
   extern Coord *load_coord(Const &, const char *);
   extern Field *load_field(Const &, const char *);
+  extern bool   load      (Const &, const char *);
 }
 
 #endif // CONST_H
