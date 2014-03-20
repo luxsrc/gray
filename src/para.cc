@@ -38,13 +38,6 @@ Para::~Para()
 bool Para::config(const char *arg)
 {
   debug("Para::config(\"%s\")\n", arg);
-  cudaError_t err;
 
-  if(config(buf, arg)) {
-    if(cudaSuccess != (err = sync(&buf)))
-      error("Para::Para(): fail to synchronize parameters [%s]\n",
-            cudaGetErrorString(err));
-    return true;
-  } else
-    return false;
+  return config(buf, arg);
 }

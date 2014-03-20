@@ -30,8 +30,12 @@ void Para::device(int device)
     error("Para::device(): no GPU is found on this machine\n");
   if(n_devices <= device)
     error("Para::device(): %u is an invalid GPU id\n");
+
   if(cudaSuccess != (err = cudaSetDevice(device)))
     error("Para::device(): fail to switch to device %d [%s]\n", device,
+          cudaGetErrorString(err));
+  if(cudaSuccess != (err = sync(&buf)))
+    error("Para::device(): fail to synchronize parameters [%s]\n",
           cudaGetErrorString(err));
 
   double gsz, ssz;
