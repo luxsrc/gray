@@ -22,8 +22,10 @@
 #include "harm.h"
 
 #define DT_DUMP (-100)
-#define N_NU 32  // so sizeof(Const) == 248 for single and 432 for double
-#define N_R  264 // large enough to hold our grids
+#define N_R     264 // large enough to hold our grids
+#define N_THETA 128 // large enough to hold out grids
+#define N_IN    64  // inner theta-grid is stored in constant memory
+#define N_NU    32  // so sizeof(Const) ~ 33 KiB for single
 
 typedef struct {
   // Parameters for geodesic integration
@@ -44,6 +46,7 @@ typedef struct {
   size_t nr, ntheta, nphi;
   real   Gamma;
   real   r[N_R];
+  real   theta[N_IN * N_THETA];
 } Const;
 
 namespace harm {

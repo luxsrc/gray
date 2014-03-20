@@ -222,14 +222,25 @@ static inline __device__ State rhs(const State &s, real t)
       ++ir;
     }
 
-    int  itheta = 0;
-    real dtheta = fabs(c.coord[ir].theta - s.theta);
-    while(itheta < c.ntheta-1) {
-      const real tmp = fabs(c.coord[(itheta+1) * c.nr + ir].theta - s.theta);
-      if(tmp > dtheta)
-        break;
-      dtheta = tmp;
-      ++itheta;
+    int itheta = 0;
+    if(ir < N_IN) {
+      real dtheta = fabs(c.theta[ir] - s.theta);
+      while(itheta < c.ntheta-1) {
+        const real tmp = fabs(c.theta[(itheta+1) * N_IN + ir] - s.theta);
+        if(tmp > dtheta)
+          break;
+        dtheta = tmp;
+        ++itheta;
+      }
+    } else {
+      real dtheta = fabs(c.coord[ir].theta - s.theta);
+      while(itheta < c.ntheta-1) {
+        const real tmp = fabs(c.coord[(itheta+1) * c.nr + ir].theta - s.theta);
+        if(tmp > dtheta)
+          break;
+        dtheta = tmp;
+        ++itheta;
+      }
     }
 
     int iphi = (s.phi >= 0) ?
