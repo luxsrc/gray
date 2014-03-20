@@ -16,28 +16,34 @@
 // You should have received a copy of the GNU General Public License
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "gray.h"
+#include "../gray.h"
+#include <cstring>
 
-Para::Para()
+bool harm::load(Const &c, const char *dump)
 {
-  debug("Para::Para()\n");
-  cudaError_t err;
+  if(c.coord) cudaFree(c.coord);
+  if(c.field) cudaFree(c.field);
 
-  define(buf);
+  char grid[1024], *p;
+  strcpy(grid, dump);
+  p = grid + strlen(grid);
+  while(p > grid && *p != '/') --p;
+  strcpy(*p == '/' ? p + 1 : p, "usgdump2d");
 
-  if(cudaSuccess != (err = sync(&buf)))
-    error("Para::Para(): fail to synchronize parameters [%s]\n",
-          cudaGetErrorString(err));
-}
+  c.coord = harm::load_coord(c, grid);
+  c.field = harm::load_field(c, dump);
 
-Para::~Para()
-{
-  debug("Para::~Para()\n");
-}
-
-bool Para::config(const char *arg)
-{
-  debug("Para::config(\"%s\")\n", arg);
-
-  return config(buf, arg);
+  if(c.coord && c.field) {
+    print("\
+Loaded harm grid from \"%s\"\n\
+        and data from \"%s\"\n\
+", grid, dump);
+    return true;
+  } else {
+    print("\
+Failed to load harm grid from \"%s\"\n\
+                 or data from \"%s\"\n\
+", grid, dump);
+    return false;
+  }
 }

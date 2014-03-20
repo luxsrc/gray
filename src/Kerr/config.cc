@@ -19,7 +19,6 @@
 #include "../gray.h"
 #include <cstring>
 #include <cstdlib>
-#include <cmath>
 
 static size_t fill(real *nu, const char *val)
 {
@@ -48,35 +47,6 @@ static size_t fill(real *nu, const char *val)
   }
 
   return n;
-}
-
-static bool load(Const &c, const char *dump)
-{
-  if(c.coord) cudaFree(c.coord);
-  if(c.field) cudaFree(c.field);
-
-  char grid[1024], *p;
-  strcpy(grid, dump);
-  p = grid + strlen(grid);
-  while(p > grid && *p != '/') --p;
-  strcpy(*p == '/' ? p + 1 : p, "usgdump2d");
-
-  c.coord = harm::load_coord(c, grid);
-  c.field = harm::load_field(c, dump);
-
-  if(c.coord && c.field) {
-    print("\
-Loaded harm grid from \"%s\"\n\
-        and data from \"%s\"\n\
-", grid, dump);
-    return true;
-  } else {
-    print("\
-Failed to load harm grid from \"%s\"\n\
-                 or data from \"%s\"\n\
-", grid, dump);
-    return false;
-  }
 }
 
 void Para::define(Const &c)
@@ -109,7 +79,7 @@ bool Para::config(Const &c, const char *arg)
   else if((val = match("rd",   arg))) c.Tp_Te_d = atof(val);
   else if((val = match("rw",   arg))) c.Tp_Te_w = atof(val);
   else if((val = match("nu",   arg))) return 0 < (c.n_nu = fill(c.nu0, val));
-  else if((val = match("harm", arg))) return load(c, val);
+  else if((val = match("harm", arg))) return harm::load(c, val);
 
   return NULL != val;
 }

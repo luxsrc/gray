@@ -66,7 +66,7 @@ int main(int argc, char **argv)
       error("Unknown argument \"%s\"\n", arg); // it's wasteful to run the
                                                // wrong simulation
   }
-  pick(gpu); // TODO: print GPU info from main() instead of pick()?
+  para.device(gpu); // TODO: print GPU info from main() instead of pick()?
 
   Data data(n);
   data.init(t0);
