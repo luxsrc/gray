@@ -22,7 +22,8 @@
 #include "harm.h"
 
 #define DT_DUMP (-100)
-#define N_NU 32 // so sizeof(Const) == 248 for single and 432 for double
+#define N_NU 32  // so sizeof(Const) == 248 for single and 432 for double
+#define N_R  264 // large enough to hold our grids
 
 typedef struct {
   // Parameters for geodesic integration
@@ -42,6 +43,7 @@ typedef struct {
   Field *field;
   size_t nr, ntheta, nphi;
   real   Gamma;
+  real   r[N_R];
 } Const;
 
 namespace harm {

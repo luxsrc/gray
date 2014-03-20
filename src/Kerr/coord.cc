@@ -53,7 +53,7 @@ Coord *harm::load_coord(Const &c, const char *name)
     fseek(file, 4 + 3 * sizeof(size_t) + 3 * sizeof(double), SEEK_CUR);
 
     fread(in, sizeof(double), 2, file);
-    host[i].r     = in[0];
+    if(i < c.nr && i < N_R) c.r[i] = in[0];
     host[i].theta = in[1];
 
     fseek(file, 17 * sizeof(double), SEEK_CUR);
@@ -72,13 +72,6 @@ Coord *harm::load_coord(Const &c, const char *name)
   }
   fclose(file);
 
-  real rmin = 1e9, rmax = -1e9;
-  for(size_t i = 0; i < count; ++i) {
-    real r = host[i].r;
-    if(rmin > r) rmin = r;
-    if(rmax < r) rmax = r;
-  }
-
   Coord *data;
   if(cudaSuccess != (err = cudaMalloc((void **)&data, sz)) ||
      cudaSuccess != (err = cudaMemcpy(data, host, sz, cudaMemcpyHostToDevice)))
@@ -88,7 +81,7 @@ Coord *harm::load_coord(Const &c, const char *name)
 
   print("Data size = %zu x %zu x %zu\n"
         "Gamma = %g, spin parameter a = %g, rmin = %g, rmax = %g\n",
-        c.nr, c.ntheta, c.nphi, c.Gamma, c.a_spin, rmin, rmax);
+        c.nr, c.ntheta, c.nphi, c.Gamma, c.a_spin, c.r[0], c.r[c.nr-1]);
 
   return data;
 }

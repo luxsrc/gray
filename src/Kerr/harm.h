@@ -28,7 +28,7 @@ typedef struct {
   // double gdet;
   // double ck[4];
   // double dxdxp[4][4];
-  float r, theta;
+  float theta;
   float gcov [4][4];
   float dxdxp[4][4];
 } Coord;
