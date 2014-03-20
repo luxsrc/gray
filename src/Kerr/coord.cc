@@ -50,22 +50,13 @@ Coord *harm::load_coord(Const &c, const char *name)
   for(size_t i = 0; i < count; ++i) {
     double in[16];
 
-    fseek(file, 4, SEEK_CUR);
+    fseek(file, 4 + 3 * sizeof(size_t) + 3 * sizeof(double), SEEK_CUR);
 
-    if(i == 0) {
-      double temp;
-      fseek(file, 3  * sizeof(size_t), SEEK_CUR);
-      fread(&temp, sizeof(double), 1, file);
-      fseek(file, 21 * sizeof(double), SEEK_CUR);
-      c.lnrmin = temp;
-    } else if(i == count-1) {
-      double temp;
-      fseek(file, 3  * sizeof(size_t), SEEK_CUR);
-      fread(&temp, sizeof(double), 1, file);
-      fseek(file, 21 * sizeof(double), SEEK_CUR);
-      c.lnrmax = temp;
-    } else
-      fseek(file, 3 * sizeof(size_t) + 22 * sizeof(double), SEEK_CUR);
+    fread(in, sizeof(double), 2, file);
+    if(i < c.nr && i < N_R) c.r[i] = in[0];
+    host[i].theta = in[1];
+
+    fseek(file, 17 * sizeof(double), SEEK_CUR);
 
     fread(in, sizeof(double), 16, file);
     for(size_t j = 0; j < 16; ++j)
@@ -81,18 +72,22 @@ Coord *harm::load_coord(Const &c, const char *name)
   }
   fclose(file);
 
+#if defined(N_IN) && defined(N_THETA)
+  for(size_t i = 0; i < N_IN; ++i)
+    for(size_t j = 0; j < c.ntheta; ++j)
+      c.theta[j * N_IN + i] = host[j * c.nr + i].theta;
+#endif
+
   Coord *data;
   if(cudaSuccess != (err = cudaMalloc((void **)&data, sz)) ||
-     cudaSuccess != (err = cudaMemcpy((void **)data, (void **)host,
-                                      sz, cudaMemcpyHostToDevice)))
+     cudaSuccess != (err = cudaMemcpy(data, host, sz, cudaMemcpyHostToDevice)))
     error("ERROR: fail to allocate device memory [%s]\n",
           cudaGetErrorString(err));
   free(host);
 
   print("Data size = %zu x %zu x %zu\n"
         "Gamma = %g, spin parameter a = %g, rmin = %g, rmax = %g\n",
-        c.nr, c.ntheta, c.nphi,
-        c.Gamma, c.a_spin, exp(c.lnrmin), exp(c.lnrmax));
+        c.nr, c.ntheta, c.nphi, c.Gamma, c.a_spin, c.r[0], c.r[c.nr-1]);
 
   return data;
 }
