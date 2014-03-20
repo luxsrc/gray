@@ -72,9 +72,11 @@ Coord *harm::load_coord(Const &c, const char *name)
   }
   fclose(file);
 
+#if defined(N_IN) && defined(N_THETA)
   for(size_t i = 0; i < N_IN; ++i)
     for(size_t j = 0; j < c.ntheta; ++j)
       c.theta[j * N_IN + i] = host[j * c.nr + i].theta;
+#endif
 
   Coord *data;
   if(cudaSuccess != (err = cudaMalloc((void **)&data, sz)) ||

@@ -223,6 +223,7 @@ static inline __device__ State rhs(const State &s, real t)
     }
 
     int itheta = 0;
+#if defined(N_IN) && defined(N_THETA)
     if(ir < N_IN) {
       real dtheta = fabs(c.theta[ir] - s.theta);
       while(itheta < c.ntheta-1) {
@@ -233,6 +234,7 @@ static inline __device__ State rhs(const State &s, real t)
         ++itheta;
       }
     } else {
+#endif
       real dtheta = fabs(c.coord[ir].theta - s.theta);
       while(itheta < c.ntheta-1) {
         const real tmp = fabs(c.coord[(itheta+1) * c.nr + ir].theta - s.theta);
@@ -241,7 +243,9 @@ static inline __device__ State rhs(const State &s, real t)
         dtheta = tmp;
         ++itheta;
       }
+#if defined(N_IN) && defined(N_THETA)
     }
+#endif
 
     int iphi = (s.phi >= 0) ?
       (int)(c.nphi * s.phi / (real)(2 * M_PI) + (real)0.5) % ( (int)c.nphi):
