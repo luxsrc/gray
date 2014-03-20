@@ -22,19 +22,16 @@
 
 Coord *harm::load_coord(Const &c, const char *name)
 {
-  cudaError_t err;
-
   FILE *file = fopen(name, "r");
   if(!file)
     error("ERROR: fail to open file \"%s\".\n", name);
 
-  size_t count, sz;
+  size_t count;
   fseek(file, 12, SEEK_CUR);
   fread(&c.nr,     sizeof(size_t), 1, file);
   fread(&c.ntheta, sizeof(size_t), 1, file);
   fread(&c.nphi,   sizeof(size_t), 1, file);
   count = c.nr * c.ntheta;
-  sz    = sizeof(Coord) * count;
 
   double Gamma, a_spin;
   fseek(file, 56, SEEK_CUR);
@@ -45,7 +42,7 @@ Coord *harm::load_coord(Const &c, const char *name)
   c.a_spin = a_spin;
 
   Coord *host;
-  if(!(host = (Coord *)malloc(sz)))
+  if(!(host = (Coord *)malloc(sizeof(Coord) * count)))
     error("ERROR: fail to allocate host memory\n");
   for(size_t i = 0; i < count; ++i) {
     double in[16];
@@ -78,16 +75,9 @@ Coord *harm::load_coord(Const &c, const char *name)
       c.theta[j * N_IN + i] = host[j * c.nr + i].theta;
 #endif
 
-  Coord *data;
-  if(cudaSuccess != (err = cudaMalloc((void **)&data, sz)) ||
-     cudaSuccess != (err = cudaMemcpy(data, host, sz, cudaMemcpyHostToDevice)))
-    error("ERROR: fail to allocate device memory [%s]\n",
-          cudaGetErrorString(err));
-  free(host);
-
   print("Data size = %zu x %zu x %zu\n"
         "Gamma = %g, spin parameter a = %g, rmin = %g, rmax = %g\n",
         c.nr, c.ntheta, c.nphi, c.Gamma, c.a_spin, c.r[0], c.r[c.nr-1]);
 
-  return data;
+  return host;
 }
