@@ -25,7 +25,7 @@
 #define N_R     264 // large enough to hold our grids
 //efine N_THETA 128 // large enough to hold out grids
 //efine N_IN    64  // inner theta-grid is stored in constant memory
-#define N_NU    32  // so sizeof(Const) ~ 33 KiB for single
+#define N_NU    5
 
 typedef struct {
   // Parameters for geodesic integration
