@@ -73,11 +73,12 @@ bool Para::config(Const &c, const char *arg)
 {
   const char *val;
 
-       if((val = match("i",    arg))) c.i_obs   = atof(val);
-  else if((val = match("a",    arg))) c.a_spin  = atof(val);
-  else if((val = match("ne",   arg))) c.ne_rho  = atof(val);
-  else if((val = match("rd",   arg))) c.Ti_Te_d = atof(val);
-  else if((val = match("rw",   arg))) c.Ti_Te_w = atof(val);
+       if((val = match("i",    arg))) c.i_obs   =  atof(val);
+  else if((val = match("a",    arg))) c.a_spin  =  atof(val);
+  else if((val = match("ne",   arg))) c.ne_rho  =  atof(val);
+  else if((val = match("Rd",   arg))) c.Ti_Te_d =  atof(val);
+  else if((val = match("Rw",   arg))) c.Ti_Te_w =  atof(val);
+  else if((val = match("Tw",   arg))) c.Ti_Te_w = -atof(val);
   else if((val = match("nu",   arg))) return 0 < (c.n_nu = fill(c.nu0, val));
   else if((val = match("harm", arg))) return harm::load(c, val);
 
