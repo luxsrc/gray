@@ -61,8 +61,8 @@ void Para::define(Const &c)
   c.m_BH      = 4.3e6; // in unit of solar mass
   c.ne_rho    = 1e6;
   c.threshold = 5;
-  c.Tp_Te_d   = 3;
-  c.Tp_Te_w   = 3;
+  c.Ti_Te_d   = 3;
+  c.Ti_Te_w   = 3;
   c.n_nu      = 0;
 
   c.coord = NULL;
@@ -76,8 +76,8 @@ bool Para::config(Const &c, const char *arg)
        if((val = match("i",    arg))) c.i_obs   = atof(val);
   else if((val = match("a",    arg))) c.a_spin  = atof(val);
   else if((val = match("ne",   arg))) c.ne_rho  = atof(val);
-  else if((val = match("rd",   arg))) c.Tp_Te_d = atof(val);
-  else if((val = match("rw",   arg))) c.Tp_Te_w = atof(val);
+  else if((val = match("rd",   arg))) c.Ti_Te_d = atof(val);
+  else if((val = match("rw",   arg))) c.Ti_Te_w = atof(val);
   else if((val = match("nu",   arg))) return 0 < (c.n_nu = fill(c.nu0, val));
   else if((val = match("harm", arg))) return harm::load(c, val);
 
