@@ -25,7 +25,7 @@
 #define N_R     264 // large enough to hold our grids
 //efine N_THETA 128 // large enough to hold out grids
 //efine N_IN    64  // inner theta-grid is stored in constant memory
-#define N_NU    32  // so sizeof(Const) ~ 33 KiB for single
+#define N_NU    5
 
 typedef struct {
   // Parameters for geodesic integration
@@ -37,7 +37,7 @@ typedef struct {
   real tolerance; // if xi+1 > tolerance, fall back to forward Euler
 
   // Parameters for radiative transfer
-  real   m_BH, ne_rho, threshold, Tp_Te_d, Tp_Te_w; // TODO: use const T_w
+  real   m_BH, ne_rho, threshold, Ti_Te_d, Ti_Te_f;
   real   nu0[N_NU];
   size_t n_nu;
 
