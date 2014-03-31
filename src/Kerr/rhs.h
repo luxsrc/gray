@@ -318,6 +318,12 @@ static inline __device__ State rhs(const State &s, real t)
     b = sqrt(bb);
   }
 
+  if(Ti_Te == 0) {
+    for(int i = 0; i < N_NU; ++i)
+      d.rad[i].I = d.rad[i].tau = 0;
+    return d;
+  }
+
   // Transform vector u and b from KSP to KS coordinates
   {
     const real dxdxp00 = c.coord[h2].dxdxp[0][0];
@@ -371,10 +377,9 @@ static inline __device__ State rhs(const State &s, real t)
     b *= sqrt(c.ne_rho) *
          (real)(CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me));
     ne = c.ne_rho      *  c.field[h3].rho;
-    te = Ti_Te < 0 ? -Ti_Te // when Ti_Te < 0, it actually stores Te
-       : c.field[h3].u / (c.field[h3].rho + (real)EPSILON) *
-         (real)CONST_mp_me *
-         ((Ti_Te+1) / (Ti_Te+2) / (real)1.5 + c.Gamma - 1) / (Ti_Te+1) / 2;
+    te = Ti_Te < 0 ? -Ti_Te : // when Ti_Te < 0, it actually stores Te
+      (c.field[h3].u / (c.field[h3].rho + (real)EPSILON) * (real)CONST_mp_me *
+       ((Ti_Te+1) / (Ti_Te+2) / (real)1.5 + c.Gamma - 1) / (Ti_Te+1) / 2);
   }
 
   for(int i = 0; i < N_NU; ++i) {
