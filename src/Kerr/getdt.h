@@ -44,5 +44,6 @@ static inline __device__ real getdt(const State &s, real t,
 
   return min(c.dt_scale / (fabs(a.r / s.r) + fabs(a.theta) + fabs(a.phi)),
              min(fabs((s.r - r_bh) / a.r / 2),
-                 min(fabs(dt_max), (real)1)));
+                 min(fabs(dt_max),
+                     (real)8)));
 }
