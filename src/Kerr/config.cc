@@ -51,6 +51,7 @@ static size_t fill(real *nu, const char *val)
 
 void Para::define(Const &c)
 {
+  c.imgsz     = 64;
   c.r_obs     = 1000;
   c.i_obs     = 30;
   c.a_spin    = 0.999;
@@ -73,14 +74,15 @@ bool Para::config(Const &c, const char *arg)
 {
   const char *val;
 
-       if((val = match("i",    arg))) c.i_obs   =  atof(val);
-  else if((val = match("a",    arg))) c.a_spin  =  atof(val);
-  else if((val = match("ne",   arg))) c.ne_rho  =  atof(val);
-  else if((val = match("Rd",   arg))) c.Ti_Te_d =  atof(val);
-  else if((val = match("Rf",   arg))) c.Ti_Te_f =  atof(val);
-  else if((val = match("Tf",   arg))) c.Ti_Te_f = -atof(val);
-  else if((val = match("nu",   arg))) return 0 < (c.n_nu = fill(c.nu0, val));
-  else if((val = match("harm", arg))) return harm::load(c, val);
+       if((val = match("imgsz", arg))) c.imgsz   =  atof(val);
+  else if((val = match("i",     arg))) c.i_obs   =  atof(val);
+  else if((val = match("a",     arg))) c.a_spin  =  atof(val);
+  else if((val = match("ne",    arg))) c.ne_rho  =  atof(val);
+  else if((val = match("Rd",    arg))) c.Ti_Te_d =  atof(val);
+  else if((val = match("Rf",    arg))) c.Ti_Te_f =  atof(val);
+  else if((val = match("Tf",    arg))) c.Ti_Te_f = -atof(val);
+  else if((val = match("nu",    arg))) return 0 < (c.n_nu = fill(c.nu0, val));
+  else if((val = match("harm",  arg))) return harm::load(c, val);
 
   return NULL != val;
 }

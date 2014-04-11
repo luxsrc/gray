@@ -29,6 +29,7 @@
 
 typedef struct {
   // Parameters for geodesic integration
+  real imgsz;     // image size in GM/c^2
   real r_obs;     // observer radius in GM/c^2
   real i_obs;     // observer theta in degrees
   real a_spin;    // dimensionless spin j/mc
