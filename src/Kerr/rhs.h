@@ -321,7 +321,8 @@ static inline __device__ State rhs(const State &s, real t)
   const real Gamma = (1 + (ti_te+1) / (ti_te+2) / (real)1.5 + c.Gamma) / 2;
   const real tgas  = (Gamma - 1) * c.field[h3].u /
                      (c.field[h3].rho + (real)EPSILON);
-  if(ti_te == 0 || tgas > 1) {
+
+  if(tgas > c.tgas_max) {
     for(int i = 0; i < N_NU; ++i)
       d.rad[i].I = d.rad[i].tau = 0;
     return d;

@@ -62,6 +62,7 @@ void Para::define(Const &c)
   c.m_BH      = 4.3e6; // in unit of solar mass
   c.ne_rho    = 1e6;
   c.threshold = 5;
+  c.tgas_max  = 1;
   c.Ti_Te_d   = 3;
   c.Ti_Te_f   = 3;
   c.n_nu      = 0;
