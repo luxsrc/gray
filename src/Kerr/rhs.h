@@ -318,7 +318,10 @@ static inline __device__ State rhs(const State &s, real t)
     b = sqrt(bb);
   }
 
-  if(ti_te == 0) {
+  const real Gamma = (1 + (ti_te+1) / (ti_te+2) / (real)1.5 + c.Gamma) / 2;
+  const real tgas  = (Gamma - 1) * c.field[h3].u /
+                     (c.field[h3].rho + (real)EPSILON);
+  if(ti_te == 0 || tgas > 1) {
     for(int i = 0; i < N_NU; ++i)
       d.rad[i].I = d.rad[i].tau = 0;
     return d;
@@ -376,10 +379,8 @@ static inline __device__ State rhs(const State &s, real t)
 
     b *= sqrt(c.ne_rho) *
          (real)(CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me));
-    ne = c.ne_rho      *  c.field[h3].rho;
-    te = ti_te < 0 ? -ti_te : // when ti_te < 0, it actually stores te
-      (c.field[h3].u / (c.field[h3].rho + (real)EPSILON) * (real)CONST_mp_me *
-       ((ti_te+1) / (ti_te+2) / (real)1.5 + c.Gamma - 1) / (ti_te+1) / 2);
+    ne = c.ne_rho *  c.field[h3].rho;
+    te = ti_te < 0 ? -ti_te : tgas * (real)CONST_mp_me / (ti_te+1);
   }
 
   for(int i = 0; i < N_NU; ++i) {
