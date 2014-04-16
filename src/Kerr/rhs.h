@@ -257,7 +257,7 @@ static inline __device__ State rhs(const State &s, real t)
   }
 
   real ut, ur, utheta, uphi;
-  real bt, br, btheta, bphi, b, Ti_Te;
+  real bt, br, btheta, bphi, b, ti_te;
 
   // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
   {
@@ -314,11 +314,11 @@ static inline __device__ State rhs(const State &s, real t)
                      bphi   * (gKSP03 * bt     + gKSP13 * br    +
                                gKSP23 * btheta + gKSP33 * bphi));
     const real ibeta = bb / (2 * (c.Gamma-1) * c.field[h3].u + (real)EPSILON);
-    Ti_Te = (ibeta > c.threshold) ? c.Ti_Te_f : c.Ti_Te_d;
+    ti_te = (ibeta > c.threshold) ? c.Ti_Te_f : c.Ti_Te_d;
     b = sqrt(bb);
   }
 
-  if(Ti_Te == 0) {
+  if(ti_te == 0) {
     for(int i = 0; i < N_NU; ++i)
       d.rad[i].I = d.rad[i].tau = 0;
     return d;
@@ -377,9 +377,9 @@ static inline __device__ State rhs(const State &s, real t)
     b *= sqrt(c.ne_rho) *
          (real)(CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me));
     ne = c.ne_rho      *  c.field[h3].rho;
-    te = Ti_Te < 0 ? -Ti_Te : // when Ti_Te < 0, it actually stores Te
+    te = ti_te < 0 ? -ti_te : // when ti_te < 0, it actually stores te
       (c.field[h3].u / (c.field[h3].rho + (real)EPSILON) * (real)CONST_mp_me *
-       ((Ti_Te+1) / (Ti_Te+2) / (real)1.5 + c.Gamma - 1) / (Ti_Te+1) / 2);
+       ((ti_te+1) / (ti_te+2) / (real)1.5 + c.Gamma - 1) / (ti_te+1) / 2);
   }
 
   for(int i = 0; i < N_NU; ++i) {
