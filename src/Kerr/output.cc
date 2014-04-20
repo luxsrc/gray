@@ -20,6 +20,8 @@
 #include <cstdlib>
 #include <cstdio>
 
+double image_size = 0;
+
 void Data::output(const State *h, FILE *file)
 {
   float *I = (float *)malloc(sizeof(float) * n * N_NU);
@@ -36,9 +38,10 @@ void Data::output(const State *h, FILE *file)
     }
   }
 
+  fprintf(file, "%15.9e\t", image_size);
   for(int i = 0; i < N_NU-1; ++i)
-    fprintf(file, "%15e ", total[i] / n);
-  fprintf(file, "%15e\n", total[N_NU-1] / n);
+    fprintf(file, "%15.9e\t", total[i] / n);
+  fprintf(file, "%15.9e\n", total[N_NU-1] / n);
 
   fwrite(&n, sizeof(size_t), 1,        file);
   fwrite( I, sizeof(float),  n * N_NU, file);
