@@ -29,6 +29,7 @@
 
 typedef struct {
   // Parameters for geodesic integration
+  real imgsz;     // image size in GM/c^2
   real r_obs;     // observer radius in GM/c^2
   real i_obs;     // observer theta in degrees
   real a_spin;    // dimensionless spin j/mc
@@ -37,7 +38,7 @@ typedef struct {
   real tolerance; // if xi+1 > tolerance, fall back to forward Euler
 
   // Parameters for radiative transfer
-  real   m_BH, ne_rho, threshold, Ti_Te_d, Ti_Te_f;
+  real   m_BH, ne_rho, threshold, tgas_max, Ti_Te_d, Ti_Te_f;
   real   nu0[N_NU];
   size_t n_nu;
 

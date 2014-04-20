@@ -32,7 +32,6 @@ static inline __device__ State ic(const size_t i, size_t n, const real t)
     const real deg2rad = M_PI / 180;
     const real cos_obs = cos(deg2rad * c.i_obs);
     const real sin_obs = sin(deg2rad * c.i_obs);
-    const real scale   = 64;
     const real half    = .5;
 
     real x, y, z;
@@ -40,9 +39,9 @@ static inline __device__ State ic(const size_t i, size_t n, const real t)
     alpha =  (i % n + half) / n - half;
     beta  = ((i / n + half) / m - half) * m / n;
 
-    x = c.r_obs * sin_obs - scale * beta * cos_obs;
-    y =                     scale * alpha         ;
-    z = c.r_obs * cos_obs + scale * beta * sin_obs;
+    x = c.r_obs * sin_obs - c.imgsz * beta * cos_obs;
+    y =                     c.imgsz * alpha         ;
+    z = c.r_obs * cos_obs + c.imgsz * beta * sin_obs;
 
     const real R2 = x * x + y * y;
 

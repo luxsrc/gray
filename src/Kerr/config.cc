@@ -20,6 +20,8 @@
 #include <cstring>
 #include <cstdlib>
 
+extern double image_size;
+
 static size_t fill(real *nu, const char *val)
 {
   size_t n = 0;
@@ -51,6 +53,7 @@ static size_t fill(real *nu, const char *val)
 
 void Para::define(Const &c)
 {
+  c.imgsz     = image_size = 64;
   c.r_obs     = 1000;
   c.i_obs     = 30;
   c.a_spin    = 0.999;
@@ -61,6 +64,7 @@ void Para::define(Const &c)
   c.m_BH      = 4.3e6; // in unit of solar mass
   c.ne_rho    = 1e6;
   c.threshold = 5;
+  c.tgas_max  = 1;
   c.Ti_Te_d   = 3;
   c.Ti_Te_f   = 3;
   c.n_nu      = 0;
@@ -73,14 +77,16 @@ bool Para::config(Const &c, const char *arg)
 {
   const char *val;
 
-       if((val = match("i",    arg))) c.i_obs   =  atof(val);
-  else if((val = match("a",    arg))) c.a_spin  =  atof(val);
-  else if((val = match("ne",   arg))) c.ne_rho  =  atof(val);
-  else if((val = match("Rd",   arg))) c.Ti_Te_d =  atof(val);
-  else if((val = match("Rf",   arg))) c.Ti_Te_f =  atof(val);
-  else if((val = match("Tf",   arg))) c.Ti_Te_f = -atof(val);
-  else if((val = match("nu",   arg))) return 0 < (c.n_nu = fill(c.nu0, val));
-  else if((val = match("harm", arg))) return harm::load(c, val);
+       if((val = match("imgsz", arg))) c.imgsz   =  image_size = atof(val);
+  else if((val = match("r",     arg))) c.r_obs   =  atof(val);
+  else if((val = match("i",     arg))) c.i_obs   =  atof(val);
+  else if((val = match("a",     arg))) c.a_spin  =  atof(val);
+  else if((val = match("ne",    arg))) c.ne_rho  =  atof(val);
+  else if((val = match("Rd",    arg))) c.Ti_Te_d =  atof(val);
+  else if((val = match("Rf",    arg))) c.Ti_Te_f =  atof(val);
+  else if((val = match("Tf",    arg))) c.Ti_Te_f = -atof(val);
+  else if((val = match("nu",    arg))) return 0 < (c.n_nu = fill(c.nu0, val));
+  else if((val = match("harm",  arg))) return harm::load(c, val);
 
   return NULL != val;
 }

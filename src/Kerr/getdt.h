@@ -22,18 +22,28 @@ static inline __device__ real getdt(const State &s, real t,
                                     const State &a, real dt_max)
 {
   const real r_bh = 1 + sqrt(1 - c.a_spin * c.a_spin);
-  if(s.r < r_bh + c.epsilon
-#ifndef ENABLE_GL
-  || s.r > (real)1.2 * c.r_obs
-#endif
-     ) return 0; // 0 stops the integration
 
-  if(c.field)
+  if(s.r < r_bh + c.epsilon)
+    return 0; // too close to the black hole
+
+#ifndef ENABLE_GL
+  if(s.r > (real)1.2 * c.r_obs)
+    return 0; // too far away from the black hole
+#endif
+
+  if(c.field) { // if we are computing images from HARM data...
+    bool done = true;
+
     for(int i = 0; i < N_NU; ++i)
-      if(s.rad[i].tau > (real)6.90775527898)
-        return 0;
+      if(s.rad[i].tau < (real)6.90775527898)
+        done = false;
+
+    if(done)
+      return 0; // integration no longer affect the intensity
+  }
 
   return min(c.dt_scale / (fabs(a.r / s.r) + fabs(a.theta) + fabs(a.phi)),
              min(fabs((s.r - r_bh) / a.r / 2),
-                 min(fabs(dt_max), 1.0)));
+                 min(fabs(dt_max),
+                     (real)8)));
 }
