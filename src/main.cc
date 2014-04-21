@@ -36,7 +36,7 @@
 
 static bool interrupted = false;
 
-static void sigint(int sig)
+static void try_quit(int sig)
 {
   if(!interrupted) {
     print("User pressed Ctrl+C\nTerminate GRay normally\n");
@@ -60,7 +60,8 @@ int main(int argc, char **argv)
   const char *format = NULL; // no snapshot by default
   const char *name   = "out.raw";
 
-  if(SIG_ERR == signal(SIGINT, sigint))
+  if(SIG_ERR == signal(SIGINT,  try_quit) ||
+     SIG_ERR == signal(SIGTERM, try_quit))
     error("Fail to register signal handler [%s]\n", strerror(errno));
 
   print("GRay: a massive parallel ODE integrator written in CUDA C/C++\n");
