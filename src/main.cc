@@ -18,6 +18,9 @@
 
 #include "gray.h"
 #include <cstdlib>
+#include <csignal>
+#include <cstring>
+#include <cerrno>
 
 #ifndef N_DEFAULT
 #define N_DEFAULT (512 * 512)
@@ -31,6 +34,22 @@
 #define DT_DUMP 1
 #endif
 
+static bool interrupted = false;
+
+static void sigint(int sig)
+{
+  if(!interrupted) {
+    print("User pressed Ctrl+C\nTerminate GRay normally\n");
+    interrupted = true;
+  } else {
+    print("User pressed Ctrl+C more than once\nForce quit GRay\n");
+    if(cudaSuccess == cudaDeviceReset())
+      exit(-1);
+    else
+      fprintf(stderr, "Fail to clean up device, try again later\n");
+  }
+}
+
 int main(int argc, char **argv)
 {
   int    gpu = 0;
@@ -41,11 +60,14 @@ int main(int argc, char **argv)
   const char *format = NULL; // no snapshot by default
   const char *name   = "out.raw";
 
+  if(SIG_ERR == signal(SIGINT, sigint))
+    error("Fail to register signal handler [%s]\n", strerror(errno));
+
   print("GRay: a massive parallel ODE integrator written in CUDA C/C++\n");
 #ifdef ENABLE_GL
   print("Press 'q' to quit, 'p' and 'r' to pulse and reverse the run\n");
 #else
-  print("Press 'Ctrl C' to quit\n");
+  print("Press 'Ctrl+C' to quit\n");
 #endif
   debug("Debugging is turned on\n");
 
@@ -79,6 +101,7 @@ int main(int argc, char **argv)
           1e-6 * scheme::flop() * actual / ms, 100 * actual / peak,
           1e-6 * (24 * sizeof(real) * actual + scheme::rwsz() * n) / ms);
     data.snapshot(c == LIMIT ? format : NULL);
+    if(interrupted) break;
   }
 
   data.output(name);
