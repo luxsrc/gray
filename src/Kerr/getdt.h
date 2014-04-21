@@ -31,6 +31,9 @@ static inline __device__ real getdt(const State &s, real t,
     return 0; // too far away from the black hole
 #endif
 
+  if(dt_max < 0) dt_max = -dt_max;
+  if(dt_max > 8) dt_max = 8;
+
   if(c.field) { // if we are computing images from HARM data...
     bool done = true;
 
@@ -44,6 +47,5 @@ static inline __device__ real getdt(const State &s, real t,
 
   return min(c.dt_scale / (fabs(a.r / s.r) + fabs(a.theta) + fabs(a.phi)),
              min(fabs((s.r - r_bh) / a.r / 2),
-                 min(fabs(dt_max),
-                     (real)8)));
+                 dt_max));
 }
