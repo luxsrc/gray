@@ -27,7 +27,7 @@ static inline __device__ real getdt(const State &s, real t,
     return 0; // too close to the black hole
 
 #ifndef ENABLE_GL
-  if(s.r > (real)1.2 * c.r_obs)
+  if((real)0.999 * s.r * s.r > c.r_obs * c.r_obs + c.imgsz * c.imgsz / 4)
     return 0; // too far away from the black hole
 #endif
 
