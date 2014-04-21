@@ -214,7 +214,7 @@ static inline __device__ State rhs(const State &s, real t)
   {
     int  ir = 0;
     real dr = fabs(c.r[0] - s.r);
-    while(ir < c.nr-1) {
+    while(ir < c.nr-8) {
       const real tmp = fabs(c.r[ir+1] - s.r);
       if(tmp > dr)
 	break;
