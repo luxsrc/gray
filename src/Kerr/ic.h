@@ -90,5 +90,8 @@ static inline __device__ State ic(const size_t i, size_t n, const real t)
     s.ktheta /= E; // so that E = 1
   }
 
+  for(int i = 0; i < N_NU; ++i)
+    s.tau[i] = s.I[i] = 0;
+
   return s;
 }
