@@ -38,7 +38,7 @@ static inline __device__ real getdt(const State &s, real t,
     bool done = true;
 
     for(int i = 0; i < N_NU; ++i)
-      if(s.rad[i].tau < (real)6.90775527898)
+      if(s.tau[i] < (real)6.90775527898)
         done = false;
 
     if(done)
