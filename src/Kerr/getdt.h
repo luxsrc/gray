@@ -37,7 +37,7 @@ static inline __device__ real getdt(const State &s, real t,
   if(c.field) { // if we are computing images from HARM data...
     bool done = true;
 
-    for(int i = 0; i < N_NU; ++i)
+    for(int i = 0; i < c.n_nu; ++i)
       if(s.tau[i] < (real)6.90775527898)
         done = false;
 
