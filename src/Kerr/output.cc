@@ -32,7 +32,7 @@ void Data::output(const State *h, FILE *file)
   for(int i = 0; i < N_NU; ++i) {
     total[i] = 0;
     for(size_t j = 0; j < n; ++j) {
-      const real tmp = h[j].rad[i].I;
+      const real tmp = h[j].I[i];
       I[i*n+j]  = tmp; // real to float
       total[i] += tmp;
     }

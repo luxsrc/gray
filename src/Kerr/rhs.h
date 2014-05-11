@@ -323,8 +323,8 @@ static inline __device__ State rhs(const State &s, real t)
                      (c.field[h3].rho + (real)EPSILON);
 
   if(tgas > c.tgas_max) {
-    for(int i = 0; i < N_NU; ++i)
-      d.rad[i].I = d.rad[i].tau = 0;
+    for(int i = 0; i < c.n_nu; ++i)
+      d.tau[i] = d.I[i] = 0;
     return d;
   }
 
@@ -384,15 +384,15 @@ static inline __device__ State rhs(const State &s, real t)
     te = ti_te < 0 ? -ti_te : tgas * (real)CONST_mp_me / (ti_te+1);
   }
 
-  for(int i = 0; i < N_NU; ++i) {
+  for(int i = 0; i < c.n_nu; ++i) {
     const real nu     = c.nu0[i] * shift;
     const real B_nu   =   B_Planck(nu, te);
     const real L_j_nu = L_j_synchr(nu, te, ne, b, bkcos) + L_j_ff(nu, te, ne);
     if(L_j_nu > 0) {
-      d.rad[i].I   = -L_j_nu * exp(-s.rad[i].tau)   /
-                     (shift * shift + (real)EPSILON);
-      d.rad[i].tau = -L_j_nu * shift                /
-                     (B_nu          + (real)EPSILON);
+      d.I  [i] = -L_j_nu * exp(-s.tau[i])       /
+                 (shift * shift + (real)EPSILON);
+      d.tau[i] = -L_j_nu * shift                /
+                 (B_nu          + (real)EPSILON);
     }
   }
 

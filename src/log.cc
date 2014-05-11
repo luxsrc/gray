@@ -39,5 +39,8 @@ void error(const char *format, ...)
   vfprintf(stderr, format, args);
   va_end(args);
 
-  exit(-1);
+  if(cudaSuccess == cudaDeviceReset())
+    exit(-1);
+  else
+    fprintf(stderr, "Fail to clean up device, try again later\n");
 }
