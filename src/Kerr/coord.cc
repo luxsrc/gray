@@ -28,15 +28,17 @@ Coord *harm::load_coord(Const &c, const char *name)
 
   size_t count;
   fseek(file, 12, SEEK_CUR);
-  fread(&c.nr,     sizeof(size_t), 1, file);
-  fread(&c.ntheta, sizeof(size_t), 1, file);
-  fread(&c.nphi,   sizeof(size_t), 1, file);
+  if(fread(&c.nr,     sizeof(size_t), 1, file) != 1 ||
+     fread(&c.ntheta, sizeof(size_t), 1, file) != 1 ||
+     fread(&c.nphi,   sizeof(size_t), 1, file) != 1)
+    error("ERROR: fail to read grid dimensions\n");
   count = c.nr * c.ntheta;
 
   double Gamma, a_spin;
   fseek(file, 56, SEEK_CUR);
-  fread(&Gamma,    sizeof(double), 1, file);
-  fread(&a_spin,   sizeof(double), 1, file);
+  if(fread(&Gamma,    sizeof(double), 1, file) != 1 ||
+     fread(&a_spin,   sizeof(double), 1, file) != 1)
+    error("ERROR: fail to read Gamma or spin\n");
   fseek(file, 52, SEEK_CUR);
   c.Gamma  = Gamma;
   c.a_spin = a_spin;
@@ -49,19 +51,22 @@ Coord *harm::load_coord(Const &c, const char *name)
 
     fseek(file, 4 + 3 * sizeof(size_t) + 3 * sizeof(double), SEEK_CUR);
 
-    fread(in, sizeof(double), 2, file);
+    if(fread(in, sizeof(double), 2, file) != 2)
+      error("ERROR: fail to read grid coordinates\n");
     if(i < c.nr && i < N_R) c.r[i] = in[0];
     host[i].theta = in[1];
 
     fseek(file, 17 * sizeof(double), SEEK_CUR);
 
-    fread(in, sizeof(double), 16, file);
+    if(fread(in, sizeof(double), 16, file) != 16)
+      error("ERROR: fail to read metric\n");
     for(size_t j = 0; j < 16; ++j)
       (&(host[i].gcov[0][0]))[j] = in[j];
 
     fseek(file, 5 * sizeof(double), SEEK_CUR);
 
-    fread(in, sizeof(double), 16, file);
+    if(fread(in, sizeof(double), 16, file) != 16)
+      error("ERROR: fail to read dxdxp\n");
     for(size_t j = 0; j < 16; ++j)
       (&(host[i].dxdxp[0][0]))[j] = in[j];
 
