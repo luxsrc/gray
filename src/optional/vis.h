@@ -22,6 +22,7 @@
 #ifdef __APPLE__
 #  include <GLUT/glut.h>
 #else
+#  define GL_GLEXT_PROTOTYPES
 #  include <GL/glut.h>
 #endif
 #include <GLFW/glfw3.h>
