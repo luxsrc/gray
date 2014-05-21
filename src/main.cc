@@ -38,6 +38,8 @@ static bool interrupted = false;
 
 static void try_quit(int sig)
 {
+  (void)sig; // shut off "-Wunused-parameter"
+
   if(!interrupted) {
     print("User pressed Ctrl+C\nTerminate GRay normally\n");
     interrupted = true;

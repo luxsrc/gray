@@ -28,7 +28,8 @@ Field *harm::load_field(Const &c, const char *name)
 
   double time;
   size_t n1, n2, n3, count;
-  fscanf(file, "%lf %zu %zu %zu", &time, &n1, &n2, &n3);
+  if(fscanf(file, "%lf %zu %zu %zu", &time, &n1, &n2, &n3) != 4)
+    error("ERROR: fail to read time or grid size\n");
   while('\n' != fgetc(file));
   count = c.nr * c.ntheta * c.nphi;
   if(n1 != c.nr || n2 != c.ntheta || n3 != c.nphi)
@@ -37,7 +38,8 @@ Field *harm::load_field(Const &c, const char *name)
   Field *host;
   if(!(host = (Field *)malloc(sizeof(Field) * count)))
     error("ERROR: fail to allocate host memory\n");
-  fread(host, sizeof(Field), count, file);
+  if(fread(host, sizeof(Field), count, file) != count)
+    error("ERROR: fail to read data\n");
   fclose(file);
 
   real dmax = 0, Emax = 0, vmax = 0, Bmax = 0, Tmax = 0;
