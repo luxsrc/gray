@@ -68,7 +68,8 @@ else
 endif
 
 CPPFLAGS += -Isrc/$@
-CFLAGS   += $(addprefix --compiler-options ,-Wall) -m64 -O3
+CFLAGS   += $(addprefix --compiler-options ,\
+	      -Wall -Wextra -Wno-unused-function) -m64 -O3
 
 help:
 	@echo 'The follow problems are avilable:'
