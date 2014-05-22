@@ -27,6 +27,8 @@ namespace vis {
 
 static void error_callback(int err, const char *msg)
 {
+  (void)err;
+
   glfwDestroyWindow(vis::window);
   glfwTerminate();
   error("[GLFW] %s\n", msg);
