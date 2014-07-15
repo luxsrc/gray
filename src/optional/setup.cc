@@ -27,6 +27,8 @@ namespace vis {
 
 static void error_callback(int err, const char *msg)
 {
+  (void)err;
+
   glfwDestroyWindow(vis::window);
   glfwTerminate();
   error("[GLFW] %s\n", msg);
@@ -34,6 +36,13 @@ static void error_callback(int err, const char *msg)
 
 cudaError_t Data::setup(GLuint *vbop, size_t sz)
 {
+  {
+    char  name[] = "GRay";
+    char *argv[] = {name};
+    int   argc   = 1;
+    glutInit(&argc, argv);
+  }
+
   if(!glfwInit())
     error("[GLFW] fail to initialize the OpenGL Framework\n");
 

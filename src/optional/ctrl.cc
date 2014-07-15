@@ -30,6 +30,8 @@ static double last_x = 0, last_y = 0;
 
 void vis::resize(GLFWwindow *win, int w, int h)
 {
+  (void)win;
+
   vis::width  = w;
   vis::height = h;
   vis::ratio  = (double)w / (double)h;
@@ -37,6 +39,10 @@ void vis::resize(GLFWwindow *win, int w, int h)
 
 void vis::keyboard(GLFWwindow *win, int key, int code, int action, int mods)
 {
+  (void)win;
+  (void)code;
+  (void)mods;
+
   if(GLFW_RELEASE != action) return; // do nothing
 
   switch(key) {

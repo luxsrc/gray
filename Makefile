@@ -36,9 +36,12 @@ else
 			        -framework OpenGL     \
 			        -framework IOKit      \
 			        -framework CoreVideo)
-	else
+	else ifeq ($(shell pkg-config --exists glfw3; echo $$?),0)
 		CFLAGS  += `pkg-config --cflags glfw3`
 		LDFLAGS += `pkg-config --libs   glfw3`
+	else
+		CPPFLAGS += -I$(GLFW_PATH)/include -I$(GLFW_PATH)/include/GLFW
+		LDFLAGS  += -L$(GLFW_PATH)/lib -lglfw -lglut -lGLU -lGL
 	endif
 
 	ifneq ($(PRIME),1) # use `make <prob> PRIME=1` to enable PrimeSense
