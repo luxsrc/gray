@@ -22,6 +22,7 @@
 #include "harm.h"
 
 #define DT_DUMP (-100)
+#define N_RX    139 // use power-law extrapolation for r > c.r[N_RX]
 #define N_R     264 // large enough to hold our grids
 //efine N_THETA 128 // large enough to hold out grids
 //efine N_IN    64  // inner theta-grid is stored in constant memory

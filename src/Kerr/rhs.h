@@ -125,6 +125,7 @@ static inline __device__ real L_j_synchr(real nu, real te, real ne,
   if(te        <= (real)T_MIN ||
      cos_theta <=          -1 ||
      cos_theta >=           1 ||
+     nus       <=           0 ||
      x         <=           0) return 0;
 
   const real f      = (CONST_G * CONST_mSun / (CONST_c * CONST_c)) *
@@ -210,6 +211,7 @@ static inline __device__ State rhs(const State &s, real t)
   d.theta = s.ktheta;
   if(!c.field) return d;
 
+  // Get indices to access HARM data
   int h2, h3;
   {
     int  ir = 0;
@@ -253,13 +255,16 @@ static inline __device__ State rhs(const State &s, real t)
     if(iphi < 0) iphi += c.nphi;
 
     h2 = itheta * c.nr + ir;
+#if defined(N_RX)
+    h3 = (iphi * c.ntheta + itheta) * c.nr + (ir < N_RX ? ir : N_RX);
+#else
     h3 = (iphi * c.ntheta + itheta) * c.nr + ir;
+#endif
   }
 
+  // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
   real ut, ur, utheta, uphi;
   real bt, br, btheta, bphi, b, ti_te;
-
-  // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
   {
     const real gKSP00 = c.coord[h2].gcov[0][0];
     const real gKSP11 = c.coord[h2].gcov[1][1];
@@ -272,10 +277,25 @@ static inline __device__ State rhs(const State &s, real t)
     const real gKSP13 = c.coord[h2].gcov[1][3];
     const real gKSP23 = c.coord[h2].gcov[2][3];
 
-    // Vector u
     ur     = c.field[h3].v1;
     utheta = c.field[h3].v2;
     uphi   = c.field[h3].v3;
+    br     = c.field[h3].B1;
+    btheta = c.field[h3].B2;
+    bphi   = c.field[h3].B3;
+
+#if defined(N_RX) // check if we need to apply extrapolation
+    if(s.r > c.r[N_RX]) {
+      ur     = 0;
+      utheta = 1 / (sqrt(s.r * sin_theta) + (real)EPSILON);
+      uphi   = 0;
+      br     = 0;
+      btheta = 0;
+      bphi   = 0;
+    }
+#endif
+
+    // Vector u
     ut     = 1 / sqrt((real)EPSILON
                       -(gKSP00                   +
                         gKSP11 * ur     * ur     +
@@ -292,9 +312,6 @@ static inline __device__ State rhs(const State &s, real t)
     uphi   *= ut;
 
     // Vector B
-    br     = c.field[h3].B1;
-    btheta = c.field[h3].B2;
-    bphi   = c.field[h3].B3;
     bt     = (br     * (gKSP01 * ut     + gKSP11 * ur    +
                         gKSP12 * utheta + gKSP13 * uphi) +
               btheta * (gKSP02 * ut     + gKSP12 * ur    +
@@ -318,10 +335,24 @@ static inline __device__ State rhs(const State &s, real t)
     b = sqrt(bb);
   }
 
-  const real Gamma = (1 + (ti_te+1) / (ti_te+2) / (real)1.5 + c.Gamma) / 2;
-  const real tgas  = (Gamma - 1) * c.field[h3].u /
-                     (c.field[h3].rho + (real)EPSILON);
+  // Construct the scalars rho and tgas
+  real rho, tgas;
+  {
+    const real Gamma = (1 + (ti_te+1) / (ti_te+2) / (real)1.5 + c.Gamma) / 2;
 
+    rho  = c.field[h3].rho;
+    tgas = (Gamma - 1) * c.field[h3].u / (rho + (real)EPSILON);
+
+#if defined(N_RX) // check if we need to apply extrapolation
+    if(s.r > c.r[N_RX]) {
+      const real invr = c.r[N_RX] / s.r;
+      rho  *= invr;
+      tgas *= invr;
+    }
+#endif
+  }
+
+  // Skip cell if tgas is above the threshold
   if(tgas > c.tgas_max) {
     for(int i = 0; i < c.n_nu; ++i)
       d.tau[i] = d.I[i] = 0;
@@ -380,7 +411,7 @@ static inline __device__ State rhs(const State &s, real t)
 
     b *= sqrt(c.ne_rho) *
          (real)(CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me));
-    ne = c.ne_rho *  c.field[h3].rho;
+    ne = c.ne_rho * rho;
     te = ti_te < 0 ? -ti_te : tgas * (real)CONST_mp_me / (ti_te+1);
   }
 
@@ -396,5 +427,6 @@ static inline __device__ State rhs(const State &s, real t)
     }
   }
 
+  // Finally done!
   return d;
 }
