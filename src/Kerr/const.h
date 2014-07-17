@@ -57,6 +57,7 @@ namespace harm {
   extern Coord *load_coord(Const &, const char *);
   extern Field *load_field(Const &, const char *);
   extern bool   load      (Const &, const char *);
+  extern bool   using_harm;
 }
 
 #endif // CONST_H

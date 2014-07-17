@@ -17,7 +17,7 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #define EPSILON  1e-32
-#define FLOP_RHS 84
+#define FLOP_RHS (harm::using_harm ? 353 : 104)
 #define R_SCHW   2
 
 #define CONST_c     (2.99792458e+10)
@@ -57,7 +57,7 @@ static inline __device__ real log_K2it(real te)
   const real d = h - i;
 
   return (1 - d) * log_K2it_tab[i] + d * log_K2it_tab[i+1];
-}
+} // 7 FLOP
 
 static inline __device__ real B_Planck(real nu, real te)
 {
@@ -71,7 +71,7 @@ static inline __device__ real B_Planck(real nu, real te)
   return nu * (f2 > (real)1e-5 ?
                f1 / (exp(f2) - 1) :
                (f1 / f2) / (1 + f2 / 2 + f2 * f2 / 6));
-}
+} // 10+ FLOP
 
 static inline __device__ real Gaunt(real x, real y)
 {
@@ -97,7 +97,7 @@ static inline __device__ real Gaunt(real x, real y)
                     log(sqrt_x / (y + (real)EPSILON)));
     return g > (real)EPSILON ? g : (real)EPSILON;
   }
-}
+} // 3+ FLOP
 
 static inline __device__ real L_j_ff(real nu, real te, real ne)
 {
@@ -113,7 +113,7 @@ static inline __device__ real L_j_ff(real nu, real te, real ne)
   f *= ne;      // ~ 1e-15
 
   return (c.m_BH * f * Gaunt(x, y)) * (f / (sqrt(te)*exp(y) + (real)EPSILON));
-}
+} // 12 FLOP + FLOP(Gaunt) == 15+ FLOP
 
 static inline __device__ real L_j_synchr(real nu, real te, real ne,
                                          real B,  real cos_theta)
@@ -137,14 +137,14 @@ static inline __device__ real L_j_synchr(real nu, real te, real ne,
                       log_K2it(te);
 
   return (c.m_BH * xx * exp(-cbrtx)) * (xx * exp(-log_K2)) * (f * ne * nus);
-}
+} // 25 FLOP + min(4 FLOP, FLOP(log_K2it)) == 29+ FLOP
 
 static inline __device__ State rhs(const State &s, real t)
 {
   State d = {};
 
-  const real a2 = c.a_spin * c.a_spin;
-  const real r2 = s.r * s.r; // 1 FLOP
+  const real a2 = c.a_spin * c.a_spin; // 1 FLOP
+  const real r2 = s.r * s.r;           // 1 FLOP
 
   real sin_theta, cos_theta, c2, cs, s2;
   {
@@ -173,7 +173,7 @@ static inline __device__ State rhs(const State &s, real t)
     tmp    = 1 / (g33 * g00 - g30 * g30);
     d.t    = -(g33 + s.bimpact * g30) * tmp; // assume E = -k_t = 1, see ic.h
     d.phi  =  (g30 + s.bimpact * g00) * tmp; // assume E = -k_t = 1, see ic.h
-  } // 25 FLOP
+  } // 26 FLOP
 
   {
     d.r = cs * R_SCHW * s.r / (g22 * g22); // use d.r as tmp
@@ -186,12 +186,12 @@ static inline __device__ State rhs(const State &s, real t)
     d.r = G222 / Dlt; // use d.r as tmp, will be reused in the next block
 
     d.ktheta = (+     G200 * d.t      * d.t
-                +     d.r * s.kr     * s.kr
+                +     d.r  * s.kr     * s.kr
                 -     G222 * s.ktheta * s.ktheta
                 +     G233 * d.phi    * d.phi
                 - 2 * s.r  * s.kr     * s.ktheta
                 + 2 * G230 * d.phi    * d.t     ) / g22;
-  } // 25 FLOP
+  } // 37 FLOP
 
   {
     const real G111 = (s.r + (R_SCHW / 2 - s.r) * g11) / Dlt;
@@ -205,7 +205,7 @@ static inline __device__ State rhs(const State &s, real t)
             +     G133 * d.phi    * d.phi
             - 2 * d.r  * s.kr     * s.ktheta // tmp d.r from the d.ktheta block
             + 2 * G130 * d.phi    * d.t     ) / g11;
-  } // 24 FLOP
+  } // 35 FLOP
 
   d.r     = s.kr;
   d.theta = s.ktheta;
@@ -260,7 +260,7 @@ static inline __device__ State rhs(const State &s, real t)
 #else
     h3 = (iphi * c.ntheta + itheta) * c.nr + ir;
 #endif
-  }
+  } // 11+ FLOP
 
   // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
   real ut, ur, utheta, uphi;
@@ -333,7 +333,7 @@ static inline __device__ State rhs(const State &s, real t)
     const real ibeta = bb / (2 * (c.Gamma-1) * c.field[h3].u + (real)EPSILON);
     ti_te = (ibeta > c.threshold) ? c.Ti_Te_f : c.Ti_Te_d;
     b = sqrt(bb);
-  }
+  } // 107 FLOP
 
   // Construct the scalars rho and tgas
   real rho, tgas;
@@ -350,7 +350,7 @@ static inline __device__ State rhs(const State &s, real t)
       tgas *= invr;
     }
 #endif
-  }
+  } // 11 FLOP
 
   // Skip cell if tgas is above the threshold
   if(tgas > c.tgas_max) {
@@ -383,7 +383,7 @@ static inline __device__ State rhs(const State &s, real t)
     br     = (dxdxp11 * temp1 + dxdxp12 * temp2);
     btheta = (dxdxp21 * temp1 + dxdxp22 * temp2);
     bphi  *= dxdxp33;
-  }
+  } // 16 FLOP
 
   // Transform vector u and b from KS to BL coordinates
   {
@@ -395,7 +395,7 @@ static inline __device__ State rhs(const State &s, real t)
 
     bt   += br * temp0;
     bphi += br * temp3;
-  }
+  } // 13 FLOP
 
   // Compute red shift, angle cosine between b and k, etc
   real shift, bkcos, ne, te;
@@ -413,20 +413,18 @@ static inline __device__ State rhs(const State &s, real t)
          (real)(CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me));
     ne = c.ne_rho * rho;
     te = ti_te < 0 ? -ti_te : tgas * (real)CONST_mp_me / (ti_te+1);
-  }
+  } // 25+ FLOP
 
   for(int i = 0; i < c.n_nu; ++i) {
     const real nu     = c.nu0[i] * shift;
     const real B_nu   =   B_Planck(nu, te);
     const real L_j_nu = L_j_synchr(nu, te, ne, b, bkcos) + L_j_ff(nu, te, ne);
     if(L_j_nu > 0) {
-      d.I  [i] = -L_j_nu * exp(-s.tau[i])       /
-                 (shift * shift + (real)EPSILON);
-      d.tau[i] = -L_j_nu * shift                /
-                 (B_nu          + (real)EPSILON);
+      d.I  [i] = -L_j_nu * exp(-s.tau[i]) / (shift * shift + (real)EPSILON);
+      d.tau[i] = -L_j_nu * shift          / (B_nu          + (real)EPSILON);
     }
-  }
+  } // 12 FLOP + FLOP(B_Planck) + FLOP(L_j_synchr) + FLOP(L_j_ff) == 66+ FLOP
 
   // Finally done!
   return d;
-}
+} // 104 FLOP if geodesic only; 353+ FLOP if HARM is on

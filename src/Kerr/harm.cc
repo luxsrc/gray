@@ -19,6 +19,10 @@
 #include "../gray.h"
 #include <cstring>
 
+namespace harm {
+  bool using_harm = false; // global variable for harm
+}
+
 bool harm::load(Const &c, const char *dump)
 {
   char grid[1024], *p;
@@ -30,17 +34,17 @@ bool harm::load(Const &c, const char *dump)
   c.coord = harm::load_coord(c, grid);
   c.field = harm::load_field(c, dump);
 
-  if(c.coord && c.field) {
+  harm::using_harm = c.coord && c.field;
+  if(harm::using_harm)
     print("\
 Loaded harm grid from \"%s\"\n\
         and data from \"%s\"\n\
 ", grid, dump);
-    return true;
-  } else {
+  else
     print("\
 Failed to load harm grid from \"%s\"\n\
                  or data from \"%s\"\n\
 ", grid, dump);
-    return false;
-  }
+
+  return harm::using_harm;
 }
