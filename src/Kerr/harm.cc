@@ -20,7 +20,8 @@
 #include <cstring>
 
 namespace harm {
-  bool using_harm = false; // global variable for harm
+  bool   using_harm = false;
+  size_t n_nu       = 0;
 }
 
 bool harm::load(Const &c, const char *dump)

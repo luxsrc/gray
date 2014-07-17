@@ -48,7 +48,7 @@ static size_t fill(real *nu, const char *val)
     print("%g\n", nu[n-1]);
   }
 
-  return n;
+  return harm::n_nu = n;
 }
 
 void Para::define(Const &c)

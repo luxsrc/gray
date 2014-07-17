@@ -17,8 +17,8 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #define EPSILON  1e-32
-#define FLOP_RHS (harm::using_harm ? 353 : 104)
-#define RWSZ_RHS (harm::using_harm ?  25 :   0)
+#define FLOP_RHS (harm::using_harm ? (287 + harm::n_nu * 66) : 104)
+#define RWSZ_RHS (harm::using_harm ? 25 : 0)
 #define R_SCHW   2
 
 #define CONST_c     (2.99792458e+10)
@@ -428,4 +428,4 @@ static inline __device__ State rhs(const State &s, real t)
 
   // Finally done!
   return d;
-} // 104 FLOP if geodesic only; 353+ FLOP if HARM is on
+} // 104 FLOP if geodesic only; (287+) + n_nu * (66+) FLOP if HARM is on

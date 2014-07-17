@@ -58,6 +58,7 @@ namespace harm {
   extern Field *load_field(Const &, const char *);
   extern bool   load      (Const &, const char *);
   extern bool   using_harm;
+  extern size_t n_nu;
 }
 
 #endif // CONST_H
