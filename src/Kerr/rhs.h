@@ -18,6 +18,7 @@
 
 #define EPSILON  1e-32
 #define FLOP_RHS (harm::using_harm ? 353 : 104)
+#define RWSZ_RHS (harm::using_harm ?  25 :   0)
 #define R_SCHW   2
 
 #define CONST_c     (2.99792458e+10)
