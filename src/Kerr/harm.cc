@@ -18,11 +18,14 @@
 
 #include "../gray.h"
 #include <cstring>
+#include <cstdlib>
 
 namespace harm {
   bool   using_harm = false;
   size_t n_nu       = 0;
 }
+
+static double rx = -1;
 
 bool harm::load(Const &c, const char *dump)
 {
@@ -34,6 +37,7 @@ bool harm::load(Const &c, const char *dump)
 
   c.coord = harm::load_coord(c, grid);
   c.field = harm::load_field(c, dump);
+  (void)harm::setx(c, NULL);
 
   harm::using_harm = c.coord && c.field;
   if(harm::using_harm)
@@ -48,4 +52,19 @@ Failed to load harm grid from \"%s\"\n\
 ", grid, dump);
 
   return harm::using_harm;
+}
+
+bool harm::setx(Const &c, const char *dump)
+{
+  if(dump)
+    rx = atof(dump);
+
+  if(rx >= 0 && c.coord && c.field)
+    for(size_t i = 0; i < c.n_r; ++i)
+      if(c.r[i] >= rx) {
+        c.n_rx = i;
+        break;
+      }
+
+  return dump;
 }

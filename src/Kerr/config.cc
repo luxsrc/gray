@@ -88,8 +88,9 @@ bool Para::config(Const &c, const char *arg)
   else if((val = match("Rd",    arg))) c.Ti_Te_d   =  atof(val);
   else if((val = match("Rf",    arg))) c.Ti_Te_f   =  atof(val);
   else if((val = match("Tf",    arg))) c.Ti_Te_f   = -atof(val);
-  else if((val = match("nu",    arg))) return 0 < (c.n_nu = fill(c.nu0, val));
+  else if((val = match("rx",    arg))) return harm::setx(c, val);
   else if((val = match("harm",  arg))) return harm::load(c, val);
+  else if((val = match("nu",    arg))) return 0 < (c.n_nu = fill(c.nu0, val));
 
   return NULL != val;
 }
