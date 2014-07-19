@@ -45,7 +45,7 @@ typedef struct {
 
   Coord *coord;
   Field *field;
-  size_t nr, ntheta, nphi;
+  size_t n_r, n_theta, n_phi;
   real   Gamma;
   real   r[N_R];
 #if defined(N_IN) && defined(N_THETA)
