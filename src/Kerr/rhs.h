@@ -287,12 +287,9 @@ static inline __device__ State rhs(const State &s, real t)
 
 #if defined(N_RX) // check if we need to apply extrapolation
     if(s.r > c.r[N_RX]) {
-      ur     = 0;
-      utheta = 1 / (sqrt(s.r * sin_theta) + (real)EPSILON);
-      uphi   = 0;
-      br     = 0;
-      btheta = 0;
-      bphi   = 0;
+      ur      = 0;
+      utheta *= sqrt(c.r[N_RX] / (s.r + (real)EPSILON));
+      uphi    = 0;
     }
 #endif
 
