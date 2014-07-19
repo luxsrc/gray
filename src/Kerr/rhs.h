@@ -287,9 +287,15 @@ static inline __device__ State rhs(const State &s, real t)
 
 #if defined(N_RX) // check if we need to apply extrapolation
     if(s.r > c.r[N_RX]) {
+      // The flow is sub-Keplerian
       ur      = 0;
       utheta *= sqrt(c.r[N_RX] / (s.r + (real)EPSILON));
       uphi    = 0;
+      // Zero out the magnetic field to void unrealistic synchrotron
+      // radiation at large radius for the constant temperature model
+      br      = 0;
+      btheta  = 0;
+      bphi    = 0;
     }
 #endif
 
