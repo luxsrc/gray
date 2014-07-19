@@ -22,9 +22,8 @@
 #include "harm.h"
 
 #define DT_DUMP (-100)
-//efine N_RX    139 // use power-law extrapolation for r > c.r[N_RX]
 #define N_R     264 // large enough to hold our grids
-//efine N_THETA 128 // large enough to hold out grids
+//efine N_THETA 128 // large enough to hold our grids
 //efine N_IN    64  // inner theta-grid is stored in constant memory
 #define N_NU    5
 
@@ -45,7 +44,7 @@ typedef struct {
 
   Coord *coord;
   Field *field;
-  size_t n_r, n_theta, n_phi;
+  size_t n_rx, n_r, n_theta, n_phi;
   real   Gamma;
   real   r[N_R];
 #if defined(N_IN) && defined(N_THETA)

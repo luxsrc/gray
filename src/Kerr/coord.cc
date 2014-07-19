@@ -32,7 +32,8 @@ Coord *harm::load_coord(Const &c, const char *name)
      fread(&c.n_theta, sizeof(size_t), 1, file) != 1 ||
      fread(&c.n_phi,   sizeof(size_t), 1, file) != 1)
     error("ERROR: fail to read grid dimensions\n");
-  count = c.n_r * c.n_theta;
+  c.n_rx = c.n_r - 1; // use power-law extrapolation for r > c.r[c.n_rx]
+  count  = c.n_r * c.n_theta;
 
   double Gamma, a_spin = 0; // a_spin is uninitialized if Gamma cannot be read
   fseek(file, 56, SEEK_CUR);

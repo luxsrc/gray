@@ -258,11 +258,7 @@ static inline __device__ State rhs(const State &s, real t)
     if(i_phi < 0) i_phi += c.n_phi;
 
     h2 = i_theta * c.n_r + i_r;
-#if defined(N_RX)
-    h3 = (i_phi * c.n_theta + i_theta) * c.n_r + (i_r < N_RX ? i_r : N_RX);
-#else
-    h3 = (i_phi * c.n_theta + i_theta) * c.n_r + i_r;
-#endif
+    h3 = (i_phi * c.n_theta + i_theta) * c.n_r + (i_r < c.n_rx ? i_r : c.n_rx);
   } // 11+ FLOP
 
   // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
@@ -287,11 +283,10 @@ static inline __device__ State rhs(const State &s, real t)
     btheta = c.field[h3].B2;
     bphi   = c.field[h3].B3;
 
-#if defined(N_RX) // check if we need to apply extrapolation
-    if(s.r > c.r[N_RX]) {
+    if(s.r > c.r[c.n_rx]) {
       // The flow is sub-Keplerian
       ur      = 0;
-      utheta *= sqrt(c.r[N_RX] / (s.r + (real)EPSILON));
+      utheta *= sqrt(c.r[c.n_rx] / (s.r + (real)EPSILON));
       uphi    = 0;
       // Zero out the magnetic field to void unrealistic synchrotron
       // radiation at large radius for the constant temperature model
@@ -299,7 +294,6 @@ static inline __device__ State rhs(const State &s, real t)
       btheta  = 0;
       bphi    = 0;
     }
-#endif
 
     // Vector u
     ut     = 1 / sqrt((real)EPSILON
@@ -349,13 +343,11 @@ static inline __device__ State rhs(const State &s, real t)
     rho  = c.field[h3].rho;
     tgas = (Gamma - 1) * c.field[h3].u / (rho + (real)EPSILON);
 
-#if defined(N_RX) // check if we need to apply extrapolation
-    if(s.r > c.r[N_RX]) {
-      const real invr = c.r[N_RX] / s.r;
+    if(s.r > c.r[c.n_rx]) {
+      const real invr = c.r[c.n_rx] / s.r;
       rho  *= invr;
       tgas *= invr;
     }
-#endif
   } // 11 FLOP
 
   // Skip cell if tgas is above the threshold
