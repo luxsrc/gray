@@ -28,7 +28,7 @@ void Data::output(const State *h, FILE *file)
   if(!I)
     error("Data::output(): fail to allocate buffer\n");
 
-  double total[N_NU] = {};
+  double total[N_NU] = {0};
   for(int i = 0; i < N_NU; ++i) {
     total[i] = 0;
     for(size_t j = 0; j < n; ++j) {

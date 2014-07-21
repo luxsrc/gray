@@ -142,7 +142,7 @@ static inline __device__ real L_j_synchr(real nu, real te, real ne,
 
 static inline __device__ State rhs(const State &s, real t)
 {
-  State d = {};
+  State d = {0};
 
   const real a2 = c.a_spin * c.a_spin; // 1 FLOP
   const real r2 = s.r * s.r;           // 1 FLOP
