@@ -210,7 +210,7 @@ static inline __device__ State rhs(const State &s, real t)
 
   d.r     = s.kr;
   d.theta = s.ktheta;
-  if(!c.field) return d;
+  if(!c.field || s.r < c.r[0]) return d;
 
   // Get indices to access HARM data
   int h2, h3;
