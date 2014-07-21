@@ -215,33 +215,33 @@ static inline __device__ State rhs(const State &s, real t)
   // Get indices to access HARM data
   int h2, h3;
   {
-    int  ir = 0;
+    int  i  = 0;
     real dr = fabs(c.r[0] - s.r);
-    while(ir < c.n_r-1) {
-      const real tmp = fabs(c.r[ir+1] - s.r);
+    while(i < c.n_r-1) {
+      const real tmp = fabs(c.r[i+1] - s.r);
       if(tmp > dr)
 	break;
       dr = tmp;
-      ++ir;
+      ++i;
     }
 
-    int  itheta = 0;
-    real dtheta = fabs(c.coord[ir].theta - s.theta);
-    while(itheta < c.n_theta-1) {
-      const real tmp = fabs(c.coord[(itheta+1) * c.n_r + ir].theta - s.theta);
+    int  j      = 0;
+    real dtheta = fabs(c.coord[i].theta - s.theta);
+    while(j < c.n_theta-1) {
+      const real tmp = fabs(c.coord[(j+1) * c.n_r + i].theta - s.theta);
       if(tmp > dtheta)
         break;
       dtheta = tmp;
-      ++itheta;
+      ++j;
     }
 
-    int iphi = (s.phi >= 0) ?
+    int k = (s.phi >= 0) ?
       (int)(c.n_phi * s.phi / (real)(2 * M_PI) + (real)0.5) % ( (int)c.n_phi):
       (int)(c.n_phi * s.phi / (real)(2 * M_PI) - (real)0.5) % (-(int)c.n_phi);
-    if(iphi < 0) iphi += c.n_phi;
+    if(k < 0) k += c.n_phi;
 
-    h2 = itheta * c.n_r + ir;
-    h3 = (iphi * c.n_theta + itheta) * c.n_r + (ir < c.n_rx ? ir : c.n_rx);
+    h2 = j * c.n_r + i;
+    h3 = (k * c.n_theta + j) * c.n_r + (i < c.n_rx ? i : c.n_rx);
   } // 11+ FLOP
 
   // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
