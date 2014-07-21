@@ -225,32 +225,16 @@ static inline __device__ State rhs(const State &s, real t)
       ++i_r;
     }
 
-    int i_theta = 0;
-#if defined(N_IN) && defined(N_THETA)
-    if(i_r < N_IN) {
-      real dtheta = fabs(c.theta[i_r] - s.theta);
-      while(i_theta < c.n_theta-1) {
-        const real tmp = fabs(c.theta[(i_theta+1) * N_IN + i_r] -
-                              s.theta);
-        if(tmp > dtheta)
-          break;
-        dtheta = tmp;
-        ++i_theta;
-      }
-    } else {
-#endif
-      real dtheta = fabs(c.coord[i_r].theta - s.theta);
-      while(i_theta < c.n_theta-1) {
-        const real tmp = fabs(c.coord[(i_theta+1) * c.n_r + i_r].theta -
-                              s.theta);
-        if(tmp > dtheta)
-          break;
-        dtheta = tmp;
-        ++i_theta;
-      }
-#if defined(N_IN) && defined(N_THETA)
+    int  i_theta = 0;
+    real dtheta = fabs(c.coord[i_r].theta - s.theta);
+    while(i_theta < c.n_theta-1) {
+      const real tmp = fabs(c.coord[(i_theta+1) * c.n_r + i_r].theta -
+                            s.theta);
+      if(tmp > dtheta)
+        break;
+      dtheta = tmp;
+      ++i_theta;
     }
-#endif
 
     int i_phi = (s.phi >= 0) ?
       (int)(c.n_phi * s.phi / (real)(2 * M_PI) + (real)0.5) % ( (int)c.n_phi):
