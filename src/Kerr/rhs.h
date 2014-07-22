@@ -214,7 +214,7 @@ static inline __device__ State rhs(const State &s, real t)
 
   // Get indices to access HARM data
   int h2, h3;
-  real f = (real)0.5, g = (real)0.5;
+  real f = (real)0.5, g = (real)0.5, h;
   {
     int I = c.n_r-1, i = I; // assume c.n_r > 1
     if(c.r[i] > s.r) {
@@ -241,10 +241,11 @@ static inline __device__ State rhs(const State &s, real t)
       } // else, constant extrapolation
     }
 
-    int k = (s.phi >= 0) ?
-      (int)(c.n_phi * s.phi / (real)(2 * M_PI) + (real)0.5) % ( (int)c.n_phi):
-      (int)(c.n_phi * s.phi / (real)(2 * M_PI) - (real)0.5) % (-(int)c.n_phi);
-    if(k < 0) k += c.n_phi;
+    h  = s.phi / (real)(2*M_PI);
+    h -= floor(h);
+    h *= c.n_phi;
+    int k = h, K = k == c.n_phi-1 ? 0 : k+1;
+    h -= k;
 
     h2 = j * c.n_r + i;
     h3 = (k * c.n_theta + j) * c.n_r + (i < c.n_rx ? i : c.n_rx);
