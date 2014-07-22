@@ -213,8 +213,8 @@ static inline __device__ State rhs(const State &s, real t)
   if(!c.field || s.r < c.r[0]) return d;
 
   // Get indices to access HARM data
-  real fg, Fg, fG, FG;
-  int  ij, Ij, iJ, IJ, h3;
+  real fg, Fg, fG, FG, fgh, Fgh, fGh, FGh, fgH, FgH, fGH, FGH;
+  int  ij, Ij, iJ, IJ, ijk, Ijk, iJk, IJk, ijK, IjK, iJK, IJK;
   {
     real f = (real)0.5;
     int  I = c.n_r-1, i = I; // assume c.n_r > 1
@@ -259,11 +259,32 @@ static inline __device__ State rhs(const State &s, real t)
     iJ = J * c.n_r + i;
     IJ = J * c.n_r + I;
 
-    h3 = (k * c.n_theta + j) * c.n_r + (i < c.n_rx ? i : c.n_rx);
+    if(i > c.n_rx) {
+      I = i = c.n_rx;
+      f = (real)0.5;
+    }
+
+    fgh =    f  *    g  *    h ;
+    Fgh = (1-f) *    g  *    h ;
+    fGh =    f  * (1-g) *    h ;
+    FGh = (1-f) * (1-g) *    h ;
+    fgH =    f  *    g  * (1-h);
+    FgH = (1-f) *    g  * (1-h);
+    fGH =    f  * (1-g) * (1-h);
+    FGH = (1-f) * (1-g) * (1-h);
+
+    ijk = (k * c.n_theta + j) * c.n_r + i;
+    Ijk = (k * c.n_theta + j) * c.n_r + I;
+    iJk = (k * c.n_theta + J) * c.n_r + i;
+    IJk = (k * c.n_theta + J) * c.n_r + I;
+    ijK = (K * c.n_theta + j) * c.n_r + i;
+    IjK = (K * c.n_theta + j) * c.n_r + I;
+    iJK = (K * c.n_theta + J) * c.n_r + i;
+    IJK = (K * c.n_theta + J) * c.n_r + I;
   } // 11+ FLOP
 
   // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
-  real ut, ur, utheta, uphi;
+  real ut, ur, utheta, uphi, u; // u is energy
   real bt, br, btheta, bphi, b, ti_te;
   {
     const real gKSP00 = (fg*c.coord[ij].gcov[0][0]+Fg*c.coord[Ij].gcov[0][0]+
@@ -287,12 +308,34 @@ static inline __device__ State rhs(const State &s, real t)
     const real gKSP33 = (fg*c.coord[ij].gcov[3][3]+Fg*c.coord[Ij].gcov[3][3]+
                          fG*c.coord[iJ].gcov[3][3]+FG*c.coord[IJ].gcov[3][3]);
 
-    ur     = c.field[h3].v1;
-    utheta = c.field[h3].v2;
-    uphi   = c.field[h3].v3;
-    br     = c.field[h3].B1;
-    btheta = c.field[h3].B2;
-    bphi   = c.field[h3].B3;
+    ur     = (fgh * c.field[ijk].v1 + Fgh * c.field[Ijk].v1 +
+              fGh * c.field[iJk].v1 + FGh * c.field[IJk].v1 +
+              fgH * c.field[ijK].v1 + FgH * c.field[IjK].v1 +
+              fGH * c.field[iJK].v1 + FGH * c.field[IJK].v1);
+    utheta = (fgh * c.field[ijk].v2 + Fgh * c.field[Ijk].v2 +
+              fGh * c.field[iJk].v2 + FGh * c.field[IJk].v2 +
+              fgH * c.field[ijK].v2 + FgH * c.field[IjK].v2 +
+              fGH * c.field[iJK].v2 + FGH * c.field[IJK].v2);
+    uphi   = (fgh * c.field[ijk].v3 + Fgh * c.field[Ijk].v3 +
+              fGh * c.field[iJk].v3 + FGh * c.field[IJk].v3 +
+              fgH * c.field[ijK].v3 + FgH * c.field[IjK].v3 +
+              fGH * c.field[iJK].v3 + FGH * c.field[IJK].v3);
+    u      = (fgh * c.field[ijk].u  + Fgh * c.field[Ijk].u  +
+              fGh * c.field[iJk].u  + FGh * c.field[IJk].u  +
+              fgH * c.field[ijK].u  + FgH * c.field[IjK].u  +
+              fGH * c.field[iJK].u  + FGH * c.field[IJK].u );
+    br     = (fgh * c.field[ijk].B1 + Fgh * c.field[Ijk].B1 +
+              fGh * c.field[iJk].B1 + FGh * c.field[IJk].B1 +
+              fgH * c.field[ijK].B1 + FgH * c.field[IjK].B1 +
+              fGH * c.field[iJK].B1 + FGH * c.field[IJK].B1);
+    btheta = (fgh * c.field[ijk].B2 + Fgh * c.field[Ijk].B2 +
+              fGh * c.field[iJk].B2 + FGh * c.field[IJk].B2 +
+              fgH * c.field[ijK].B2 + FgH * c.field[IjK].B2 +
+              fGH * c.field[iJK].B2 + FGH * c.field[IJK].B2);
+    bphi   = (fgh * c.field[ijk].B3 + Fgh * c.field[Ijk].B3 +
+              fGh * c.field[iJk].B3 + FGh * c.field[IJk].B3 +
+              fgH * c.field[ijK].B3 + FgH * c.field[IjK].B3 +
+              fGH * c.field[iJK].B3 + FGH * c.field[IJK].B3);
 
     if(s.r > c.r[c.n_rx]) {
       // The flow is sub-Keplerian
@@ -341,7 +384,7 @@ static inline __device__ State rhs(const State &s, real t)
                                gKSP22 * btheta + gKSP23 * bphi) +
                      bphi   * (gKSP03 * bt     + gKSP13 * br    +
                                gKSP23 * btheta + gKSP33 * bphi));
-    const real ibeta = bb / (2 * (c.Gamma-1) * c.field[h3].u + (real)EPSILON);
+    const real ibeta = bb / (2 * (c.Gamma-1) * u + (real)EPSILON);
     ti_te = (ibeta > c.threshold) ? c.Ti_Te_f : c.Ti_Te_d;
     b = sqrt(bb);
   } // 107 FLOP
@@ -351,8 +394,11 @@ static inline __device__ State rhs(const State &s, real t)
   {
     const real Gamma = (1 + (ti_te+1) / (ti_te+2) / (real)1.5 + c.Gamma) / 2;
 
-    rho  = c.field[h3].rho;
-    tgas = (Gamma - 1) * c.field[h3].u / (rho + (real)EPSILON);
+    rho  = (fgh * c.field[ijk].rho + Fgh * c.field[Ijk].rho +
+            fGh * c.field[iJk].rho + FGh * c.field[IJk].rho +
+            fgH * c.field[ijK].rho + FgH * c.field[IjK].rho +
+            fGH * c.field[iJK].rho + FGH * c.field[IJK].rho);
+    tgas = (Gamma - 1) * u / (rho + (real)EPSILON);
 
     if(s.r > c.r[c.n_rx]) {
       const real invr = c.r[c.n_rx] / s.r;
