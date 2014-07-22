@@ -213,8 +213,8 @@ static inline __device__ State rhs(const State &s, real t)
   if(!c.field || s.r < c.r[0]) return d;
 
   // Get indices to access HARM data
-  real fg, fG, Fg, FG;
-  int  ij, iJ, Ij, IJ, h3;
+  real fg, Fg, fG, FG;
+  int  ij, Ij, iJ, IJ, h3;
   {
     real f = (real)0.5;
     int  I = c.n_r-1, i = I; // assume c.n_r > 1
@@ -250,13 +250,13 @@ static inline __device__ State rhs(const State &s, real t)
     h -= k;
 
     fg =    f  *    g ;
-    fG =    f  * (1-g);
     Fg = (1-f) *    g ;
+    fG =    f  * (1-g);
     FG = (1-f) * (1-g);
 
     ij = j * c.n_r + i;
-    iJ = J * c.n_r + i;
     Ij = j * c.n_r + I;
+    iJ = J * c.n_r + i;
     IJ = J * c.n_r + I;
 
     h3 = (k * c.n_theta + j) * c.n_r + (i < c.n_rx ? i : c.n_rx);
@@ -266,26 +266,26 @@ static inline __device__ State rhs(const State &s, real t)
   real ut, ur, utheta, uphi;
   real bt, br, btheta, bphi, b, ti_te;
   {
-    const real gKSP00 = (fg*c.coord[ij].gcov[0][0]+fG*c.coord[iJ].gcov[0][0]+
-                         Fg*c.coord[Ij].gcov[0][0]+FG*c.coord[IJ].gcov[0][0]);
-    const real gKSP11 = (fg*c.coord[ij].gcov[1][1]+fG*c.coord[iJ].gcov[1][1]+
-                         Fg*c.coord[Ij].gcov[1][1]+FG*c.coord[IJ].gcov[1][1]);
-    const real gKSP22 = (fg*c.coord[ij].gcov[2][2]+fG*c.coord[iJ].gcov[2][2]+
-                         Fg*c.coord[Ij].gcov[2][2]+FG*c.coord[IJ].gcov[2][2]);
-    const real gKSP33 = (fg*c.coord[ij].gcov[3][3]+fG*c.coord[iJ].gcov[3][3]+
-                         Fg*c.coord[Ij].gcov[3][3]+FG*c.coord[IJ].gcov[3][3]);
-    const real gKSP01 = (fg*c.coord[ij].gcov[0][1]+fG*c.coord[iJ].gcov[0][1]+
-                         Fg*c.coord[Ij].gcov[0][1]+FG*c.coord[IJ].gcov[0][1]);
-    const real gKSP02 = (fg*c.coord[ij].gcov[0][2]+fG*c.coord[iJ].gcov[0][2]+
-                         Fg*c.coord[Ij].gcov[0][2]+FG*c.coord[IJ].gcov[0][2]);
-    const real gKSP03 = (fg*c.coord[ij].gcov[0][3]+fG*c.coord[iJ].gcov[0][3]+
-                         Fg*c.coord[Ij].gcov[0][3]+FG*c.coord[IJ].gcov[0][3]);
-    const real gKSP12 = (fg*c.coord[ij].gcov[1][2]+fG*c.coord[iJ].gcov[1][2]+
-                         Fg*c.coord[Ij].gcov[1][2]+FG*c.coord[IJ].gcov[1][2]);
-    const real gKSP13 = (fg*c.coord[ij].gcov[1][3]+fG*c.coord[iJ].gcov[1][3]+
-                         Fg*c.coord[Ij].gcov[1][3]+FG*c.coord[IJ].gcov[1][3]);
-    const real gKSP23 = (fg*c.coord[ij].gcov[2][3]+fG*c.coord[iJ].gcov[2][3]+
-                         Fg*c.coord[Ij].gcov[2][3]+FG*c.coord[IJ].gcov[2][3]);
+    const real gKSP00 = (fg*c.coord[ij].gcov[0][0]+Fg*c.coord[Ij].gcov[0][0]+
+                         fG*c.coord[iJ].gcov[0][0]+FG*c.coord[IJ].gcov[0][0]);
+    const real gKSP01 = (fg*c.coord[ij].gcov[0][1]+Fg*c.coord[Ij].gcov[0][1]+
+                         fG*c.coord[iJ].gcov[0][1]+FG*c.coord[IJ].gcov[0][1]);
+    const real gKSP02 = (fg*c.coord[ij].gcov[0][2]+Fg*c.coord[Ij].gcov[0][2]+
+                         fG*c.coord[iJ].gcov[0][2]+FG*c.coord[IJ].gcov[0][2]);
+    const real gKSP03 = (fg*c.coord[ij].gcov[0][3]+Fg*c.coord[Ij].gcov[0][3]+
+                         fG*c.coord[iJ].gcov[0][3]+FG*c.coord[IJ].gcov[0][3]);
+    const real gKSP11 = (fg*c.coord[ij].gcov[1][1]+Fg*c.coord[Ij].gcov[1][1]+
+                         fG*c.coord[iJ].gcov[1][1]+FG*c.coord[IJ].gcov[1][1]);
+    const real gKSP12 = (fg*c.coord[ij].gcov[1][2]+Fg*c.coord[Ij].gcov[1][2]+
+                         fG*c.coord[iJ].gcov[1][2]+FG*c.coord[IJ].gcov[1][2]);
+    const real gKSP13 = (fg*c.coord[ij].gcov[1][3]+Fg*c.coord[Ij].gcov[1][3]+
+                         fG*c.coord[iJ].gcov[1][3]+FG*c.coord[IJ].gcov[1][3]);
+    const real gKSP22 = (fg*c.coord[ij].gcov[2][2]+Fg*c.coord[Ij].gcov[2][2]+
+                         fG*c.coord[iJ].gcov[2][2]+FG*c.coord[IJ].gcov[2][2]);
+    const real gKSP23 = (fg*c.coord[ij].gcov[2][3]+Fg*c.coord[Ij].gcov[2][3]+
+                         fG*c.coord[iJ].gcov[2][3]+FG*c.coord[IJ].gcov[2][3]);
+    const real gKSP33 = (fg*c.coord[ij].gcov[3][3]+Fg*c.coord[Ij].gcov[3][3]+
+                         fG*c.coord[iJ].gcov[3][3]+FG*c.coord[IJ].gcov[3][3]);
 
     ur     = c.field[h3].v1;
     utheta = c.field[h3].v2;
@@ -370,18 +370,19 @@ static inline __device__ State rhs(const State &s, real t)
 
   // Transform vector u and b from KSP to KS coordinates
   {
-    const real dxdxp00=(fg*c.coord[ij].dxdxp[0][0]+fG*c.coord[iJ].dxdxp[0][0]+
-                        Fg*c.coord[Ij].dxdxp[0][0]+FG*c.coord[IJ].dxdxp[0][0]);
-    const real dxdxp11=(fg*c.coord[ij].dxdxp[1][1]+fG*c.coord[iJ].dxdxp[1][1]+
-                        Fg*c.coord[Ij].dxdxp[1][1]+FG*c.coord[IJ].dxdxp[1][1]);
-    const real dxdxp12=(fg*c.coord[ij].dxdxp[1][2]+fG*c.coord[iJ].dxdxp[1][2]+
-                        Fg*c.coord[Ij].dxdxp[1][2]+FG*c.coord[IJ].dxdxp[1][2]);
-    const real dxdxp21=(fg*c.coord[ij].dxdxp[2][1]+fG*c.coord[iJ].dxdxp[2][1]+
-                        Fg*c.coord[Ij].dxdxp[2][1]+FG*c.coord[IJ].dxdxp[2][1]);
-    const real dxdxp22=(fg*c.coord[ij].dxdxp[2][2]+fG*c.coord[iJ].dxdxp[2][2]+
-                        Fg*c.coord[Ij].dxdxp[2][2]+FG*c.coord[IJ].dxdxp[2][2]);
-    const real dxdxp33=(fg*c.coord[ij].dxdxp[3][3]+fG*c.coord[iJ].dxdxp[3][3]+
-                        Fg*c.coord[Ij].dxdxp[3][3]+FG*c.coord[IJ].dxdxp[3][3]);
+    const real dxdxp00=(fg*c.coord[ij].dxdxp[0][0]+Fg*c.coord[Ij].dxdxp[0][0]+
+                        fG*c.coord[iJ].dxdxp[0][0]+FG*c.coord[IJ].dxdxp[0][0]);
+    const real dxdxp11=(fg*c.coord[ij].dxdxp[1][1]+Fg*c.coord[Ij].dxdxp[1][1]+
+                        fG*c.coord[iJ].dxdxp[1][1]+FG*c.coord[IJ].dxdxp[1][1]);
+    const real dxdxp12=(fg*c.coord[ij].dxdxp[1][2]+Fg*c.coord[Ij].dxdxp[1][2]+
+                        fG*c.coord[iJ].dxdxp[1][2]+FG*c.coord[IJ].dxdxp[1][2]);
+    const real dxdxp21=(fg*c.coord[ij].dxdxp[2][1]+Fg*c.coord[Ij].dxdxp[2][1]+
+                        fG*c.coord[iJ].dxdxp[2][1]+FG*c.coord[IJ].dxdxp[2][1]);
+    const real dxdxp22=(fg*c.coord[ij].dxdxp[2][2]+Fg*c.coord[Ij].dxdxp[2][2]+
+                        fG*c.coord[iJ].dxdxp[2][2]+FG*c.coord[IJ].dxdxp[2][2]);
+    const real dxdxp33=(fg*c.coord[ij].dxdxp[3][3]+Fg*c.coord[Ij].dxdxp[3][3]+
+                        fG*c.coord[iJ].dxdxp[3][3]+FG*c.coord[IJ].dxdxp[3][3]);
+
     real temp1, temp2;
 
     temp1  = ur;
