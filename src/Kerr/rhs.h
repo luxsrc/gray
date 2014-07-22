@@ -214,10 +214,13 @@ static inline __device__ State rhs(const State &s, real t)
 
   // Get indices to access HARM data
   int h2, h3;
+  real f = (real)0.5;
   {
-    int i = c.n_r-1, I = i;
-    while(i && c.r[i] > s.r) I = i--;
-    real f = (i == I) ? 0.5 : (s.r - c.r[i]) / (c.r[I] - c.r[i]);
+    int I = c.n_r-1, i = I; /* assume c.n_r > 1 */
+    if(c.r[i] < s.r) {
+      do I = i--; while(i && c.r[i] > s.r); /* assume s.r >= c.r[0] */
+      f = (s.r - c.r[i]) / (c.r[I] - c.r[i]);
+    }
 
     int  j      = 0;
     real dtheta = fabs(c.coord[i].theta - s.theta);
