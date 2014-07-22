@@ -214,22 +214,31 @@ static inline __device__ State rhs(const State &s, real t)
 
   // Get indices to access HARM data
   int h2, h3;
-  real f = (real)0.5;
+  real f = (real)0.5, g = (real)0.5;
   {
-    int I = c.n_r-1, i = I; /* assume c.n_r > 1 */
-    if(c.r[i] < s.r) {
-      do I = i--; while(i && c.r[i] > s.r); /* assume s.r >= c.r[0] */
+    int I = c.n_r-1, i = I; // assume c.n_r > 1
+    if(c.r[i] > s.r) {
+      do I = i--; while(i && c.r[i] > s.r); // assume s.r >= c.r[0]
       f = (s.r - c.r[i]) / (c.r[I] - c.r[i]);
-    }
+    } // else, constant extrapolate
 
-    int  j      = 0;
-    real dtheta = fabs(c.coord[i].theta - s.theta);
-    while(j < c.n_theta-1) {
-      const real tmp = fabs(c.coord[(j+1) * c.n_r + i].theta - s.theta);
-      if(tmp > dtheta)
-        break;
-      dtheta = tmp;
-      ++j;
+    int J = c.n_theta-1, j = J;
+    if(s.theta < c.coord[i].theta *    f  +
+                 c.coord[I].theta * (1-f))
+      j = J = 0; // constant extrapolation
+    else {
+      real theta = c.coord[j*c.n_r + i].theta *    f  +
+                   c.coord[j*c.n_r + I].theta * (1-f);
+      if(theta > s.theta) {
+	real Theta;
+        do {
+          J = j--;
+          Theta = theta;
+          theta = c.coord[j*c.n_r + i].theta *    f  +
+                  c.coord[j*c.n_r + I].theta * (1-f);
+        } while(j && theta > s.theta);
+        g = (s.theta - theta) / (Theta - theta);
+      } // else, constant extrapolation
     }
 
     int k = (s.phi >= 0) ?
