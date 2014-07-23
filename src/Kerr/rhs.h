@@ -216,43 +216,43 @@ static inline __device__ State rhs(const State &s, real t)
   real fg, Fg, fG, FG, fgh, Fgh, fGh, FGh, fgH, FgH, fGH, FGH;
   int  ij, Ij, iJ, IJ, ijk, Ijk, iJk, IJk, ijK, IjK, iJK, IJK;
   {
-    real f = (real)0.5;
+    real F = (real)0.5;
     int  I = c.n_r-1, i = I; // assume c.n_r > 1
     if(c.r[i] > s.r) {
       do I = i--; while(i && c.r[i] > s.r); // assume s.r >= c.r[0]
-      f = (s.r - c.r[i]) / (c.r[I] - c.r[i]);
+      F = (s.r - c.r[i]) / (c.r[I] - c.r[i]);
     } // else, constant extrapolate
 
-    real g = (real)0.5;
+    real G = (real)0.5;
     int  J = c.n_theta-1, j = J;
-    if(s.theta < c.coord[i].theta *    f  +
-                 c.coord[I].theta * (1-f))
+    if(s.theta < c.coord[i].theta * (1-F) +
+                 c.coord[I].theta *    F)
       j = J = 0; // constant extrapolation
     else {
-      real theta = c.coord[j*c.n_r + i].theta *    f  +
-                   c.coord[j*c.n_r + I].theta * (1-f);
+      real theta = c.coord[j*c.n_r + i].theta * (1-F)  +
+                   c.coord[j*c.n_r + I].theta *    F;
       if(theta > s.theta) {
 	real Theta;
         do {
           J = j--;
           Theta = theta;
-          theta = c.coord[j*c.n_r + i].theta *    f  +
-                  c.coord[j*c.n_r + I].theta * (1-f);
+          theta = c.coord[j*c.n_r + i].theta * (1-F) +
+                  c.coord[j*c.n_r + I].theta *    F;
         } while(j && theta > s.theta);
-        g = (s.theta - theta) / (Theta - theta);
+        G = (s.theta - theta) / (Theta - theta);
       } // else, constant extrapolation
     }
 
-    real h = s.phi / (real)(2*M_PI);
-    h -= floor(h);
-    h *= c.n_phi;
-    int k = h, K = k == c.n_phi-1 ? 0 : k+1;
-    h -= k;
+    real H = s.phi / (real)(2*M_PI);
+    H -= floor(H);
+    H *= c.n_phi;
+    int k = H, K = k == c.n_phi-1 ? 0 : k+1;
+    H -= k;
 
-    fg =    f  *    g ;
-    Fg = (1-f) *    g ;
-    fG =    f  * (1-g);
-    FG = (1-f) * (1-g);
+    fg = (1-F) * (1-G);
+    Fg =    F  * (1-G);
+    fG = (1-F) *    G ;
+    FG =    F  *    G ;
 
     ij = j * c.n_r + i;
     Ij = j * c.n_r + I;
@@ -261,17 +261,17 @@ static inline __device__ State rhs(const State &s, real t)
 
     if(i > c.n_rx) {
       I = i = c.n_rx;
-      f = (real)0.5;
+      F = (real)0.5;
     }
 
-    fgh =    f  *    g  *    h ;
-    Fgh = (1-f) *    g  *    h ;
-    fGh =    f  * (1-g) *    h ;
-    FGh = (1-f) * (1-g) *    h ;
-    fgH =    f  *    g  * (1-h);
-    FgH = (1-f) *    g  * (1-h);
-    fGH =    f  * (1-g) * (1-h);
-    FGH = (1-f) * (1-g) * (1-h);
+    fgh = (1-F) * (1-G) * (1-H);
+    Fgh =    F  * (1-G) * (1-H);
+    fGh = (1-F) *    G  * (1-H);
+    FGh =    F  *    G  * (1-H);
+    fgH = (1-F) * (1-G) *    H ;
+    FgH =    F  * (1-G) *    H ;
+    fGH = (1-F) *    G  *    H ;
+    FGH =    F  *    G  *    H ;
 
     ijk = (k * c.n_theta + j) * c.n_r + i;
     Ijk = (k * c.n_theta + j) * c.n_r + I;
