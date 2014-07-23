@@ -17,7 +17,7 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #define EPSILON  1e-32
-#define FLOP_RHS (harm::using_harm ? (287 + harm::n_nu * 66) : 104)
+#define FLOP_RHS (harm::using_harm ? (566 + harm::n_nu * 66) : 104)
 #define RWSZ_RHS (harm::using_harm ? 25 : 0)
 #define R_SCHW   2
 
@@ -281,7 +281,7 @@ static inline __device__ State rhs(const State &s, real t)
     IjK = (K * c.n_theta + j) * c.n_r + I;
     iJK = (K * c.n_theta + J) * c.n_r + i;
     IJK = (K * c.n_theta + J) * c.n_r + I;
-  } // 11+ FLOP
+  } // 58+ FLOP
 
   // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
   real ut, ur, utheta, uphi, u; // u is energy
@@ -387,7 +387,7 @@ static inline __device__ State rhs(const State &s, real t)
     const real ibeta = bb / (2 * (c.Gamma-1) * u + (real)EPSILON);
     ti_te = (ibeta > c.threshold) ? c.Ti_Te_f : c.Ti_Te_d;
     b = sqrt(bb);
-  } // 107 FLOP
+  } // 282 FLOP
 
   // Construct the scalars rho and tgas
   real rho, tgas;
@@ -405,7 +405,7 @@ static inline __device__ State rhs(const State &s, real t)
       rho  *= invr;
       tgas *= invr;
     }
-  } // 11 FLOP
+  } // 26 FLOP
 
   // Skip cell if tgas is above the threshold
   if(tgas > c.tgas_max) {
@@ -428,7 +428,6 @@ static inline __device__ State rhs(const State &s, real t)
                         fG*c.coord[iJ].dxdxp[2][2]+FG*c.coord[IJ].dxdxp[2][2]);
     const real dxdxp33=(fg*c.coord[ij].dxdxp[3][3]+Fg*c.coord[Ij].dxdxp[3][3]+
                         fG*c.coord[iJ].dxdxp[3][3]+FG*c.coord[IJ].dxdxp[3][3]);
-
     real temp1, temp2;
 
     temp1  = ur;
@@ -444,7 +443,7 @@ static inline __device__ State rhs(const State &s, real t)
     br     = (dxdxp11 * temp1 + dxdxp12 * temp2);
     btheta = (dxdxp21 * temp1 + dxdxp22 * temp2);
     bphi  *= dxdxp33;
-  } // 16 FLOP
+  } // 58 FLOP
 
   // Transform vector u and b from KS to BL coordinates
   {
@@ -488,4 +487,4 @@ static inline __device__ State rhs(const State &s, real t)
 
   // Finally done!
   return d;
-} // 104 FLOP if geodesic only; (287+) + n_nu * (66+) FLOP if HARM is on
+} // 104 FLOP if geodesic only; (566+) + n_nu * (66+) FLOP if HARM is on
