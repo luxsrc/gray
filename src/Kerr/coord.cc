@@ -75,12 +75,6 @@ Coord *harm::load_coord(Const &c, const char *name)
   }
   fclose(file);
 
-#if defined(N_IN) && defined(N_THETA)
-  for(size_t i = 0; i < N_IN; ++i)
-    for(size_t j = 0; j < c.n_theta; ++j)
-      c.theta[j * N_IN + i] = host[j * c.n_r + i].theta;
-#endif
-
   print("Data size = %zu x %zu x %zu\n"
         "Gamma = %g, spin parameter a = %g, rmin = %g, rmax = %g\n",
         c.n_r, c.n_theta, c.n_phi, c.Gamma, c.a_spin, c.r[0], c.r[c.n_r-1]);

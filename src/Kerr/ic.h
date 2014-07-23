@@ -20,7 +20,7 @@
 
 static inline __device__ State ic(const size_t i, size_t n, const real t)
 {
-  State s = {};
+  State s = {0};
 
   size_t m = (size_t)sqrt((real)n); // round down
   while(n % m) --m;
