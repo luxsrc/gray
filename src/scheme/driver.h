@@ -57,13 +57,3 @@ static __global__ void driver(State *state, size_t n, real t, real target)
   __syncthreads();
   copy((real *)state, (real *)shared, NVAR * n);
 }
-
-double scheme::rwsz(void)
-{
-#if defined(RWSZ_RHS)
-  // TODO: make this formula scheme, e.g., rk4(), independent
-  return 2 * sizeof(State) + sizeof(size_t) + 4 * RWSZ_RHS;
-#else
-  return 2 * sizeof(State) + sizeof(size_t);
-#endif
-}
