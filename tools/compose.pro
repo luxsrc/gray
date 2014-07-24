@@ -16,22 +16,20 @@
 ; You should have received a copy of the GNU General Public License
 ; along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
-function load_raw, name
+function compose, l, s
 
-  if strmid(name,strlen(name)-4,4) ne '.raw' then name = name+'.raw'
-  spawn, 'head -qn1 '+name+' | wc -w', w
-  n_nu = fix(w)-1
+  sz1 = size(l.img) & n_nu = sz1[0] eq 3 ? sz1[3] : 1 & sz1 = sz1[1:2]
+  sz2 = size(s.img) & n_mu = sz2[0] eq 3 ? sz2[3] : 1 & sz2 = sz2[1:2]
 
-  openr, lun, name, /get_lun
-  h = dblarr(n_nu+1) & readf, lun, h
-  n = 0LL            & readu, lun, n
-  I = fltarr(n,n_nu) & readu, lun, I
-  close, lun & free_lun, lun
+  if n_nu ne n_mu or max(l.nu ne l.nu) or l.size le s.size then $
+    return, {}
 
-  n1 = long64(sqrt(n))
-  n2 = n / n1
-  I  = reform(double(I),n1,n2,n_nu)
-
-  return, {size:h[0], nu:h[1:*], img:I}
+  sz2 = round(sz1 * s.size / l.size)
+  b   = (sz1-sz2)/2
+  e   =  sz1-b-1
+  img = l.img
+  img[b[0]:e[0],b[1]:e[1],*] = rebin(s.img, [sz2,n_nu])
+  
+  return, {size:l.size, nu:l.nu, img:img}
 
 end
