@@ -65,7 +65,6 @@ void Para::define(Const &c)
   c.tgas_max  = 1;
   c.Ti_Te_d   = 3;
   c.Ti_Te_f   = 3;
-  for(int i = 0; i < N_NU; ++i) c.nu0[i] = 0; // we will need to output nu0[]
   c.n_nu      = 0;
 
   c.coord = NULL;

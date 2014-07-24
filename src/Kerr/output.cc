@@ -26,8 +26,8 @@ void Data::output(const State *h, const Const *c, FILE *file)
   if(!I)
     error("Data::output(): fail to allocate buffer\n");
 
-  double total[N_NU] = {0};
-  for(int i = 0; i < N_NU; ++i) {
+  double total[N_NU];
+  for(size_t i = 0; i < c->n_nu; ++i) {
     total[i] = 0;
     for(size_t j = 0; j < n; ++j) {
       const real tmp = h[j].I[i];
@@ -36,14 +36,14 @@ void Data::output(const State *h, const Const *c, FILE *file)
     }
   }
 
-  for(int i = 0; i < N_NU; ++i)
+  for(size_t i = 0; i < c->n_nu; ++i)
     fprintf(file, "%15.9e\t", total[i] / n);
-  for(int i = 0; i < N_NU; ++i)
+  for(size_t i = 0; i < c->n_nu; ++i)
     fprintf(file, "%15.9e\t", c->nu0[i]);
   fprintf(file, "%15.9e\n", c->imgsz);
 
-  fwrite(&n, sizeof(size_t), 1,        file);
-  fwrite( I, sizeof(float),  n * N_NU, file);
+  fwrite(&n, sizeof(size_t), 1,           file);
+  fwrite( I, sizeof(float),  n * c->n_nu, file);
 
   free(I);
 }
