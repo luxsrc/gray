@@ -19,6 +19,8 @@
 #ifndef DATA_H
 #define DATA_H
 
+class Para; // forward declaration
+
 class Data {
   size_t n, m, gsz, bsz;
 
@@ -48,7 +50,7 @@ class Data {
   cudaError_t htod();         // implemented in "src/memcpy.cc"
   cudaError_t sync(size_t *); // implemented in "src/core.cu"
 
-  void output(const State *, FILE *); // implemented in "src/*/output.cc"
+  void output(const State *, const Const *, FILE *); // in "src/*/output.cc"
 
  public:
   Data(size_t); // implemented in "src/data.cc"
@@ -61,8 +63,8 @@ class Data {
 
   size_t solve(double, float &, float &, float &);
 
-  void snapshot(const char *); // implemented in "src/io.cc"
-  void output  (const char *); // implemented in "src/io.cc"
+  void snapshot(const char *);               // implemented in "src/io.cc"
+  void output  (const char *, const Para &); // implemented in "src/io.cc"
 #ifdef ENABLE_GL
   int  show(); // implemented in "src/optional/vis.cc"
 #endif
