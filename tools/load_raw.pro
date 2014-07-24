@@ -20,10 +20,11 @@ function load_raw, name
 
   if strmid(name,strlen(name)-4,4) ne '.raw' then name = name+'.raw'
   spawn, 'head -qn1 '+name+' | wc -w', w
-  n_nu = fix(w)-1
+  n    = fix(w[0])
+  n_nu = (n-1)/2
 
   openr, lun, name, /get_lun
-  h = dblarr(n_nu+1) & readf, lun, h
+  h = dblarr(n)      & readf, lun, h
   n = 0LL            & readu, lun, n
   I = fltarr(n,n_nu) & readu, lun, I
   close, lun & free_lun, lun
@@ -32,6 +33,6 @@ function load_raw, name
   n2 = n / n1
   I  = reform(double(I),n1,n2,n_nu)
 
-  return, {size:h[0], nu:h[1:*], img:I}
+  return, {size:h[2*n_nu], nu:h[n_nu:2*n_nu-1], img:I}
 
 end
