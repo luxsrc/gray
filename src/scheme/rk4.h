@@ -49,3 +49,12 @@ double scheme::flop(void)
 {
   return 4 + 12 * NVAR + 4 * FLOP_RHS + FLOP_GETDT;
 }
+
+double scheme::rwsz(void)
+{
+#if defined(RWSZ_RHS)
+  return 2 * sizeof(State) + sizeof(size_t) + 4 * RWSZ_RHS;
+#else
+  return 2 * sizeof(State) + sizeof(size_t);
+#endif
+}

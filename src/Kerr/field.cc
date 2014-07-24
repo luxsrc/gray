@@ -31,8 +31,8 @@ Field *harm::load_field(Const &c, const char *name)
   if(fscanf(file, "%lf %zu %zu %zu", &time, &n1, &n2, &n3) != 4)
     error("ERROR: fail to read time or grid size\n");
   while('\n' != fgetc(file));
-  count = c.nr * c.ntheta * c.nphi;
-  if(n1 != c.nr || n2 != c.ntheta || n3 != c.nphi)
+  count = c.n_r * c.n_theta * c.n_phi;
+  if(n1 != c.n_r || n2 != c.n_theta || n3 != c.n_phi)
     error("ERROR: inconsistent grid size\n");
 
   Field *host;

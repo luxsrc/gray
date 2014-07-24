@@ -18,7 +18,7 @@
 
 #include "gray.h"
 
-static __device__ __constant__ struct Counter {size_t *er;} count = {};
+static __device__ __constant__ struct Counter {size_t *er;} count = {0};
 
 cudaError_t Data::sync(size_t *p)
 {
@@ -27,7 +27,7 @@ cudaError_t Data::sync(size_t *p)
   return cudaMemcpyToSymbol(count, &p, sizeof(size_t *));
 }
 
-static __device__ __constant__ Const c = {};
+static __device__ __constant__ Const c = {0};
 
 cudaError_t Para::sync(Const *p)
 {
@@ -40,14 +40,14 @@ cudaError_t Para::sync(Const *p)
   if(coord && field) {
     size_t sz;
 
-    sz = sizeof(Coord) * p->nr * p->ntheta;
+    sz = sizeof(Coord) * p->n_r * p->n_theta;
     if(cudaSuccess != (err = cudaMalloc((void **)&p->coord, sz)) ||
        cudaSuccess != (err = cudaMemcpy(p->coord, coord, sz,
                                         cudaMemcpyHostToDevice)))
       error("Para::sync(): fail to allocate device memory [%s]\n",
             cudaGetErrorString(err));
 
-    sz = sizeof(Field) * p->nr * p->ntheta * p->nphi;
+    sz = sizeof(Field) * p->n_r * p->n_theta * p->n_phi;
     if(cudaSuccess != (err = cudaMalloc((void **)&p->field, sz)) ||
        cudaSuccess != (err = cudaMemcpy(p->field, field, sz,
                                         cudaMemcpyHostToDevice)))

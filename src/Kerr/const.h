@@ -23,8 +23,6 @@
 
 #define DT_DUMP (-100)
 #define N_R     264 // large enough to hold our grids
-//efine N_THETA 128 // large enough to hold out grids
-//efine N_IN    64  // inner theta-grid is stored in constant memory
 #define N_NU    5
 
 typedef struct {
@@ -44,18 +42,18 @@ typedef struct {
 
   Coord *coord;
   Field *field;
-  size_t nr, ntheta, nphi;
+  size_t n_rx, n_r, n_theta, n_phi;
   real   Gamma;
   real   r[N_R];
-#if defined(N_IN) && defined(N_THETA)
-  real   theta[N_IN * N_THETA];
-#endif
 } Const;
 
 namespace harm {
   extern Coord *load_coord(Const &, const char *);
   extern Field *load_field(Const &, const char *);
   extern bool   load      (Const &, const char *);
+  extern bool   setx      (Const &, const char *);
+  extern bool   using_harm;
+  extern size_t n_nu;
 }
 
 #endif // CONST_H

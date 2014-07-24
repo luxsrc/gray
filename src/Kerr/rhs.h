@@ -17,7 +17,8 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #define EPSILON  1e-32
-#define FLOP_RHS 84
+#define FLOP_RHS (harm::using_harm ? (566 + harm::n_nu * 66) : 104)
+#define RWSZ_RHS (harm::using_harm ? 132 * sizeof(float) : 0)
 #define R_SCHW   2
 
 #define CONST_c     (2.99792458e+10)
@@ -57,7 +58,7 @@ static inline __device__ real log_K2it(real te)
   const real d = h - i;
 
   return (1 - d) * log_K2it_tab[i] + d * log_K2it_tab[i+1];
-}
+} // 7 FLOP
 
 static inline __device__ real B_Planck(real nu, real te)
 {
@@ -71,7 +72,7 @@ static inline __device__ real B_Planck(real nu, real te)
   return nu * (f2 > (real)1e-5 ?
                f1 / (exp(f2) - 1) :
                (f1 / f2) / (1 + f2 / 2 + f2 * f2 / 6));
-}
+} // 10+ FLOP
 
 static inline __device__ real Gaunt(real x, real y)
 {
@@ -97,7 +98,7 @@ static inline __device__ real Gaunt(real x, real y)
                     log(sqrt_x / (y + (real)EPSILON)));
     return g > (real)EPSILON ? g : (real)EPSILON;
   }
-}
+} // 3+ FLOP
 
 static inline __device__ real L_j_ff(real nu, real te, real ne)
 {
@@ -113,7 +114,7 @@ static inline __device__ real L_j_ff(real nu, real te, real ne)
   f *= ne;      // ~ 1e-15
 
   return (c.m_BH * f * Gaunt(x, y)) * (f / (sqrt(te)*exp(y) + (real)EPSILON));
-}
+} // 12 FLOP + FLOP(Gaunt) == 15+ FLOP
 
 static inline __device__ real L_j_synchr(real nu, real te, real ne,
                                          real B,  real cos_theta)
@@ -125,6 +126,7 @@ static inline __device__ real L_j_synchr(real nu, real te, real ne,
   if(te        <= (real)T_MIN ||
      cos_theta <=          -1 ||
      cos_theta >=           1 ||
+     nus       <=           0 ||
      x         <=           0) return 0;
 
   const real f      = (CONST_G * CONST_mSun / (CONST_c * CONST_c)) *
@@ -136,14 +138,14 @@ static inline __device__ real L_j_synchr(real nu, real te, real ne,
                       log_K2it(te);
 
   return (c.m_BH * xx * exp(-cbrtx)) * (xx * exp(-log_K2)) * (f * ne * nus);
-}
+} // 25 FLOP + min(4 FLOP, FLOP(log_K2it)) == 29+ FLOP
 
 static inline __device__ State rhs(const State &s, real t)
 {
-  State d = {};
+  State d = {0};
 
-  const real a2 = c.a_spin * c.a_spin;
-  const real r2 = s.r * s.r; // 1 FLOP
+  const real a2 = c.a_spin * c.a_spin; // 1 FLOP
+  const real r2 = s.r * s.r;           // 1 FLOP
 
   real sin_theta, cos_theta, c2, cs, s2;
   {
@@ -172,7 +174,7 @@ static inline __device__ State rhs(const State &s, real t)
     tmp    = 1 / (g33 * g00 - g30 * g30);
     d.t    = -(g33 + s.bimpact * g30) * tmp; // assume E = -k_t = 1, see ic.h
     d.phi  =  (g30 + s.bimpact * g00) * tmp; // assume E = -k_t = 1, see ic.h
-  } // 25 FLOP
+  } // 26 FLOP
 
   {
     d.r = cs * R_SCHW * s.r / (g22 * g22); // use d.r as tmp
@@ -185,12 +187,12 @@ static inline __device__ State rhs(const State &s, real t)
     d.r = G222 / Dlt; // use d.r as tmp, will be reused in the next block
 
     d.ktheta = (+     G200 * d.t      * d.t
-                +     d.r * s.kr     * s.kr
+                +     d.r  * s.kr     * s.kr
                 -     G222 * s.ktheta * s.ktheta
                 +     G233 * d.phi    * d.phi
                 - 2 * s.r  * s.kr     * s.ktheta
                 + 2 * G230 * d.phi    * d.t     ) / g22;
-  } // 25 FLOP
+  } // 37 FLOP
 
   {
     const real G111 = (s.r + (R_SCHW / 2 - s.r) * g11) / Dlt;
@@ -204,78 +206,150 @@ static inline __device__ State rhs(const State &s, real t)
             +     G133 * d.phi    * d.phi
             - 2 * d.r  * s.kr     * s.ktheta // tmp d.r from the d.ktheta block
             + 2 * G130 * d.phi    * d.t     ) / g11;
-  } // 24 FLOP
+  } // 35 FLOP
 
   d.r     = s.kr;
   d.theta = s.ktheta;
-  if(!c.field) return d;
+  if(!c.field || s.r < c.r[0]) return d;
 
-  int h2, h3;
+  // Get indices to access HARM data
+  real fg, Fg, fG, FG, fgh, Fgh, fGh, FGh, fgH, FgH, fGH, FGH;
+  int  ij, Ij, iJ, IJ, ijk, Ijk, iJk, IJk, ijK, IjK, iJK, IJK;
   {
-    int  ir = 0;
-    real dr = fabs(c.r[0] - s.r);
-    while(ir < c.nr-1) {
-      const real tmp = fabs(c.r[ir+1] - s.r);
-      if(tmp > dr)
-	break;
-      dr = tmp;
-      ++ir;
+    real F = (real)0.5;
+    int  I = c.n_r-1, i = I; // assume c.n_r > 1
+    if(c.r[i] > s.r) {
+      do I = i--; while(i && c.r[i] > s.r); // assume s.r >= c.r[0]
+      F = (s.r - c.r[i]) / (c.r[I] - c.r[i]);
+    } // else, constant extrapolate
+
+    real G = (real)0.5;
+    int  J = c.n_theta-1, j = J;
+    if(s.theta < c.coord[i].theta * (1-F) +
+                 c.coord[I].theta *    F)
+      j = J = 0; // constant extrapolation
+    else {
+      real theta = c.coord[j*c.n_r + i].theta * (1-F)  +
+                   c.coord[j*c.n_r + I].theta *    F;
+      if(theta > s.theta) {
+	real Theta;
+        do {
+          J = j--;
+          Theta = theta;
+          theta = c.coord[j*c.n_r + i].theta * (1-F) +
+                  c.coord[j*c.n_r + I].theta *    F;
+        } while(j && theta > s.theta);
+        G = (s.theta - theta) / (Theta - theta);
+      } // else, constant extrapolation
     }
 
-    int itheta = 0;
-#if defined(N_IN) && defined(N_THETA)
-    if(ir < N_IN) {
-      real dtheta = fabs(c.theta[ir] - s.theta);
-      while(itheta < c.ntheta-1) {
-        const real tmp = fabs(c.theta[(itheta+1) * N_IN + ir] - s.theta);
-        if(tmp > dtheta)
-          break;
-        dtheta = tmp;
-        ++itheta;
-      }
-    } else {
-#endif
-      real dtheta = fabs(c.coord[ir].theta - s.theta);
-      while(itheta < c.ntheta-1) {
-        const real tmp = fabs(c.coord[(itheta+1) * c.nr + ir].theta - s.theta);
-        if(tmp > dtheta)
-          break;
-        dtheta = tmp;
-        ++itheta;
-      }
-#if defined(N_IN) && defined(N_THETA)
+    real H = s.phi / (real)(2*M_PI);
+    H -= floor(H);
+    H *= c.n_phi;
+    int k = H, K = k == c.n_phi-1 ? 0 : k+1;
+    H -= k;
+
+    fg = (1-F) * (1-G);
+    Fg =    F  * (1-G);
+    fG = (1-F) *    G ;
+    FG =    F  *    G ;
+
+    ij = j * c.n_r + i;
+    Ij = j * c.n_r + I;
+    iJ = J * c.n_r + i;
+    IJ = J * c.n_r + I;
+
+    if(i > c.n_rx) {
+      I = i = c.n_rx;
+      F = (real)0.5;
     }
-#endif
 
-    int iphi = (s.phi >= 0) ?
-      (int)(c.nphi * s.phi / (real)(2 * M_PI) + (real)0.5) % ( (int)c.nphi):
-      (int)(c.nphi * s.phi / (real)(2 * M_PI) - (real)0.5) % (-(int)c.nphi);
-    if(iphi < 0) iphi += c.nphi;
+    fgh = (1-F) * (1-G) * (1-H);
+    Fgh =    F  * (1-G) * (1-H);
+    fGh = (1-F) *    G  * (1-H);
+    FGh =    F  *    G  * (1-H);
+    fgH = (1-F) * (1-G) *    H ;
+    FgH =    F  * (1-G) *    H ;
+    fGH = (1-F) *    G  *    H ;
+    FGH =    F  *    G  *    H ;
 
-    h2 = itheta * c.nr + ir;
-    h3 = (iphi * c.ntheta + itheta) * c.nr + ir;
-  }
-
-  real ut, ur, utheta, uphi;
-  real bt, br, btheta, bphi, b, ti_te;
+    ijk = (k * c.n_theta + j) * c.n_r + i;
+    Ijk = (k * c.n_theta + j) * c.n_r + I;
+    iJk = (k * c.n_theta + J) * c.n_r + i;
+    IJk = (k * c.n_theta + J) * c.n_r + I;
+    ijK = (K * c.n_theta + j) * c.n_r + i;
+    IjK = (K * c.n_theta + j) * c.n_r + I;
+    iJK = (K * c.n_theta + J) * c.n_r + i;
+    IJK = (K * c.n_theta + J) * c.n_r + I;
+  } // 58+ FLOP
 
   // Construct the four vectors u^\mu and b^\mu in modified KS coordinates
+  real ut, ur, utheta, uphi, u; // u is energy
+  real bt, br, btheta, bphi, b, ti_te;
   {
-    const real gKSP00 = c.coord[h2].gcov[0][0];
-    const real gKSP11 = c.coord[h2].gcov[1][1];
-    const real gKSP22 = c.coord[h2].gcov[2][2];
-    const real gKSP33 = c.coord[h2].gcov[3][3];
-    const real gKSP01 = c.coord[h2].gcov[0][1];
-    const real gKSP02 = c.coord[h2].gcov[0][2];
-    const real gKSP03 = c.coord[h2].gcov[0][3];
-    const real gKSP12 = c.coord[h2].gcov[1][2];
-    const real gKSP13 = c.coord[h2].gcov[1][3];
-    const real gKSP23 = c.coord[h2].gcov[2][3];
+    const real gKSP00 = (fg*c.coord[ij].gcov[0][0]+Fg*c.coord[Ij].gcov[0][0]+
+                         fG*c.coord[iJ].gcov[0][0]+FG*c.coord[IJ].gcov[0][0]);
+    const real gKSP01 = (fg*c.coord[ij].gcov[0][1]+Fg*c.coord[Ij].gcov[0][1]+
+                         fG*c.coord[iJ].gcov[0][1]+FG*c.coord[IJ].gcov[0][1]);
+    const real gKSP02 = (fg*c.coord[ij].gcov[0][2]+Fg*c.coord[Ij].gcov[0][2]+
+                         fG*c.coord[iJ].gcov[0][2]+FG*c.coord[IJ].gcov[0][2]);
+    const real gKSP03 = (fg*c.coord[ij].gcov[0][3]+Fg*c.coord[Ij].gcov[0][3]+
+                         fG*c.coord[iJ].gcov[0][3]+FG*c.coord[IJ].gcov[0][3]);
+    const real gKSP11 = (fg*c.coord[ij].gcov[1][1]+Fg*c.coord[Ij].gcov[1][1]+
+                         fG*c.coord[iJ].gcov[1][1]+FG*c.coord[IJ].gcov[1][1]);
+    const real gKSP12 = (fg*c.coord[ij].gcov[1][2]+Fg*c.coord[Ij].gcov[1][2]+
+                         fG*c.coord[iJ].gcov[1][2]+FG*c.coord[IJ].gcov[1][2]);
+    const real gKSP13 = (fg*c.coord[ij].gcov[1][3]+Fg*c.coord[Ij].gcov[1][3]+
+                         fG*c.coord[iJ].gcov[1][3]+FG*c.coord[IJ].gcov[1][3]);
+    const real gKSP22 = (fg*c.coord[ij].gcov[2][2]+Fg*c.coord[Ij].gcov[2][2]+
+                         fG*c.coord[iJ].gcov[2][2]+FG*c.coord[IJ].gcov[2][2]);
+    const real gKSP23 = (fg*c.coord[ij].gcov[2][3]+Fg*c.coord[Ij].gcov[2][3]+
+                         fG*c.coord[iJ].gcov[2][3]+FG*c.coord[IJ].gcov[2][3]);
+    const real gKSP33 = (fg*c.coord[ij].gcov[3][3]+Fg*c.coord[Ij].gcov[3][3]+
+                         fG*c.coord[iJ].gcov[3][3]+FG*c.coord[IJ].gcov[3][3]);
+
+    ur     = (fgh * c.field[ijk].v1 + Fgh * c.field[Ijk].v1 +
+              fGh * c.field[iJk].v1 + FGh * c.field[IJk].v1 +
+              fgH * c.field[ijK].v1 + FgH * c.field[IjK].v1 +
+              fGH * c.field[iJK].v1 + FGH * c.field[IJK].v1);
+    utheta = (fgh * c.field[ijk].v2 + Fgh * c.field[Ijk].v2 +
+              fGh * c.field[iJk].v2 + FGh * c.field[IJk].v2 +
+              fgH * c.field[ijK].v2 + FgH * c.field[IjK].v2 +
+              fGH * c.field[iJK].v2 + FGH * c.field[IJK].v2);
+    uphi   = (fgh * c.field[ijk].v3 + Fgh * c.field[Ijk].v3 +
+              fGh * c.field[iJk].v3 + FGh * c.field[IJk].v3 +
+              fgH * c.field[ijK].v3 + FgH * c.field[IjK].v3 +
+              fGH * c.field[iJK].v3 + FGH * c.field[IJK].v3);
+    u      = (fgh * c.field[ijk].u  + Fgh * c.field[Ijk].u  +
+              fGh * c.field[iJk].u  + FGh * c.field[IJk].u  +
+              fgH * c.field[ijK].u  + FgH * c.field[IjK].u  +
+              fGH * c.field[iJK].u  + FGH * c.field[IJK].u );
+    br     = (fgh * c.field[ijk].B1 + Fgh * c.field[Ijk].B1 +
+              fGh * c.field[iJk].B1 + FGh * c.field[IJk].B1 +
+              fgH * c.field[ijK].B1 + FgH * c.field[IjK].B1 +
+              fGH * c.field[iJK].B1 + FGH * c.field[IJK].B1);
+    btheta = (fgh * c.field[ijk].B2 + Fgh * c.field[Ijk].B2 +
+              fGh * c.field[iJk].B2 + FGh * c.field[IJk].B2 +
+              fgH * c.field[ijK].B2 + FgH * c.field[IjK].B2 +
+              fGH * c.field[iJK].B2 + FGH * c.field[IJK].B2);
+    bphi   = (fgh * c.field[ijk].B3 + Fgh * c.field[Ijk].B3 +
+              fGh * c.field[iJk].B3 + FGh * c.field[IJk].B3 +
+              fgH * c.field[ijK].B3 + FgH * c.field[IjK].B3 +
+              fGH * c.field[iJK].B3 + FGH * c.field[IJK].B3);
+
+    if(s.r > c.r[c.n_rx]) {
+      // The flow is sub-Keplerian
+      ur      = 0;
+      utheta *= sqrt(c.r[c.n_rx] / (s.r + (real)EPSILON));
+      uphi    = 0;
+      // Zero out the magnetic field to void unrealistic synchrotron
+      // radiation at large radius for the constant temperature model
+      br      = 0;
+      btheta  = 0;
+      bphi    = 0;
+    }
 
     // Vector u
-    ur     = c.field[h3].v1;
-    utheta = c.field[h3].v2;
-    uphi   = c.field[h3].v3;
     ut     = 1 / sqrt((real)EPSILON
                       -(gKSP00                   +
                         gKSP11 * ur     * ur     +
@@ -292,9 +366,6 @@ static inline __device__ State rhs(const State &s, real t)
     uphi   *= ut;
 
     // Vector B
-    br     = c.field[h3].B1;
-    btheta = c.field[h3].B2;
-    bphi   = c.field[h3].B3;
     bt     = (br     * (gKSP01 * ut     + gKSP11 * ur    +
                         gKSP12 * utheta + gKSP13 * uphi) +
               btheta * (gKSP02 * ut     + gKSP12 * ur    +
@@ -313,15 +384,30 @@ static inline __device__ State rhs(const State &s, real t)
                                gKSP22 * btheta + gKSP23 * bphi) +
                      bphi   * (gKSP03 * bt     + gKSP13 * br    +
                                gKSP23 * btheta + gKSP33 * bphi));
-    const real ibeta = bb / (2 * (c.Gamma-1) * c.field[h3].u + (real)EPSILON);
+    const real ibeta = bb / (2 * (c.Gamma-1) * u + (real)EPSILON);
     ti_te = (ibeta > c.threshold) ? c.Ti_Te_f : c.Ti_Te_d;
     b = sqrt(bb);
-  }
+  } // 282 FLOP
 
-  const real Gamma = (1 + (ti_te+1) / (ti_te+2) / (real)1.5 + c.Gamma) / 2;
-  const real tgas  = (Gamma - 1) * c.field[h3].u /
-                     (c.field[h3].rho + (real)EPSILON);
+  // Construct the scalars rho and tgas
+  real rho, tgas;
+  {
+    const real Gamma = (1 + (ti_te+1) / (ti_te+2) / (real)1.5 + c.Gamma) / 2;
 
+    rho  = (fgh * c.field[ijk].rho + Fgh * c.field[Ijk].rho +
+            fGh * c.field[iJk].rho + FGh * c.field[IJk].rho +
+            fgH * c.field[ijK].rho + FgH * c.field[IjK].rho +
+            fGH * c.field[iJK].rho + FGH * c.field[IJK].rho);
+    tgas = (Gamma - 1) * u / (rho + (real)EPSILON);
+
+    if(s.r > c.r[c.n_rx]) {
+      const real invr = c.r[c.n_rx] / s.r;
+      rho  *= invr;
+      tgas *= invr;
+    }
+  } // 26 FLOP
+
+  // Skip cell if tgas is above the threshold
   if(tgas > c.tgas_max) {
     for(int i = 0; i < c.n_nu; ++i)
       d.tau[i] = d.I[i] = 0;
@@ -330,13 +416,18 @@ static inline __device__ State rhs(const State &s, real t)
 
   // Transform vector u and b from KSP to KS coordinates
   {
-    const real dxdxp00 = c.coord[h2].dxdxp[0][0];
-    const real dxdxp11 = c.coord[h2].dxdxp[1][1];
-    const real dxdxp12 = c.coord[h2].dxdxp[1][2];
-    const real dxdxp21 = c.coord[h2].dxdxp[2][1];
-    const real dxdxp22 = c.coord[h2].dxdxp[2][2];
-    const real dxdxp33 = c.coord[h2].dxdxp[3][3];
-
+    const real dxdxp00=(fg*c.coord[ij].dxdxp[0][0]+Fg*c.coord[Ij].dxdxp[0][0]+
+                        fG*c.coord[iJ].dxdxp[0][0]+FG*c.coord[IJ].dxdxp[0][0]);
+    const real dxdxp11=(fg*c.coord[ij].dxdxp[1][1]+Fg*c.coord[Ij].dxdxp[1][1]+
+                        fG*c.coord[iJ].dxdxp[1][1]+FG*c.coord[IJ].dxdxp[1][1]);
+    const real dxdxp12=(fg*c.coord[ij].dxdxp[1][2]+Fg*c.coord[Ij].dxdxp[1][2]+
+                        fG*c.coord[iJ].dxdxp[1][2]+FG*c.coord[IJ].dxdxp[1][2]);
+    const real dxdxp21=(fg*c.coord[ij].dxdxp[2][1]+Fg*c.coord[Ij].dxdxp[2][1]+
+                        fG*c.coord[iJ].dxdxp[2][1]+FG*c.coord[IJ].dxdxp[2][1]);
+    const real dxdxp22=(fg*c.coord[ij].dxdxp[2][2]+Fg*c.coord[Ij].dxdxp[2][2]+
+                        fG*c.coord[iJ].dxdxp[2][2]+FG*c.coord[IJ].dxdxp[2][2]);
+    const real dxdxp33=(fg*c.coord[ij].dxdxp[3][3]+Fg*c.coord[Ij].dxdxp[3][3]+
+                        fG*c.coord[iJ].dxdxp[3][3]+FG*c.coord[IJ].dxdxp[3][3]);
     real temp1, temp2;
 
     temp1  = ur;
@@ -352,7 +443,7 @@ static inline __device__ State rhs(const State &s, real t)
     br     = (dxdxp11 * temp1 + dxdxp12 * temp2);
     btheta = (dxdxp21 * temp1 + dxdxp22 * temp2);
     bphi  *= dxdxp33;
-  }
+  } // 58 FLOP
 
   // Transform vector u and b from KS to BL coordinates
   {
@@ -364,7 +455,7 @@ static inline __device__ State rhs(const State &s, real t)
 
     bt   += br * temp0;
     bphi += br * temp3;
-  }
+  } // 13 FLOP
 
   // Compute red shift, angle cosine between b and k, etc
   real shift, bkcos, ne, te;
@@ -380,21 +471,20 @@ static inline __device__ State rhs(const State &s, real t)
 
     b *= sqrt(c.ne_rho) *
          (real)(CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me));
-    ne = c.ne_rho *  c.field[h3].rho;
+    ne = c.ne_rho * rho;
     te = ti_te < 0 ? -ti_te : tgas * (real)CONST_mp_me / (ti_te+1);
-  }
+  } // 25+ FLOP
 
   for(int i = 0; i < c.n_nu; ++i) {
     const real nu     = c.nu0[i] * shift;
     const real B_nu   =   B_Planck(nu, te);
     const real L_j_nu = L_j_synchr(nu, te, ne, b, bkcos) + L_j_ff(nu, te, ne);
     if(L_j_nu > 0) {
-      d.I  [i] = -L_j_nu * exp(-s.tau[i])       /
-                 (shift * shift + (real)EPSILON);
-      d.tau[i] = -L_j_nu * shift                /
-                 (B_nu          + (real)EPSILON);
+      d.I  [i] = -L_j_nu * exp(-s.tau[i]) / (shift * shift + (real)EPSILON);
+      d.tau[i] = -L_j_nu * shift          / (B_nu          + (real)EPSILON);
     }
-  }
+  } // 12 FLOP + FLOP(B_Planck) + FLOP(L_j_synchr) + FLOP(L_j_ff) == 66+ FLOP
 
+  // Finally done!
   return d;
-}
+} // 104 FLOP if geodesic only; (566+) + n_nu * (66+) FLOP if HARM is on

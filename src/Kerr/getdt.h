@@ -22,6 +22,7 @@ static inline __device__ real getdt(const State &s, real t,
                                     const State &a, real dt_max)
 {
   const real r_bh = 1 + sqrt(1 - c.a_spin * c.a_spin);
+  const real cap  = s.r * (1 - pow(c.r[0]/c.r[c.n_r-1], (real)0.125/c.n_r));
 
   if(s.r < r_bh + c.epsilon)
     return 0; // too close to the black hole
@@ -31,8 +32,8 @@ static inline __device__ real getdt(const State &s, real t,
     return 0; // too far away from the black hole
 #endif
 
-  if(dt_max < 0) dt_max = -dt_max;
-  if(dt_max > 8) dt_max = 8;
+  if(dt_max <   0) dt_max = -dt_max;
+  if(dt_max > cap) dt_max = cap;
 
   if(c.field) { // if we are computing images from HARM data...
     bool done = true;

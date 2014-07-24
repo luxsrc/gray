@@ -48,7 +48,7 @@ static size_t fill(real *nu, const char *val)
     print("%g\n", nu[n-1]);
   }
 
-  return n;
+  return harm::n_nu = n;
 }
 
 void Para::define(Const &c)
@@ -77,17 +77,18 @@ bool Para::config(Const &c, const char *arg)
 {
   const char *val;
 
-       if((val = match("imgsz", arg))) c.imgsz     =  image_size = atof(val);
-  else if((val = match("r",     arg))) c.r_obs     =  atof(val);
-  else if((val = match("i",     arg))) c.i_obs     =  atof(val);
-  else if((val = match("a",     arg))) c.a_spin    =  atof(val);
-  else if((val = match("ne",    arg))) c.ne_rho    =  atof(val);
-  else if((val = match("beta",  arg))) c.threshold =1/atof(val);
-  else if((val = match("Rd",    arg))) c.Ti_Te_d   =  atof(val);
-  else if((val = match("Rf",    arg))) c.Ti_Te_f   =  atof(val);
-  else if((val = match("Tf",    arg))) c.Ti_Te_f   = -atof(val);
-  else if((val = match("nu",    arg))) return 0 < (c.n_nu = fill(c.nu0, val));
+       if((val = match("imgsz", arg))) c.imgsz     =   image_size = atof(val);
+  else if((val = match("r",     arg))) c.r_obs     =   atof(val);
+  else if((val = match("i",     arg))) c.i_obs     =   atof(val);
+  else if((val = match("a",     arg))) c.a_spin    =   atof(val);
+  else if((val = match("ne",    arg))) c.ne_rho    =   atof(val);
+  else if((val = match("beta",  arg))) c.threshold = 1/atof(val);
+  else if((val = match("td",    arg))) c.Ti_Te_d   = 1/atof(val);
+  else if((val = match("tf",    arg))) c.Ti_Te_f   = 1/atof(val);
+  else if((val = match("Tf",    arg))) c.Ti_Te_f   = - atof(val);
+  else if((val = match("rx",    arg))) return harm::setx(c, val);
   else if((val = match("harm",  arg))) return harm::load(c, val);
+  else if((val = match("nu",    arg))) return 0 < (c.n_nu = fill(c.nu0, val));
 
   return NULL != val;
 }

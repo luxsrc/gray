@@ -57,8 +57,3 @@ static __global__ void driver(State *state, size_t n, real t, real target)
   __syncthreads();
   copy((real *)state, (real *)shared, NVAR * n);
 }
-
-double scheme::rwsz(void)
-{
-  return 2 * sizeof(State) + sizeof(size_t);
-}
