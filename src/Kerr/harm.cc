@@ -60,7 +60,7 @@ bool harm::setx(Const &c, const char *dump)
     rx = atof(dump);
 
   if(rx >= 0 && c.coord && c.field)
-    for(size_t i = 0; i < c.n_r; ++i)
+    for(size_t i = 0; i < c.n_r - N_RS; ++i)
       if(c.r[i] >= rx) {
         c.n_rx = i;
         break;

@@ -23,6 +23,7 @@
 
 #define DT_DUMP (-100)
 #define N_R     264 // large enough to hold our grids
+#define N_RS    8   // number of cells to skip near the outer boundary
 #define N_NU    5
 
 typedef struct {

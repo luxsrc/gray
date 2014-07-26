@@ -217,7 +217,7 @@ static inline __device__ State rhs(const State &s, real t)
   int  ij, Ij, iJ, IJ, ijk, Ijk, iJk, IJk, ijK, IjK, iJK, IJK;
   {
     real F = (real)0.5;
-    int  I = c.n_r-1, i = I; // assume c.n_r > 1
+    int  I = c.n_r - N_RS - 1, i = I; // assume c.n_r > N_RS + 1
     if(c.r[i] > s.r) {
       do I = i--; while(i && c.r[i] > s.r); // assume s.r >= c.r[0]
       F = (s.r - c.r[i]) / (c.r[I] - c.r[i]);
