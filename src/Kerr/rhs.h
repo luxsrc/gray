@@ -100,6 +100,8 @@ static inline __device__ real Gaunt(real x, real y)
   }
 } // 3+ FLOP
 
+// "Standard" formula for thermal bremsstrahlung, Rybicki & Lightman
+// equation (5.14b) divided by 4 pi
 static inline __device__ real L_j_ff(real nu, real te, real ne)
 {
   // Assume Z == 1 and ni == ne
@@ -116,6 +118,8 @@ static inline __device__ real L_j_ff(real nu, real te, real ne)
   return (c.m_BH * f * Gaunt(x, y)) * (f / (sqrt(te)*exp(y) + (real)EPSILON));
 } // 12 FLOP + FLOP(Gaunt) == 15+ FLOP
 
+// An approximate expression for thermal magnetobremsstrahlung
+// emission, see Leung, Gammie, & Noble (2011) equation (72)
 static inline __device__ real L_j_synchr(real nu, real te, real ne,
                                          real B,  real cos_theta)
 {
