@@ -106,8 +106,8 @@ static inline __device__ real L_j_ff(real nu, real te, real ne)
 
   real x = CONST_me * CONST_c * CONST_c / CONST_Ry;    // ~ 4e4
   real y = (CONST_h / (CONST_me * CONST_c * CONST_c)); // ~ 3e-21
-  real f = sqrt(CONST_G * CONST_mSun / (CONST_c * CONST_c) *
-                6.8e-38 / sqrt(CONST_me * CONST_c * CONST_c / CONST_kB));
+  real f = sqrt(CONST_G * CONST_mSun / (CONST_c * CONST_c) * 6.8e-38 /
+                (4 * M_PI * sqrt(CONST_me * CONST_c * CONST_c / CONST_kB)));
 
   x *= te;      // ~ 1e+04
   y *= nu / te; // ~ 1e-10
