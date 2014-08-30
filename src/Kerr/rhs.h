@@ -17,7 +17,7 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #define EPSILON  1e-32
-#define FLOP_RHS (harm::using_harm ? (566 + harm::n_nu * 66) : 104)
+#define FLOP_RHS (harm::using_harm ? (569 + harm::n_nu * 66) : 104)
 #define RWSZ_RHS (harm::using_harm ? 132 * sizeof(float) : 0)
 #define R_SCHW   2
 
@@ -389,9 +389,9 @@ static inline __device__ State rhs(const State &s, real t)
                      bphi   * (gKSP03 * bt     + gKSP13 * br    +
                                gKSP23 * btheta + gKSP33 * bphi));
     const real ibeta = bb / (2 * (c.Gamma-1) * u + (real)EPSILON);
-    ti_te = (ibeta > c.threshold) ? c.Ti_Te_f : c.Ti_Te_d;
+    ti_te = (ibeta > c.threshold) ? c.Ti_Te_f : (1 + c.Ti_Te_d * R_SCHW / s.r);
     b = sqrt(bb);
-  } // 282 FLOP
+  } // 285 FLOP
 
   // Construct the scalars rho and tgas
   real rho, tgas;
