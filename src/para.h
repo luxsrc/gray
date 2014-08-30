@@ -20,14 +20,14 @@
 #define PARA_H
 
 class Para {
-  Const buf; // host buffer, device resource is defined as constant memory
-
   cudaError_t sync(Const *); // implemented in "src/core.cu"
 
   void define(Const &);               // implemented in "src/*/config.cc"
   bool config(Const &, const char *); // implemented in "src/*/config.cc"
 
  public:
+  Const buf; // host buffer, device resource is defined as constant memory
+
   Para();
   ~Para();
 

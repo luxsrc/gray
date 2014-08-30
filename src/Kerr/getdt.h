@@ -22,7 +22,7 @@ static inline __device__ real getdt(const State &s, real t,
                                     const State &a, real dt_max)
 {
   const real r_bh = 1 + sqrt(1 - c.a_spin * c.a_spin);
-  const real cap  = s.r * (1 - pow(c.r[0]/c.r[c.n_r-1], (real)0.125/c.n_r));
+  const real cap  = s.r * (1 - pow(c.r[0]/c.r[c.n_r-1], (real)0.5/c.n_r));
 
   if(s.r < r_bh + c.epsilon)
     return 0; // too close to the black hole

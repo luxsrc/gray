@@ -39,7 +39,7 @@ void Data::snapshot(const char *format)
   fclose(file);
 }
 
-void Data::output(const char *name)
+void Data::output(const char *name, const Para &para)
 {
   if(name && *name)
     debug("Data::output(\"%s\")\n", name);
@@ -48,7 +48,7 @@ void Data::output(const char *name)
 
   FILE *file = fopen(name, "w");
   if(file) {
-    output(host(), file);
+    output(host(), &para.buf, file);
     fclose(file);
   } else
     error("Data::output(): fail to create file \"%s\"\n", name);

@@ -100,14 +100,16 @@ static inline __device__ real Gaunt(real x, real y)
   }
 } // 3+ FLOP
 
+// "Standard" formula for thermal bremsstrahlung, Rybicki & Lightman
+// equation (5.14b) divided by 4 pi
 static inline __device__ real L_j_ff(real nu, real te, real ne)
 {
   // Assume Z == 1 and ni == ne
 
   real x = CONST_me * CONST_c * CONST_c / CONST_Ry;    // ~ 4e4
   real y = (CONST_h / (CONST_me * CONST_c * CONST_c)); // ~ 3e-21
-  real f = sqrt(CONST_G * CONST_mSun / (CONST_c * CONST_c) *
-                6.8e-38 / sqrt(CONST_me * CONST_c * CONST_c / CONST_kB));
+  real f = sqrt(CONST_G * CONST_mSun / (CONST_c * CONST_c) * 6.8e-38 /
+                (4 * M_PI * sqrt(CONST_me * CONST_c * CONST_c / CONST_kB)));
 
   x *= te;      // ~ 1e+04
   y *= nu / te; // ~ 1e-10
@@ -116,6 +118,8 @@ static inline __device__ real L_j_ff(real nu, real te, real ne)
   return (c.m_BH * f * Gaunt(x, y)) * (f / (sqrt(te)*exp(y) + (real)EPSILON));
 } // 12 FLOP + FLOP(Gaunt) == 15+ FLOP
 
+// An approximate expression for thermal magnetobremsstrahlung
+// emission, see Leung, Gammie, & Noble (2011) equation (72)
 static inline __device__ real L_j_synchr(real nu, real te, real ne,
                                          real B,  real cos_theta)
 {
@@ -217,7 +221,7 @@ static inline __device__ State rhs(const State &s, real t)
   int  ij, Ij, iJ, IJ, ijk, Ijk, iJk, IJk, ijK, IjK, iJK, IJK;
   {
     real F = (real)0.5;
-    int  I = c.n_r-1, i = I; // assume c.n_r > 1
+    int  I = c.n_r - N_RS - 1, i = I; // assume c.n_r > N_RS + 1
     if(c.r[i] > s.r) {
       do I = i--; while(i && c.r[i] > s.r); // assume s.r >= c.r[0]
       F = (s.r - c.r[i]) / (c.r[I] - c.r[i]);

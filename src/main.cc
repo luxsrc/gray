@@ -107,6 +107,6 @@ int main(int argc, char **argv)
     if(interrupted) break;
   }
 
-  data.output(name);
+  data.output(name, para);
   return 0;
 }
