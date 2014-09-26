@@ -247,7 +247,7 @@ static inline __device__ State rhs(const State &s, real t)
       } // else, constant extrapolation
     }
 
-    real H = s.phi / (real)(2*M_PI);
+    real H = (s.phi - (real)(M_PI/180) * c.j_obs) / (real)(2*M_PI);
     H -= floor(H);
     H *= c.n_phi;
     int k = H, K = k == c.n_phi-1 ? 0 : k+1;

@@ -52,8 +52,9 @@ static size_t fill(real *nu, const char *val)
 void Para::define(Const &c)
 {
   c.imgsz     = 64;
-  c.r_obs     = 1000;
-  c.i_obs     = 30;
+  c.r_obs     = 1024;
+  c.i_obs     = 60;
+  c.j_obs     = 180;
   c.a_spin    = 0.999;
   c.dt_scale  = 1.0 / 32;
   c.epsilon   = 1e-3;
@@ -78,6 +79,7 @@ bool Para::config(Const &c, const char *arg)
        if((val = match("imgsz", arg))) c.imgsz     =   atof(val);
   else if((val = match("r",     arg))) c.r_obs     =   atof(val);
   else if((val = match("i",     arg))) c.i_obs     =   atof(val);
+  else if((val = match("j",     arg))) c.j_obs     =   atof(val);
   else if((val = match("a",     arg))) c.a_spin    =   atof(val);
   else if((val = match("ne",    arg))) c.ne_rho    =   atof(val);
   else if((val = match("beta",  arg))) c.threshold = 1/atof(val);
