@@ -54,7 +54,7 @@ void Para::define(Const &c)
   c.imgsz     = 64;
   c.r_obs     = 1024;
   c.i_obs     = 60;
-  c.j_obs     = 180;
+  c.j_obs     = 90;
   c.a_spin    = 0.999;
   c.dt_scale  = 1.0 / 32;
   c.epsilon   = 1e-3;
