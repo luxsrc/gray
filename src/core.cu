@@ -78,6 +78,10 @@ cudaError_t Data::init(double t0)
   cudaError_t err;
 
   kernel<<<gsz, bsz>>>(device(), n, t = t0);
+  err = cudaGetLastError();
+  if(cudaSuccess != err)
+    error("Data::init(): fail to launch kernel<<<>>>() [%s]\n",
+	  cudaGetErrorString(err));
 
   err = cudaDeviceSynchronize();
   if(cudaSuccess == err)
@@ -110,6 +114,10 @@ cudaError_t Data::evolve(double dt)
 
   const double t0 = t, t1 = (t += dt);
   driver<<<gsz, bsz, bsz * sizeof(State)>>>(device(), n, t0, t1);
+  err = cudaGetLastError();
+  if(cudaSuccess != err)
+    error("Data::init(): fail to launch driver<<<>>>() [%s]\n",
+	  cudaGetErrorString(err));
 
   err = cudaDeviceSynchronize();
   if(cudaSuccess == err)
