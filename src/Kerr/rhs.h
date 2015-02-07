@@ -214,6 +214,12 @@ static inline __device__ State rhs(const State &s, real t)
   d.theta = s.ktheta;
   if(!c.field || s.r < c.r[0]) return d;
 
+  bool stop_integrating = true;
+  for(int i = 0; i < c.n_nu; ++i)
+    if(s.tau[i] < (real)6.90775527898)
+      stop_integrating = false;
+  if(stop_integrating) return d;
+
   // Get indices to access HARM data
   real fg, Fg, fG, FG, fgh, Fgh, fGh, FGh, fgH, FgH, fGH, FGH;
   int  ij, Ij, iJ, IJ, ijk, Ijk, iJk, IJk, ijK, IjK, iJK, IJK;
