@@ -123,15 +123,13 @@ static inline __device__ real L_j_ff(real nu, real te, real ne)
 static inline __device__ real L_j_synchr(real nu, real te, real ne,
                                          real B,  real cos_theta)
 {
+  if(te        <= (real)T_MIN ||
+     cos_theta <=          -1 ||
+     cos_theta >=           1) return 0;
+
   const real nus = te * te * B * sqrt(1 - cos_theta * cos_theta) *
                    (real)(CONST_e / (9 * M_PI * CONST_me * CONST_c)); // ~ 1e5
   const real x   = nu / (nus + (real)EPSILON); // 1e6 -- 1e18
-
-  if(te        <= (real)T_MIN ||
-     cos_theta <=          -1 ||
-     cos_theta >=           1 ||
-     nus       <=           0 ||
-     x         <=           0) return 0;
 
   const real f      = (CONST_G * CONST_mSun / (CONST_c * CONST_c)) *
                       (M_SQRT2 * M_PI * CONST_e * CONST_e / (3 * CONST_c));
@@ -412,11 +410,7 @@ static inline __device__ State rhs(const State &s, real t)
   } // 26 FLOP
 
   // Skip cell if tgas is above the threshold
-  if(tgas > c.tgas_max) {
-    for(int i = 0; i < c.n_nu; ++i)
-      d.tau[i] = d.I[i] = 0;
-    return d;
-  }
+  if(tgas > c.tgas_max) return d;
 
   // Transform vector u and b from KSP to KS coordinates
   {
