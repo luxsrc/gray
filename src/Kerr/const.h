@@ -21,7 +21,7 @@
 
 #include "harm.h"
 
-#define DT_DUMP (-100)
+#define DT_DUMP (-64)
 #define N_R     264 // large enough to hold our grids
 #define N_RS    8   // number of cells to skip near the outer boundary
 #define N_NU    5
@@ -31,6 +31,7 @@ typedef struct {
   real imgsz;     // image size in GM/c^2
   real r_obs;     // observer radius in GM/c^2
   real i_obs;     // observer theta in degrees
+  real j_obs;     // observer phi in degrees
   real a_spin;    // dimensionless spin j/mc
   real dt_scale;  // typical step size
   real epsilon;   // stop photon

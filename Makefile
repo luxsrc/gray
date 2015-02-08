@@ -4,7 +4,8 @@ NITE_PATH = /usr/local/NiTE/2.2
 OPNI_PATH = /usr/local/OpenNI/2.2
 LEAP_PATH = /usr/local/LeapSDK
 
-NVCC = $(CUDA_PATH)/bin/nvcc
+NVCC   = $(CUDA_PATH)/bin/nvcc
+CFLAGS = -arch sm_35 -use_fast_math
 
 ifeq ($(DEBUG),1) # use `make <prob> DEBUG=1` to enable debug messages
 	CPPFLAGS += -DEBUG
@@ -16,11 +17,8 @@ endif
 
 ifeq ($(DOUBLE),1)      # use `make <prob> DOUBLE=1` for double precision
 	CPPFLAGS += -DOUBLE=1
-	CFLAGS   += -arch sm_13
 else ifeq ($(SINGLE),1) # use `make <prob> SINGLE=1` for single precision
 	CPPFLAGS += -DOUBLE=0
-else                    # mixed precision otherwise
-	CFLAGS   += -arch sm_13
 endif
 
 ifeq ($(GL),0) # use `make <prob> GL=0` to disable OpenGL visualization

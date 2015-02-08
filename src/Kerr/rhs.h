@@ -17,7 +17,7 @@
 // along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 #define EPSILON  1e-32
-#define FLOP_RHS (harm::using_harm ? (566 + harm::n_nu * 66) : 104)
+#define FLOP_RHS (harm::using_harm ? (569 + harm::n_nu * 66) : 104)
 #define RWSZ_RHS (harm::using_harm ? 132 * sizeof(float) : 0)
 #define R_SCHW   2
 
@@ -123,15 +123,13 @@ static inline __device__ real L_j_ff(real nu, real te, real ne)
 static inline __device__ real L_j_synchr(real nu, real te, real ne,
                                          real B,  real cos_theta)
 {
+  if(te        <= (real)T_MIN ||
+     cos_theta <=          -1 ||
+     cos_theta >=           1) return 0;
+
   const real nus = te * te * B * sqrt(1 - cos_theta * cos_theta) *
                    (real)(CONST_e / (9 * M_PI * CONST_me * CONST_c)); // ~ 1e5
   const real x   = nu / (nus + (real)EPSILON); // 1e6 -- 1e18
-
-  if(te        <= (real)T_MIN ||
-     cos_theta <=          -1 ||
-     cos_theta >=           1 ||
-     nus       <=           0 ||
-     x         <=           0) return 0;
 
   const real f      = (CONST_G * CONST_mSun / (CONST_c * CONST_c)) *
                       (M_SQRT2 * M_PI * CONST_e * CONST_e / (3 * CONST_c));
@@ -216,6 +214,12 @@ static inline __device__ State rhs(const State &s, real t)
   d.theta = s.ktheta;
   if(!c.field || s.r < c.r[0]) return d;
 
+  bool stop_integrating = true;
+  for(int i = 0; i < c.n_nu; ++i)
+    if(s.tau[i] < (real)6.90775527898)
+      stop_integrating = false;
+  if(stop_integrating) return d;
+
   // Get indices to access HARM data
   real fg, Fg, fG, FG, fgh, Fgh, fGh, FGh, fgH, FgH, fGH, FGH;
   int  ij, Ij, iJ, IJ, ijk, Ijk, iJk, IJk, ijK, IjK, iJK, IJK;
@@ -247,7 +251,7 @@ static inline __device__ State rhs(const State &s, real t)
       } // else, constant extrapolation
     }
 
-    real H = s.phi / (real)(2*M_PI);
+    real H = (s.phi - (real)(M_PI/180) * c.j_obs) / (real)(2*M_PI);
     H -= floor(H);
     H *= c.n_phi;
     int k = H, K = k == c.n_phi-1 ? 0 : k+1;
@@ -389,9 +393,9 @@ static inline __device__ State rhs(const State &s, real t)
                      bphi   * (gKSP03 * bt     + gKSP13 * br    +
                                gKSP23 * btheta + gKSP33 * bphi));
     const real ibeta = bb / (2 * (c.Gamma-1) * u + (real)EPSILON);
-    ti_te = (ibeta > c.threshold) ? c.Ti_Te_f : c.Ti_Te_d;
+    ti_te = (ibeta > c.threshold) ? c.Ti_Te_f : (1 + c.Ti_Te_d * R_SCHW / s.r);
     b = sqrt(bb);
-  } // 282 FLOP
+  } // 285 FLOP
 
   // Construct the scalars rho and tgas
   real rho, tgas;
@@ -412,11 +416,7 @@ static inline __device__ State rhs(const State &s, real t)
   } // 26 FLOP
 
   // Skip cell if tgas is above the threshold
-  if(tgas > c.tgas_max) {
-    for(int i = 0; i < c.n_nu; ++i)
-      d.tau[i] = d.I[i] = 0;
-    return d;
-  }
+  if(tgas > c.tgas_max) return d;
 
   // Transform vector u and b from KSP to KS coordinates
   {
