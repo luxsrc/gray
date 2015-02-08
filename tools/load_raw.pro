@@ -1,5 +1,5 @@
-; Copyright (C) 2014 Chi-kwan Chan
-; Copyright (C) 2014 Steward Observatory
+; Copyright (C) 2014,2015 Chi-kwan Chan
+; Copyright (C) 2014,2015 Steward Observatory
 ;
 ; This file is part of GRay.
 ;
@@ -33,6 +33,6 @@ function load_raw, name
   n2 = n / n1
   I  = reform(double(I),n1,n2,n_nu)
 
-  return, {size:h[2*n_nu], nu:h[n_nu:2*n_nu-1], img:I}
+  return, {flux:h[0:n_nu-1], nu:h[n_nu:2*n_nu-1], size:h[2*n_nu], img:I}
 
 end
