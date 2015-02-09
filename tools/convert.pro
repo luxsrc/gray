@@ -19,12 +19,11 @@
 function convert, s, Jy=Jy
 
   a = s.size * 6.6725985d-8 * 4.3d6 * 1.99d33 / (2.99792458d10)^2
-  I = total(total(s.img,1),1) / n_elements(s.img[*,*,0])
   d = 2.57036943d22
 
   if keyword_set(Jy) then $
-    return, 1d23 * (a / d)^2 * I $
+    return, 1d23 * (a / d)^2 * s.flux $
   else $
-    return, 4d * !pi * (a)^2 * I * s.nu
+    return, 4d * !pi * (a)^2 * s.flux * s.nu
 
 end
