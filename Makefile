@@ -5,7 +5,7 @@ OPNI_PATH = /usr/local/OpenNI/2.2
 LEAP_PATH = /usr/local/LeapSDK
 
 NVCC   = $(CUDA_PATH)/bin/nvcc
-CFLAGS = -arch sm_35 -use_fast_math
+CFLAGS = -use_fast_math
 
 ifeq ($(DEBUG),1) # use `make <prob> DEBUG=1` to enable debug messages
 	CPPFLAGS += -DEBUG
