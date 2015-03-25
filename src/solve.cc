@@ -76,13 +76,22 @@ size_t Data::solve(double dt, float &elapse, float &actual, float &peak)
   }
 
 #ifdef ENABLE_GL
-  if(elapse < 20 && delta < LIMIT) delta *= 2;
-  if(elapse > 80 && delta > 1    ) delta /= 2;
+  if(direction) {
+    if(elapse < 20 && delta < LIMIT) delta *= 2;
+    if(elapse > 80 && delta > 1    ) delta /= 2;
+  }
 
+  int direction_old = direction;
   direction = show();
   glfwPollEvents();
   if(glfwWindowShouldClose(vis::window))
     return 0;
+  if(!direction_old) {
+    elapse = 1;
+    actual = 0;
+    peak   = 1;
+    return 1;
+  }
 
   return actual > 0.0 ? count : 0;
 #else
