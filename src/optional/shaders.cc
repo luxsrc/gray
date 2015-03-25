@@ -52,7 +52,7 @@ void vis::mkshaders(GLuint shaders[])
   ) STRING(R_MAP) STRING(C_MAP) STRING(
       vec4 q = gl_ModelViewMatrix * r;
       gl_Position    = gl_ProjectionMatrix * q;
-      gl_PointSize   = max(2.0, 200.0 * gl_Point.size / (1.0 - q.z));
+      gl_PointSize   = max(8.0, 128.0 * gl_Point.size / (1.0 - q.z));
       gl_TexCoord[0] = gl_MultiTexCoord0;
     }
   ), GL_VERTEX_SHADER));

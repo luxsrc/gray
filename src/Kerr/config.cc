@@ -52,12 +52,20 @@ static size_t fill(real *nu, const char *val)
 void Para::define(Const &c)
 {
   c.imgsz     = 64;
+#ifdef ENABLE_GL
+  c.r_obs     = 256;
+#else
   c.r_obs     = 1024;
+#endif
   c.i_obs     = 60;
   c.j_obs     = 90;
   c.a_spin    = 0.999;
   c.dt_scale  = 1.0 / 32;
+#ifdef ENABLE_GL
+  c.epsilon   = 1.0 / 32; // do get too close so we can get out...
+#else
   c.epsilon   = 1e-3;
+#endif
   c.tolerance = 1e-1;
 
   c.m_BH      = 4.3e6; // in unit of solar mass
