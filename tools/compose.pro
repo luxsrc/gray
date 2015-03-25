@@ -29,7 +29,8 @@ function compose, l, s
   e   =  sz1-b-1
   img = l.img
   img[b[0]:e[0],b[1]:e[1],*] = rebin(s.img, [sz2,n_nu])
-  
-  return, {size:l.size, nu:l.nu, img:img}
+  flux = total(total(img,1),1) / n_elements(img[*,*,0])
+
+  return, {flux:flux, nu:l.nu, size:l.size, img:img}
 
 end
