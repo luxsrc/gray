@@ -70,7 +70,7 @@ endif
 
 CPPFLAGS += -Isrc/$@
 CFLAGS   += $(addprefix --compiler-options ,\
-	      -Wall -Wextra -Wno-unused-function) -m64 -O3
+	      -Wextra -Wno-unused-function -Wno-deprecated) -m64 -O3
 
 help:
 	@echo 'The follow problems are avilable:'
