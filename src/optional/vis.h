@@ -29,7 +29,6 @@
 
 namespace vis {
   extern GLFWwindow *window;
-  extern int    width, height;
   extern float  ratio, ax, ly, az, a_spin;
   extern int    direction, saved;
   extern GLuint shaders[2];

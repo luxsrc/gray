@@ -38,7 +38,9 @@ int Data::show()
   vis::sense();
 #endif
 
-  glViewport(0, 0, vis::width, vis::height);
+  int width, height;
+  glfwGetFramebufferSize(vis::window, &width, &height);
+  glViewport(0, 0, width, height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(27.0, vis::ratio, 1.0, 1.0e6);

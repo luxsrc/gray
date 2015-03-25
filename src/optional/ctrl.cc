@@ -19,7 +19,6 @@
 #include "../gray.h"
 
 namespace vis {
-  int   width = 512, height = 512;
   float ratio = 1, ax = 330, ly = -70, az = 90;
   int   direction = 1, saved = 0;
   int   shader = 1;
@@ -30,11 +29,8 @@ static double last_x = 0, last_y = 0;
 
 void vis::resize(GLFWwindow *win, int w, int h)
 {
-  (void)win;
-
-  vis::width  = w;
-  vis::height = h;
-  vis::ratio  = (double)w / (double)h;
+  (void)win; // silence not-used-variable warning
+  vis::ratio = (double)w / (double)h;
 }
 
 void vis::keyboard(GLFWwindow *win, int key, int code, int action, int mods)
