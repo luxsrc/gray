@@ -40,7 +40,7 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
   const Leap::Frame    frame = controller.frame();
   const Leap::HandList hands = frame.hands();
 
-  if(hands.count()              == 2 &&
+  if(hands.count() == 2 &&
      hands[0].fingers().count() >= 1 &&
      hands[1].fingers().count() >= 1) {
     const Leap::FingerList lfingers = hands[0].fingers();
@@ -64,66 +64,70 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
       }
       vis::ly = ly_old * d_old / d;
     }
-  } else if(hands.count() == 1 && hands[0].fingers().count() >= 4) {
-    const Leap::FingerList fingers = hands[0].fingers();
-    Leap::Vector pos;
-
-    for(int i = 0; i < fingers.count(); ++i)
-      pos += fingers[i].tipPosition();
-    pos /= (float)fingers.count();
-
-    if(type != 1) {
-      ax_old = vis::ax;
-      az_old = vis::az;
-      x_old  = -pos.x;
-      z_old  =  pos.y;
-      type   = 1;
-    }
-    vis::ax = ax_old + (-pos.x - x_old) / 2;
-    vis::az = az_old + ( pos.y - z_old) / 2;
-  } else if(hands.count() == 1 && hands[0].fingers().count() <= 1) {
-    // Pause or run the simulation
+  } else if(hands.count() == 1 &&
+            hands[0].fingers().count() >= 1) {
     const Leap::GestureList gestures = frame.gestures();
+    bool detected = false;
 
     for(int i = 0; i < gestures.count(); ++i)
+      // If a "Tap" gesture is detected, swap direction with
+      // direction_old so we restore the previous direction
       if(gestures[i].type() == Leap::Gesture::TYPE_KEY_TAP) {
+        detected = true;
+
         int tmp = direction_old;
         direction_old = direction;
         direction = tmp;
-	break;
+        break;
       }
 
     for(int i = 0; i < gestures.count(); ++i)
+      // If a "Circle" gesture is detected, save the current state
+      // only if we are in pause mode, then set direction to the
+      // circle direction.
       if(gestures[i].type() == Leap::Gesture::TYPE_CIRCLE) {
+	detected = true;
+
         if(direction == 0) direction_old = 0;
-	Leap::CircleGesture circle = gestures[i];
+        Leap::CircleGesture circle = gestures[i];
         direction = circle.pointable().direction().angleTo(circle.normal())
                  <= Leap::PI/4 ? 1 : -1;
-	break;
+        break;
       }
 
-    switch(direction) {
-    case -1: if(vis::dt_dump != 0.0)
-	       vis::dt_dump  = +fabs(vis::dt_dump);
-	     else {
-	       vis::dt_dump  = +fabs(vis::dt_saved);
-	       vis::dt_saved = 0.0;
-	     }
-	     break;
-    case  0: if(vis::dt_dump != 0.0) {
-               vis::dt_saved = vis::dt_dump;
-               vis::dt_dump  = 0.0;
-	     }
- 	     break;
-    case  1: if(vis::dt_dump != 0.0)
-	       vis::dt_dump  = -fabs(vis::dt_dump);
-	     else {
-	       vis::dt_dump  = -fabs(vis::dt_saved);
-	       vis::dt_saved = 0.0;
-	     }
-	     break;
+    if(detected) {
+      if(direction) {
+        if(vis::direction == 0)
+   	  vis::saved = 0;
+        vis::direction = -direction;
+      } else if(vis::direction) {
+        vis::saved     = vis::direction;
+        vis::direction = 0;
+      }
+      type = 0;
+    } else {
+      for(int i = 0; i < gestures.count(); ++i)
+        if(gestures[i].type() == Leap::Gesture::TYPE_SWIPE) {
+          const Leap::FingerList fingers = hands[0].fingers();
+          Leap::Vector pos;
+
+          for(int i = 0; i < fingers.count(); ++i)
+            pos += fingers[i].tipPosition();
+          pos /= (float)fingers.count();
+
+          if(type != 1) {
+            ax_old = vis::ax;
+            az_old = vis::az;
+            x_old  = -pos.x;
+            z_old  =  pos.y;
+            type   = 1;
+          }
+          vis::ax = ax_old + (-pos.x - x_old) / 2;
+          vis::az = az_old + ( pos.y - z_old) / 2;
+
+          break;
+        }
     }
-    type = 0;
   } else
     type = 0;
 }
