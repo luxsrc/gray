@@ -21,27 +21,35 @@
 #include <Leap.h>
 
 static int type = 0, direction = 1, direction_old = 0;
-static float d_old, x_old, ax_old, ly_old;
+static float x_old, d_old, y_old, ax_old, ly_old, az_old;
 
 static void zoom(const Leap::Vector &l, const Leap::Vector &r)
 {
   float d = l.distanceTo(r);
-  float x =  (r-l).yaw();
+  if(isnan(d))
+    return;
 
-  if(d < 1.0)
-    return; // d may be NaN
-
-  if(type != 2) {
-    type   = 2;
-
-    d_old  = d;
-    x_old  = x;
-
-    ax_old = vis::ax;
+  if(type != 1) {
+    type = 1;
+    d_old = d;
     ly_old = vis::ly;
   }
   vis::ly = ly_old * d_old / d;
-  vis::ax = ax_old + (x - x_old) * 180 / M_PI;
+}
+
+static void rotate(const Leap::Vector &p)
+{
+  if(type != 2) {
+    type = 2;
+
+    x_old = p.x;
+    y_old = p.y;
+
+    ax_old = vis::ax;
+    az_old = vis::az;
+  }
+  vis::ax = ax_old - (p.x - x_old) / 2;
+  vis::az = az_old + (p.y - y_old) / 2;
 }
 
 class GRayLeapListener : public Leap::Listener {
@@ -70,9 +78,10 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
       return;
     }
   } else if(hands.count() == 1) {
-     Leap::FingerList f = hands[0].fingers().extended();
+     Leap::Hand h = hands[0];
+     Leap::FingerList f = h.fingers().extended();
      if(f.count() == 1) {
-       type = 1;
+       type = 3;
        Leap::GestureList g = frame.gestures();
        for(int i = 0; i < g.count(); ++i)
 	 if(g[i].type() == Leap::Gesture::TYPE_CIRCLE) {
@@ -88,6 +97,10 @@ void GRayLeapListener::onFrame(const Leap::Controller& controller)
 	 vis::saved = vis::direction;
 	 vis::direction = 0;
        }
+       return;
+     }
+     if(h.grabStrength() > 0.5) {
+       rotate(h.palmPosition());
        return;
      }
   }
