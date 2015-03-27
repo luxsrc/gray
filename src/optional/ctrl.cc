@@ -62,7 +62,7 @@ void vis::keyboard(GLFWwindow *win, int key, int code, int action, int mods)
       break;
     }
   case 'p': case 'P':
-    const double temp = vis::saved;
+    const int temp = vis::saved;
     vis::saved = vis::direction;
     vis::direction = temp;
     break;
