@@ -46,8 +46,7 @@ def load_raw(name):
         # Read the ASCII header
         head = np.array(list(map(float, readline(file).split())))
         n_nu = head.size // 2
-        flux = head[0:n_nu]
-        nu   = head[n_nu:2*n_nu]
+        nus  = head[n_nu:2*n_nu]
         size = head[2*n_nu]
 
         # Read the binary images
@@ -55,15 +54,26 @@ def load_raw(name):
         imgs = np.fromfile(file, dtype="f").reshape((n_nu, n, n))
 
         # Done
-        return imgs, nu, size
+        return imgs, nus, size * ((np.arange(0, n) + 0.5) / n - 0.5)
 
-def dump_hdf5(name, imgs, time, side, parameters):
+def load_hdf5(name):
+    """ Load a GRay HDF5 file """
+    with h5.File(name, "r") as file: # FIXME: will file close automatically?
+        print("Loading GRay HDF5 file \"{0}\"".format(name))
+
+        paras = {}
+        for key, value in file.attrs.items():
+            paras[key] = value
+
+        return file['images'][...], file['time'][...], file['side'][...], paras
+
+def dump_hdf5(name, imgs, time, side, paras):
     """ Dump GRay data into a new HDF5 file """
     with h5.File(name, "w") as file: # FIXME: will file close automatically?
         print("Dumping GRay HDF5 file \"{0}\"".format(name))
 
         # Turn parameters into file attributes
-        for key, value in parameters.items():
+        for key, value in paras.items():
             file.attrs[key] = value
 
         # Create image array/dataset
@@ -103,11 +113,13 @@ def load(name):
     ext = os.path.splitext(name)[1][1:]
     if ext == "raw":
         return load_raw(name)
+    elif ext == "h5" or ext == "hdf5":
+        return load_hdf5(name)
     else:
         raise NameError("Fail to load file \"{0}\", "
                         "which is in an unsupported format".format(name))
 
-def dump(name, imgs, time, nu=None, side=None):
+def dump(name, imgs, time, side=[], paras={}):
     if imgs.ndim != 3 or time.ndim != 1:
         raise NameError("Unexpected number of dimensions")
     if imgs.shape[1] != imgs.shape[2]:
@@ -118,13 +130,10 @@ def dump(name, imgs, time, nu=None, side=None):
 
     ext = os.path.splitext(name)[1][1:]
     if ext == "h5" or ext == "hdf5":
-        if os.path.isfile(name) and nu == None and side == None:
+        if os.path.isfile(name):
             append_hdf5(name, imgs, time)
-        elif nu != None and side != None:
-            ns = imgs.shape[1]
-            dump_hdf5(name, imgs, time,
-                      side * ((np.arange(0, ns) + 0.5) / ns - 0.5),
-                      {'wavelength (cm)': nu / 2.99792458e10})
+        elif side != [] and paras != {}:
+            dump_hdf5(name, imgs, time, side, paras)
         else:
             raise NameError("Variables nu and side are required "
                             "only for creating dump new HDF5 file")
