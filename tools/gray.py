@@ -59,98 +59,45 @@ def load_raw(name):
 
 def dump_hdf5(name, imgs, time, side, parameters):
     """ Dump GRay data into a new HDF5 file """
-    if imgs.ndim != 3:
-        raise NameError("imgs should be a 3 dimensional array")
-    if imgs.shape[0] != len(time):
-        raise NameError("The number of elements of time does not match "
-                        "the zeroth dimension of imgs")
-
-    n0 = imgs.shape[0]
-    n1 = imgs.shape[1]
-    n2 = imgs.shape[2]
-
     with h5.File(name, "w") as file: # FIXME: will file close automatically?
         print("Dumping GRay HDF5 file \"{0}\"".format(name))
 
-        # Parameters
+        # Turn parameters into file attributes
         for key, value in parameters.items():
             file.attrs[key] = value
 
-        # Create image array
+        # Create image array/dataset
+        maxs = (None, imgs.shape[1], imgs.shape[2])
         imgs = file.create_dataset("images", data=imgs,
-                            chunks  =(1,    64, 64),
-                            maxshape=(None, n1, n2))
+                                   maxshape=maxs, chunks=(1, 64, 64))
         imgs.dims[0].label = "time"
         imgs.dims[1].label = "beta"
         imgs.dims[2].label = "alpha"
 
-        # Create time series
-        type   = np.dtype([('time',  "f"),
-                           ('image', h5.special_dtype(ref=h5.Reference))])
-        series = np.empty(n0, dtype=type)
-        for i, t in enumerate(time):
-            series[i] = (t, imgs.regionref[i,:,:])
-        file.create_dataset("time_series", data=series)
-
-        # Convert side into an array, compute physical scales
-        side = side * ((np.arange(0, n2) + 0.5) / n1 - 0.5)
-        G   = 6.67384e-8
-        c   = 2.99792458e10
-        t_g = G * 4.3e6 * 1.99e33 / (c * c * c) # ~ 21.2 s
-        r_g = G * 4.3e6 * 1.99e33 / (c * c)     # ~ 6.35e11 cm
-
-        # Attach scales in gravitational units
-        dscl = file.create_group("dimension scales/gravitational units")
-        side = dscl.create_dataset("side", data=side)
-        time = dscl.create_dataset("time", data=time,
+        # Create dimension scales
+        time = file.create_dataset("time", data=time,
                                    maxshape=(None,), chunks=True)
+        side = file.create_dataset("side", data=side)
+        imgs.dims.create_scale(time)
+        imgs.dims.create_scale(side)
 
-        imgs.dims.create_scale(time, "GM/c^3")
-        imgs.dims.create_scale(side, "GM/c^2")
-
-        imgs.dims[0].attach_scale(time)
-        imgs.dims[1].attach_scale(side)
-        imgs.dims[2].attach_scale(side)
-
-        # Attach scales in physical (cgs) units
-        dscl = file.create_group("dimension scales/physical units (cgs)")
-        side = dscl.create_dataset("side", data=side[:] * r_g)
-        time = dscl.create_dataset("time", data=(time[:] - time[0]) * t_g,
-                                   maxshape=(None,), chunks=True)
-
-        imgs.dims.create_scale(time, "s")
-        imgs.dims.create_scale(side, "cm")
-
+        # Attach dimension scales to image array/dataset
         imgs.dims[0].attach_scale(time)
         imgs.dims[1].attach_scale(side)
         imgs.dims[2].attach_scale(side)
 
 def append_hdf5(name, imgs, time):
     """ Dump GRay data into an existing HDF5 file """
-    if imgs.ndim != 3:
-        raise NameError("imgs should be a 3 dimensional array")
-    if imgs.shape[0] != len(time):
-        raise NameError("The number of elements of time does not match "
-                        "the zeroth dimension of imgs")
-
     with h5.File(name, "r+") as file: # FIXME: weill file close automatically?
-        n0 = file['images'].shape[0]
+        print("Appending GRay HDF5 file \"{0}\"".format(name))
 
-        file['images'].resize(n0 + imgs.shape[0], axis=0)
-        file['images'][n0:,:,:] = imgs
+        nt = file['images'].shape[0]
 
-        dscl = file['dimension scales/gravitational units']
-        dscl['time'].resize(n0 + imgs.shape[0], axis=0)
-        dscl['time'][n0:] = time
+        file['images'].resize(nt + imgs.shape[0], axis=0)
+        file['images'][nt:,:,:] = imgs
 
-        time = np.array(time) - dscl['time'][0]
-        G    = 6.67384e-8
-        c    = 2.99792458e10
-        t_g  = G * 4.3e6 * 1.99e33 / (c * c * c) # ~ 21.2 s
-
-        dscl = file['dimension scales/physical units (cgs)']
-        dscl['time'].resize(n0 + imgs.shape[0], axis=0)
-        dscl['time'][n0:] = time * t_g
+        file['time'].resize(nt + imgs.shape[0], axis=0)
+        file['time'][nt:] = time
 
 def load(name):
     ext = os.path.splitext(name)[1][1:]
@@ -160,11 +107,27 @@ def load(name):
         raise NameError("Fail to load file \"{0}\", "
                         "which is in an unsupported format".format(name))
 
-def dump(name, imgs, nu, side, time):
+def dump(name, imgs, time, nu=None, side=None):
+    if imgs.ndim != 3 or time.ndim != 1:
+        raise NameError("Unexpected number of dimensions")
+    if imgs.shape[1] != imgs.shape[2]:
+        raise NameError("The images are not square")
+    if imgs.shape[0] != time.shape[0]:
+        raise NameError("The number of elements of time does not match "
+                        "the zeroth dimension of imgs")
+
     ext = os.path.splitext(name)[1][1:]
     if ext == "h5" or ext == "hdf5":
-        dump_hdf5(name, imgs, time, side,
-                  {'wavelength (cm)': nu / 2.99792458e10})
+        if os.path.isfile(name) and nu == None and side == None:
+            append_hdf5(name, imgs, time)
+        elif nu != None and side != None:
+            ns = imgs.shape[1]
+            dump_hdf5(name, imgs, time,
+                      side * ((np.arange(0, ns) + 0.5) / ns - 0.5),
+                      {'wavelength (cm)': nu / 2.99792458e10})
+        else:
+            raise NameError("Variables nu and side are required "
+                            "only for creating dump new HDF5 file")
     else:
         raise NameError("Fail to dump file \"{0}\", "
                         "which is in an unsupported format".format(name))
