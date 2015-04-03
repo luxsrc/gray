@@ -115,7 +115,7 @@ def dump_hdf5(name, imgs, time, side, parameters):
         # Attach scales in physical (cgs) units
         dscl = file.create_group("dimension scales/physical units (cgs)")
         side = dscl.create_dataset("side", data=side[:] * r_g)
-        time = dscl.create_dataset("time", data=time[:] * t_g,
+        time = dscl.create_dataset("time", data=(time[:] - time[0]) * t_g,
                                    maxshape=(None,), chunks=True)
 
         imgs.dims.create_scale(time, "s")
@@ -143,6 +143,14 @@ def append_hdf5(name, imgs, time):
         dscl['time'].resize(n0 + imgs.shape[0], axis=0)
         dscl['time'][n0:] = time
 
+        time = np.array(time) - dscl['time'][0]
+        G    = 6.67384e-8
+        c    = 2.99792458e10
+        t_g  = G * 4.3e6 * 1.99e33 / (c * c * c) # ~ 21.2 s
+
+        dscl = file['dimension scales/physical units (cgs)']
+        dscl['time'].resize(n0 + imgs.shape[0], axis=0)
+        dscl['time'][n0:] = time * t_g
 
 def load(name):
     ext = os.path.splitext(name)[1][1:]
