@@ -18,6 +18,7 @@
 
 import numpy as np
 import h5py  as h5
+import os.path
 
 def readline(file):
     """ Read a line from a binary file """
@@ -37,10 +38,10 @@ def isqrt(n):
         y = (x + n // x) // 2
     return x
 
-def load(name):
+def load_raw(name):
     """ Load a GRay raw data file """
     with open(name, "rb") as file:
-        print("Loading \"{0}\"".format(name))
+        print("Loading GRay raw file \"{0}\"".format(name))
 
         # Read the ASCII header
         head = np.array(list(map(float, readline(file).split())))
@@ -56,7 +57,7 @@ def load(name):
         # Done
         return imgs, nu, size
 
-def dump(name, imgs, time, side, wavelength):
+def dump_hdf5(name, imgs, time, side, wavelength):
     """ Dump a GRay HDF5 file """
     if imgs.ndim != 3:
         raise NameError("imgs should be a 3 dimensional array")
@@ -69,6 +70,8 @@ def dump(name, imgs, time, side, wavelength):
     n2 = imgs.shape[2]
 
     with h5.File(name, "w") as file: # FIXME: will file close automatically?
+        print("Dumping GRay HDF5 file \"{0}\"".format(name))
+
         # Parameters
         file.attrs['units']      = "gcs"
         file.attrs['wavelength'] = wavelength
@@ -87,7 +90,6 @@ def dump(name, imgs, time, side, wavelength):
                            ('image', h5.special_dtype(ref=h5.Reference))])
         series = np.empty(n0, dtype=type)
         for i, t in enumerate(time):
-            print("Creating: t = {0}".format(t))
             series[i] = (t, imgs.regionref[i,:,:])
         file.create_dataset("time_series", data=series)
 
@@ -121,3 +123,20 @@ def dump(name, imgs, time, side, wavelength):
         imgs.dims[0].attach_scale(time)
         imgs.dims[1].attach_scale(side)
         imgs.dims[2].attach_scale(side)
+
+def load(name):
+    ext = os.path.splitext(name)[1][1:]
+    if ext == "raw":
+        return load_raw(name)
+    else:
+        raise NameError("Fail to load file \"{0}\", "
+                        "which is in an unsupported format".format(name))
+
+def dump(name, imgs, nu, side, time):
+    ext = os.path.splitext(name)[1][1:]
+    if ext == "h5" or ext == "hdf5":
+        c = 2.99792458e10
+        dump_hdf5(name, imgs, time, side, nu / c)
+    else:
+        raise NameError("Fail to dump file \"{0}\", "
+                        "which is in an unsupported format".format(name))
