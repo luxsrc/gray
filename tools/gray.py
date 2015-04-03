@@ -57,7 +57,7 @@ def load_raw(name):
         # Done
         return imgs, nu, size
 
-def dump_hdf5(name, imgs, time, side, wavelength):
+def dump_hdf5(name, imgs, time, side, parameters):
     """ Dump a GRay HDF5 file """
     if imgs.ndim != 3:
         raise NameError("imgs should be a 3 dimensional array")
@@ -73,9 +73,8 @@ def dump_hdf5(name, imgs, time, side, wavelength):
         print("Dumping GRay HDF5 file \"{0}\"".format(name))
 
         # Parameters
-        file.attrs['units']      = "gcs"
-        file.attrs['wavelength'] = wavelength
-        # TODO: other simulation parameters
+        for key, value in parameters.items():
+            file.attrs[key] = value
 
         # Create image array
         imgs = file.create_dataset("images", data=imgs,
@@ -135,8 +134,8 @@ def load(name):
 def dump(name, imgs, nu, side, time):
     ext = os.path.splitext(name)[1][1:]
     if ext == "h5" or ext == "hdf5":
-        c = 2.99792458e10
-        dump_hdf5(name, imgs, time, side, nu / c)
+        dump_hdf5(name, imgs, time, side,
+                  {'wavelength (cm)': nu / 2.99792458e10})
     else:
         raise NameError("Fail to dump file \"{0}\", "
                         "which is in an unsupported format".format(name))
