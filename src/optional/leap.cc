@@ -20,6 +20,38 @@
 
 #include <Leap.h>
 
+static int type = 0, direction = 1, direction_old = 0;
+static float x_old, d_old, y_old, ax_old, ly_old, az_old;
+
+static void zoom(const Leap::Vector &l, const Leap::Vector &r)
+{
+  float d = l.distanceTo(r);
+  if(isnan(d))
+    return;
+
+  if(type != 1) {
+    type = 1;
+    d_old = d;
+    ly_old = vis::ly;
+  }
+  vis::ly = ly_old * d_old / d;
+}
+
+static void rotate(const Leap::Vector &p)
+{
+  if(type != 2) {
+    type = 2;
+
+    x_old = p.x;
+    y_old = p.y;
+
+    ax_old = vis::ax;
+    az_old = vis::az;
+  }
+  vis::ax = ax_old - (p.x - x_old) / 2;
+  vis::az = az_old + (p.y - y_old) / 2;
+}
+
 class GRayLeapListener : public Leap::Listener {
   public:
     virtual void onConnect(const Leap::Controller&);
@@ -29,103 +61,51 @@ class GRayLeapListener : public Leap::Listener {
 void GRayLeapListener::onConnect(const Leap::Controller& controller)
 {
   controller.enableGesture(Leap::Gesture::TYPE_CIRCLE);
-  controller.enableGesture(Leap::Gesture::TYPE_KEY_TAP);
 }
 
 void GRayLeapListener::onFrame(const Leap::Controller& controller)
 {
-  static int type = 0, direction = 1, direction_old = 0;
-  static float d_old, x_old, z_old, ax_old, ly_old, az_old;
-
   const Leap::Frame    frame = controller.frame();
   const Leap::HandList hands = frame.hands();
 
-  if(hands.count()              == 2 &&
-     hands[0].fingers().count() >= 1 &&
-     hands[1].fingers().count() >= 1) {
-    const Leap::FingerList lfingers = hands[0].fingers();
-    const Leap::FingerList rfingers = hands[1].fingers();
-    Leap::Vector lpos, rpos;
-
-    for(int i = 0; i < lfingers.count(); ++i)
-      lpos += lfingers[i].tipPosition();
-    lpos /= (float)lfingers.count();
-
-    for(int i = 0; i < rfingers.count(); ++i)
-      rpos += rfingers[i].tipPosition();
-    rpos /= (float)rfingers.count();
-
-    const float d = lpos.distanceTo(rpos);
-    if(d > 10.0) { // d may be NaN
-      if(type != 2) {
-        d_old  = d;
-        ly_old = vis::ly;
-        type   = 2;
-      }
-      vis::ly = ly_old * d_old / d;
+  if(hands.count() == 2) {
+    int i = hands[1].isLeft();
+    Leap::Hand l = hands[i];
+    Leap::Hand r = hands[1-i];
+    if(l.grabStrength() > 0.5 &&
+       r.grabStrength() > 0.5) {
+      zoom(l.palmPosition(), r.palmPosition());
+      return;
     }
-  } else if(hands.count() == 1 && hands[0].fingers().count() >= 4) {
-    const Leap::FingerList fingers = hands[0].fingers();
-    Leap::Vector pos;
+  } else if(hands.count() == 1) {
+     Leap::Hand h = hands[0];
+     Leap::FingerList f = h.fingers().extended();
+     if(f.count() == 1) {
+       type = 3;
+       Leap::GestureList g = frame.gestures();
+       for(int i = 0; i < g.count(); ++i)
+	 if(g[i].type() == Leap::Gesture::TYPE_CIRCLE) {
+	   if(direction == 0) direction_old = 0;
+	   Leap::CircleGesture c = g[i];
+	   if(c.pointable().direction().angleTo(c.normal()) <= Leap::PI/2)
+	     vis::direction = 1;
+	   else
+	     vis::direction = -1;
+	   return;
+	 }
+       if(vis::direction) {
+	 vis::saved = vis::direction;
+	 vis::direction = 0;
+       }
+       return;
+     }
+     if(h.grabStrength() > 0.5) {
+       rotate(h.palmPosition());
+       return;
+     }
+  }
 
-    for(int i = 0; i < fingers.count(); ++i)
-      pos += fingers[i].tipPosition();
-    pos /= (float)fingers.count();
-
-    if(type != 1) {
-      ax_old = vis::ax;
-      az_old = vis::az;
-      x_old  = -pos.x;
-      z_old  =  pos.y;
-      type   = 1;
-    }
-    vis::ax = ax_old + (-pos.x - x_old) / 2;
-    vis::az = az_old + ( pos.y - z_old) / 2;
-  } else if(hands.count() == 1 && hands[0].fingers().count() <= 1) {
-    // Pause or run the simulation
-    const Leap::GestureList gestures = frame.gestures();
-
-    for(int i = 0; i < gestures.count(); ++i)
-      if(gestures[i].type() == Leap::Gesture::TYPE_KEY_TAP) {
-        int tmp = direction_old;
-        direction_old = direction;
-        direction = tmp;
-	break;
-      }
-
-    for(int i = 0; i < gestures.count(); ++i)
-      if(gestures[i].type() == Leap::Gesture::TYPE_CIRCLE) {
-        if(direction == 0) direction_old = 0;
-	Leap::CircleGesture circle = gestures[i];
-        direction = circle.pointable().direction().angleTo(circle.normal())
-                 <= Leap::PI/4 ? 1 : -1;
-	break;
-      }
-
-    switch(direction) {
-    case -1: if(vis::dt_dump != 0.0)
-	       vis::dt_dump  = +fabs(vis::dt_dump);
-	     else {
-	       vis::dt_dump  = +fabs(vis::dt_saved);
-	       vis::dt_saved = 0.0;
-	     }
-	     break;
-    case  0: if(vis::dt_dump != 0.0) {
-               vis::dt_saved = vis::dt_dump;
-               vis::dt_dump  = 0.0;
-	     }
- 	     break;
-    case  1: if(vis::dt_dump != 0.0)
-	       vis::dt_dump  = -fabs(vis::dt_dump);
-	     else {
-	       vis::dt_dump  = -fabs(vis::dt_saved);
-	       vis::dt_saved = 0.0;
-	     }
-	     break;
-    }
-    type = 0;
-  } else
-    type = 0;
+  type = 0;
 }
 
 static Leap::Controller *controller = NULL;
