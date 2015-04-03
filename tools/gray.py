@@ -17,6 +17,7 @@
 # along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
+import h5py  as h5
 
 def readline(file):
     """ Read a line from a binary file """
@@ -54,3 +55,69 @@ def load(name):
 
         # Done
         return imgs, nu, size
+
+def dump(name, imgs, time, side, wavelength):
+    """ Dump a GRay HDF5 file """
+    if imgs.ndim != 3:
+        raise NameError("imgs should be a 3 dimensional array")
+    if imgs.shape[0] != len(time):
+        raise NameError("The number of elements of time does not match "
+                        "the zeroth dimension of imgs")
+
+    n0 = imgs.shape[0]
+    n1 = imgs.shape[1]
+    n2 = imgs.shape[2]
+
+    with h5.File(name, "w") as file: # FIXME: will file close automatically?
+        # Parameters
+        file.attrs['units']      = "gcs"
+        file.attrs['wavelength'] = wavelength
+        # TODO: other simulation parameters
+
+        # Create image array
+        imgs = file.create_dataset("images", data=imgs,
+                            chunks  =(1,    64, 64),
+                            maxshape=(None, n1, n2))
+        imgs.dims[0].label = "time"
+        imgs.dims[1].label = "beta"
+        imgs.dims[2].label = "alpha"
+
+        # Create time series
+        type   = np.dtype([('time',  "f"),
+                           ('image', h5.special_dtype(ref=h5.Reference))])
+        series = np.empty(n0, dtype=type)
+        for i, t in enumerate(time):
+            print("Creating: t = {0}".format(t))
+            series[i] = (t, imgs.regionref[i,:,:])
+        file.create_dataset("time_series", data=series)
+
+        # Convert side into an array, compute physical scales
+        side = side * ((np.arange(0, n2) + 0.5) / n1 - 0.5)
+        G   = 6.67384e-8
+        c   = 2.99792458e10
+        t_g = G * 4.3e6 * 1.99e33 / (c * c * c) # ~ 21.2 s
+        r_g = G * 4.3e6 * 1.99e33 / (c * c)     # ~ 6.35e11 cm
+
+        # Attach scales in gravitational units
+        dscl = file.create_group("dimension scales/gravitational units")
+        time = dscl.create_dataset("time", data=time, maxshape=None)
+        side = dscl.create_dataset("side", data=side)
+
+        imgs.dims.create_scale(time, "GM/c^3")
+        imgs.dims.create_scale(side, "GM/c^2")
+
+        imgs.dims[0].attach_scale(time)
+        imgs.dims[1].attach_scale(side)
+        imgs.dims[2].attach_scale(side)
+
+        # Attach scales in physical (cgs) units
+        dscl = file.create_group("dimension scales/physical units (cgs)")
+        time = dscl.create_dataset("time", data=time[:] * t_g, maxshape=None)
+        side = dscl.create_dataset("side", data=side[:] * r_g)
+
+        imgs.dims.create_scale(time, "s")
+        imgs.dims.create_scale(side, "cm")
+
+        imgs.dims[0].attach_scale(time)
+        imgs.dims[1].attach_scale(side)
+        imgs.dims[2].attach_scale(side)
