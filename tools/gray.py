@@ -58,7 +58,7 @@ def load_raw(name):
         return imgs, nu, size
 
 def dump_hdf5(name, imgs, time, side, parameters):
-    """ Dump a GRay HDF5 file """
+    """ Dump GRay data into a new HDF5 file """
     if imgs.ndim != 3:
         raise NameError("imgs should be a 3 dimensional array")
     if imgs.shape[0] != len(time):
@@ -101,8 +101,9 @@ def dump_hdf5(name, imgs, time, side, parameters):
 
         # Attach scales in gravitational units
         dscl = file.create_group("dimension scales/gravitational units")
-        time = dscl.create_dataset("time", data=time, maxshape=None)
         side = dscl.create_dataset("side", data=side)
+        time = dscl.create_dataset("time", data=time,
+                                   maxshape=(None,), chunks=True)
 
         imgs.dims.create_scale(time, "GM/c^3")
         imgs.dims.create_scale(side, "GM/c^2")
@@ -113,8 +114,9 @@ def dump_hdf5(name, imgs, time, side, parameters):
 
         # Attach scales in physical (cgs) units
         dscl = file.create_group("dimension scales/physical units (cgs)")
-        time = dscl.create_dataset("time", data=time[:] * t_g, maxshape=None)
         side = dscl.create_dataset("side", data=side[:] * r_g)
+        time = dscl.create_dataset("time", data=time[:] * t_g,
+                                   maxshape=(None,), chunks=True)
 
         imgs.dims.create_scale(time, "s")
         imgs.dims.create_scale(side, "cm")
@@ -122,6 +124,25 @@ def dump_hdf5(name, imgs, time, side, parameters):
         imgs.dims[0].attach_scale(time)
         imgs.dims[1].attach_scale(side)
         imgs.dims[2].attach_scale(side)
+
+def append_hdf5(name, imgs, time):
+    """ Dump GRay data into an existing HDF5 file """
+    if imgs.ndim != 3:
+        raise NameError("imgs should be a 3 dimensional array")
+    if imgs.shape[0] != len(time):
+        raise NameError("The number of elements of time does not match "
+                        "the zeroth dimension of imgs")
+
+    with h5.File(name, "r+") as file: # FIXME: weill file close automatically?
+        n0 = file['images'].shape[0]
+
+        file['images'].resize(n0 + imgs.shape[0], axis=0)
+        file['images'][n0:,:,:] = imgs
+
+        dscl = file['dimension scales/gravitational units']
+        dscl['time'].resize(n0 + imgs.shape[0], axis=0)
+        dscl['time'][n0:] = time
+
 
 def load(name):
     ext = os.path.splitext(name)[1][1:]
