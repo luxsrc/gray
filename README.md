@@ -1,16 +1,17 @@
-GRay is a massive parallel ordinary differential equation integrator.
-It employs the "stream processing paradigm" and runs on nVidia's GPUs.
-It is designed to efficiently integrate millions of photons in curved
-spacetime according to Einstein's general theory of relativity.
+`GRay` is a massive parallel ordinary differential equation
+integrator.  It employs the "stream processing paradigm" and runs on
+nVidia's GPUs.  It is designed to efficiently integrate millions of
+photons in curved spacetime according to Einstein's general theory of
+relativity.
 
-== Compile the Code ===
+=== Compile the Code ===
 
-To get started compiling GRay, simply type `make` in the `gray`
-directory.  If the nVidia CUDA compiler `nvcc` is in your path, you
-will see the following instructions:
+To get started, simply type `make` in the `gray` directory.  If the
+nVidia CUDA compiler `nvcc` is in your path, you will see the
+following instructions:
 
   ckchan@lorentz:gray$ make
-  The follow problems are avilable:
+  The follow problems are available:
 
     1. Kerr
     ...
@@ -27,16 +28,26 @@ mode disabled and in single-precision, simply type
   Compiling Kerr... DONE.  Use `bin/GRay-Kerr` to run GRay.
 
 The `Makefile` will then compile GRay and place the executable in
-bin/.  To run the code, type
+bin/.  To run `GRay` so it creates snapshot every 100 GM/c^3, type
 
-  ckchan@lorentz:gray$ bin/GRay-Kerr
+  ckchan@lorentz:gray$ bin/GRay-Kerr snapshot=%02d.raw dt=-100
   GRay: a massive parallel ODE integrator written in CUDA C/C++
   Press 'Ctrl+C' to quit
+  Set parameter "snapshot=%02d.raw"
+  Set parameter "dt=-100"
   1 GPU is found --- running on GPU 0
   "GeForce GT 650M" with 1023.69MiB global and 48KiB shared memory
-  t = -64.00; 120 ms/786432 steps ~ 4.16 Gflops (100.00%), 1.57 GB/s
-  t = -128.00; 125 ms/786432 steps ~ 4.00 Gflops (100.00%), 1.51 GB/s
+  t = -100.00; 64 ms/1048576 steps ~ 10.49 Gflops (100.00%), 3.96 GB/s
+  t = -200.00; 64 ms/1048576 steps ~ 10.50 Gflops (100.00%), 3.96 GB/s
+  t = -300.00; 79 ms/1310720 steps ~ 10.58 Gflops (100.00%), 3.99 GB/s
   ...
+
+Note that the `dt` parameter must be set negative because in ray
+tracing we integrate the ray backward.  The snapshots `00.raw`,
+`01.raw`, `02.raw`, ..., named by the `snapshot` parameter contains
+the full state dump of the run.  The final output `out.raw` is
+controlled by `src/Kerr/output.cc`, and is currently used to output a
+ray tracing image.
 
 === Code Structure ===
 
