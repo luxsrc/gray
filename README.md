@@ -4,13 +4,15 @@ nVidia's GPUs.  It is designed to efficiently integrate millions of
 photons in curved spacetime according to Einstein's general theory of
 relativity.
 
-=== Compile the Code ===
 
-To get started, simply type `make` in the `gray` directory.  If the
+Compile the Code
+----------------
+
+To get started, simply type `make` in the `gray/` directory.  If the
 nVidia CUDA compiler `nvcc` is in your path, you will see the
 following instructions:
 
-    ckchan@lorentz:gray$ make
+    gray$ make
     The follow problems are available:
 
       1. Kerr
@@ -24,13 +26,13 @@ following instructions:
 To solve the geodesic equations in the Kerr metric with interactive
 mode disabled and in single-precision, simply type
 
-    ckchan@lorentz:gray$ mk Kerr GL=0 SINGLE=1
+    gray$ mk Kerr GL=0 SINGLE=1
     Compiling Kerr... DONE.  Use `bin/GRay-Kerr` to run GRay.
 
 The `Makefile` will then compile GRay and place the executable in
 bin/.  To run `GRay` so it creates snapshot every 100 GM/c^3, type
 
-    ckchan@lorentz:gray$ bin/GRay-Kerr snapshot=%02d.raw dt=-100
+    gray$ bin/GRay-Kerr snapshot=%02d.raw dt=-100
     GRay: a massive parallel ODE integrator written in CUDA C/C++
     Press 'Ctrl+C' to quit
     Set parameter "snapshot=%02d.raw"
@@ -42,17 +44,19 @@ bin/.  To run `GRay` so it creates snapshot every 100 GM/c^3, type
     t = -300.00; 79 ms/1310720 steps ~ 10.58 Gflops (100.00%), 3.99 GB/s
     ...
 
-Note that the `dt` parameter must be set negative because in ray
-tracing we integrate the ray backward.  The snapshots `00.raw`,
-`01.raw`, `02.raw`, ..., named by the `snapshot` parameter contains
-the full state dump of the run.  The final output `out.raw` is
+Note that the `dt` parameter must be negative because in ray tracing
+we integrate the rays backward.  The snapshot files "00.raw",
+"01.raw", "02.raw", ..., named by the `snapshot` parameter contains
+the full state dump of the run.  The final output "out.raw" is
 controlled by `src/Kerr/output.cc`, and is currently used to output a
 ray tracing image.
 
-=== Code Structure ===
 
-The code is implemented in CUDA C/C++.  The following chart
-illustrates the structure and flow of GRay:
+Code Structure
+--------------
+
+GRay is implemented in CUDA C/C++.  The following chart illustrates
+the structure and flow of GRay:
 
     main() in "main.cc"
     |
