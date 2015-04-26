@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2015 Chi-kwan Chan
+# Copyright (C) 2015 Steward Observatory
+#
+# This file is part of GRay.
+#
+# GRay is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GRay is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GRay.  If not, see <http://www.gnu.org/licenses/>.
+
+import os.path
+import gray
+import numpy
+
+lambdas = {'radio': 2,
+           'farIR': 6, # 1.3mm
+           'IR':    14,
+           'X-ray': 23}
+
+exist = False
+for key in lambdas:
+    name = key+".h5"
+    if(os.path.isfile(name)):
+        print("File \"{0}\" exists".format(name))
+        exist = True
+if(exist):
+    print("No need to convert.  DONE.")
+    raise SystemExit
+
+c = 2.99792458e10
+for i in range(4988,5000):
+    data, nus, side = gray.load("{0},64.raw".format(i))
+    for l, j in lambdas.items():
+        time  = numpy.array([10 * i])
+        paras = {'wavelength (cm)': c / nus[j]}
+        gray.dump(l+".h5", data[j:j+1,:,:], time, side, paras)
