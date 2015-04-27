@@ -60,7 +60,7 @@ int main(int argc, char **argv)
   double dt  = DT_DUMP;
 
   const char *format = NULL; // no snapshot by default
-  const char *name   = "out.raw";
+  const char *name   = NULL; // no output   by default
 
   if(SIG_ERR == signal(SIGINT,  try_quit) ||
      SIG_ERR == signal(SIGTERM, try_quit))
@@ -74,6 +74,7 @@ int main(int argc, char **argv)
 #endif
   debug("Debugging is turned on\n");
 
+  // Get parameters for simulations
   Para para;
   for(int i = 1; i < argc; ++i) {
     const char *arg = argv[i], *val;
@@ -93,10 +94,12 @@ int main(int argc, char **argv)
   }
   para.device(gpu); // TODO: print GPU info from main() instead of pick()?
 
+  // Setup buffer
   Data data(n);
   data.init(t0);
   data.snapshot(format);
 
+  // Main loop
   float ms, actual, peak;
   while(size_t c = data.solve(dt, ms, actual, peak)) {
     print("t = %.2f; %.0f ms/%.0f steps ~ %.2f Gflops (%.2f%%), %.2f GB/s\n",
@@ -107,6 +110,7 @@ int main(int argc, char **argv)
     if(interrupted) break;
   }
 
+  // Done
   data.output(name, para);
   return 0;
 }
