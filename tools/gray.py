@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
+from os import path
 import numpy as np
 
 def readline(file):
@@ -36,8 +37,13 @@ def isqrt(n):
         y = (x + n // x) // 2
     return x
 
-def load_raw(name):
+def load(name):
     """ Load a GRay raw data file """
+    ext = path.splitext(name)[1][1:]
+    if ext != "raw":
+        raise NameError("Fail to load file \"{0}\", "
+                        "which is in an unsupported format".format(name))
+
     with open(name, "rb") as file:
         print("Loading GRay raw file \"{0}\"".format(name))
 
