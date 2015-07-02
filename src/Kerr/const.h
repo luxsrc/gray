@@ -24,7 +24,7 @@
 #define DT_DUMP (-64)
 #define N_R     264 // large enough to hold our grids
 #define N_RS    8   // number of cells to skip near the outer boundary
-#define N_NU    5
+#define N_NU    12
 
 typedef struct {
   // Parameters for geodesic integration
