@@ -29,6 +29,8 @@
 typedef struct {
   // Parameters for geodesic integration
   real imgsz;     // image size in GM/c^2
+  real imgx0;     // the location of alpha-origin
+  real imgy0;     // the location of beta-origin
   real r_obs;     // observer radius in GM/c^2
   real i_obs;     // observer theta in degrees
   real j_obs;     // observer phi in degrees
