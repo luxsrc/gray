@@ -49,6 +49,9 @@ static inline __device__ State ic(const size_t i, size_t n, const real t)
     s.theta = acos(z / s.r);
     s.phi   = atan2(y, x);
 
+    if(s.phi >= M_PI) s.phi -= 2 * M_PI;
+    if(s.phi <  M_PI) s.phi += 2 * M_PI;
+
     s.kr     = c.r_obs / s.r;
     s.ktheta = (s.kr * z / s.r - cos_obs) / sqrt(R2);
       kphi   = -sin_obs * y / R2;
