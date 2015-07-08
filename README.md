@@ -88,5 +88,5 @@ the structure and flow of GRay:
     |  |                                                                    ^
     |  +-->--->--->--->--->--->--->--->--->--->--->--->--->--->--->--->--->-`
     |
-    +-Create final output by calling Data::output() in "io.cc", which
-      uses a different Data::output() in "*/output.cc"
+    +--Create final output by calling Data::output() in "io.cc", which
+       uses a different Data::output() in "*/output.cc"
