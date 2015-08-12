@@ -1,5 +1,5 @@
-// Copyright (C) 2012--2014 Chi-kwan Chan
-// Copyright (C) 2012--2014 Steward Observatory
+// Copyright (C) 2012--2015 Chi-kwan Chan & Lia Medeiros
+// Copyright (C) 2012--2015 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -50,7 +50,8 @@ class Data {
   cudaError_t htod();         // implemented in "src/memcpy.cc"
   cudaError_t sync(size_t *); // implemented in "src/core.cu"
 
-  void output(const State *, const Const *, FILE *); // in "src/*/output.cc"
+  void point(Point *, const State *);                // in "src/*/io.cc"
+  void output(const State *, const Const *, FILE *); // in "src/*/io.cc"
 
  public:
   Data(size_t); // implemented in "src/data.cc"
@@ -63,8 +64,8 @@ class Data {
 
   size_t solve(double, float &, float &, float &);
 
-  void snapshot(const char *);               // implemented in "src/io.cc"
-  void output  (const char *, const Para &); // implemented in "src/io.cc"
+  void snapshot(void);                         // implemented in "src/io.cc"
+  void output  (const char *, const char *, const Para &); // in "src/io.cc"
 #ifdef ENABLE_GL
   int  show(); // implemented in "src/optional/vis.cc"
 #endif

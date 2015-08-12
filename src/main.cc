@@ -1,5 +1,5 @@
-// Copyright (C) 2012--2014 Chi-kwan Chan
-// Copyright (C) 2012--2014 Steward Observatory
+// Copyright (C) 2012--2015 Chi-kwan Chan & Lia Medeiros
+// Copyright (C) 2012--2015 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -59,8 +59,8 @@ int main(int argc, char **argv)
   double t0  = T_START;
   double dt  = DT_DUMP;
 
-  const char *format = NULL; // no snapshot by default
-  const char *name   = NULL; // no output   by default
+  const char *sname = NULL; // no snapshot by default
+  const char *oname = NULL; // no output   by default
 
   if(SIG_ERR == signal(SIGINT,  try_quit) ||
      SIG_ERR == signal(SIGTERM, try_quit))
@@ -79,25 +79,24 @@ int main(int argc, char **argv)
   for(int i = 1; i < argc; ++i) {
     const char *arg = argv[i], *val;
 
-         if((val = match("gpu",      arg))) gpu    = atoi(val);
-    else if((val = match("n",        arg))) n      = atoi(val);
-    else if((val = match("t0",       arg))) t0     = atof(val);
-    else if((val = match("dt",       arg))) dt     = atof(val);
-    else if((val = match("snapshot", arg))) format =      val ;
-    else if((val = match("output",   arg))) name   =      val ;
+         if((val = match("gpu",      arg))) gpu   = atoi(val);
+    else if((val = match("n",        arg))) n     = atoi(val);
+    else if((val = match("t0",       arg))) t0    = atof(val);
+    else if((val = match("dt",       arg))) dt    = atof(val);
+    else if((val = match("snapshot", arg))) sname =      val ;
+    else if((val = match("output",   arg))) oname =      val ;
 
     if(val || para.config(arg))
       print("Set parameter \"%s\"\n", arg);
     else
-      error("Unknown argument \"%s\"\n", arg); // it's wasteful to run the
-                                               // wrong simulation
+      error("Unknown argument \"%s\"\n", arg); // do not run wrong simulation
   }
   para.device(gpu); // TODO: print GPU info from main() instead of pick()?
 
   // Setup buffer
   Data data(n);
   data.init(t0);
-  data.snapshot(format);
+  if(sname) data.snapshot();
 
   // Main loop
   float ms, actual, peak;
@@ -106,11 +105,11 @@ int main(int argc, char **argv)
           data.t, ms, actual,
           1e-6 * scheme::flop() * actual / ms, 100 * actual / peak,
           1e-6 * (24 * sizeof(real) + scheme::rwsz()) * actual / ms);
-    data.snapshot(c == LIMIT ? format : NULL);
+    if(sname && c == LIMIT) data.snapshot();
     if(interrupted) break;
   }
 
   // Done
-  data.output(name, para);
+  data.output(sname, oname, para);
   return 0;
 }

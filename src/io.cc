@@ -1,5 +1,5 @@
-// Copyright (C) 2012--2014 Chi-kwan Chan
-// Copyright (C) 2012--2014 Steward Observatory
+// Copyright (C) 2012--2015 Chi-kwan Chan & Lia Medeiros
+// Copyright (C) 2012--2015 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -19,37 +19,76 @@
 #include "gray.h"
 #include <cstdlib>
 
-void Data::snapshot(const char *format)
+typedef struct {
+  size_t c, n;
+  Point *p;
+} Log;
+
+static Log *l = NULL;
+
+void Data::snapshot()
 {
-  if(format && *format)
-    debug("Data::snapshot(\"%s\")\n", format);
-  else
-    return;
+  if(!l) {
+    l = (Log *)malloc(sizeof(Log) * n);
+    for(size_t i = 0; i < n; ++i) {
+      l[i].c = 0;
+      l[i].n = 256;
+      l[i].p = (Point *)malloc(sizeof(Point) * 256);
+    }
+  }
 
-  char name[1024];
-  static int frame = 0;
-  snprintf(name, sizeof(name), format, frame++);
+  const State *s = host();
+  for(size_t i = 0; i < n; ++i) {
+    size_t c = l[i].c;
+    if(c && l[i].p[c-1].t == s[i].t)
+      continue;
 
-  FILE *file = fopen(name, "wb");
-  const void *h = host();
-  fwrite(&t, sizeof(double), 1, file);
-  fwrite(&m, sizeof(size_t), 1, file);
-  fwrite(&n, sizeof(size_t), 1, file);
-  fwrite( h, sizeof(State),  n, file);
-  fclose(file);
+    if(c == l[i].n) {
+      l[i].p = (Point *)realloc(l[i].p, sizeof(Point) * (l[i].n += 256));
+      if(!l[i].p)
+	error("NOT ENOUGH MEMORY!!!\n");
+    }
+
+    point(l[i].p+c, s+i);
+    ++(l[i].c);
+  }
 }
 
-void Data::output(const char *name, const Para &para)
+void Data::output(const char *sname, const char *oname, const Para &para)
 {
-  if(name && *name)
-    debug("Data::output(\"%s\")\n", name);
-  else
-    return;
+  if(sname && *sname) {
+    debug("Data::output(...): write snapshot \"%s\"\n", sname);
 
-  FILE *file = fopen(name, "w");
-  if(file) {
-    output(host(), &para.buf, file);
-    fclose(file);
-  } else
-    error("Data::output(): fail to create file \"%s\"\n", name);
+    size_t sum = 0, max = 0;
+    for(size_t i = 0; i < n; ++i) {
+      size_t c = l[i].c;
+      sum += c;
+      if(max < c) max = c;
+    }
+
+    FILE *file = fopen(sname, "wb");
+    if(file) {
+      size_t m = sizeof(Point) / sizeof(real);
+      fwrite(&n, sizeof(size_t), 1, file);
+      fwrite(&m, sizeof(size_t), 1, file);
+      for(size_t i = 0; i < n; ++i) {
+	size_t c = l[i].c;
+	fwrite(&c, sizeof(size_t), 1, file);
+	fwrite(l[i].p, sizeof(Point), c, file);
+      }
+      fclose(file);
+    } else
+      error("Data::output(): fail to create file \"%s\"\n", sname);
+  }
+
+  if(oname && *oname) {
+    debug("Data::output(...): write output \"%s\"\n", oname);
+
+    FILE *file = fopen(oname, "wb");
+    if(file) {
+      output(host(), &para.buf, file);
+      fclose(file);
+    } else
+      error("Data::output(): fail to create file \"%s\"\n", oname);
+  }
 }
