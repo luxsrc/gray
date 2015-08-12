@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Chi-kwan Chan
+# Copyright (C) 2015 Chi-kwan Chan & Lia Medeiros
 # Copyright (C) 2015 Steward Observatory
 #
 # This file is part of GRay.
@@ -59,3 +59,13 @@ def load(name):
 
         # Done
         return imgs, nus, size * ((np.arange(0, n) + 0.5) / n - 0.5)
+
+def rays(name):
+    r = []
+    with open(name, "rb") as f:
+        n = np.fromfile(f, np.uint64, 2)
+        for i in range(n[0]):
+            c = np.fromfile(f, np.uint64,  1)
+            d = np.fromfile(f, np.float32, c * n[1])
+            r.append(d.reshape(c, n[1]))
+    return r
