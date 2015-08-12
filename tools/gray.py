@@ -69,3 +69,6 @@ def rays(name):
             d = np.fromfile(f, np.float32, c * n[1])
             r.append(d.reshape(c, n[1]))
     return r
+
+def d(f):
+    return np.hstack((f[1]-f[0], (f[2:]-f[:-2])/2, f[-1]-f[-2]))
