@@ -62,13 +62,6 @@ void Data::output(const char *sname, const char *oname, const Para &para)
   if(sname && *sname) {
     debug("Data::output(...): write snapshot \"%s\"\n", sname);
 
-    size_t sum = 0, max = 0;
-    for(size_t i = 0; i < n; ++i) {
-      size_t c = l[i].c;
-      sum += c;
-      if(max < c) max = c;
-    }
-
     FILE *file = fopen(sname, "wb");
     if(file) {
       if(!strcmp(sname+strlen(sname)-5, ".grid")) { // output grid
@@ -77,7 +70,7 @@ void Data::output(const char *sname, const char *oname, const Para &para)
 	size_t n_nu = N_NU;
 	fwrite(&n_nu, sizeof(size_t), 1, file);
 	float *grid = snp2grid(side, n, l);
-	fwrite(grid, sizeof(float),  side * side * side * N_NU, file);
+	fwrite(grid, sizeof(float),  side * side * side * n_nu, file);
 	free(grid);
       } else { // output rays
 	fwrite(&n, sizeof(size_t), 1, file);
@@ -90,6 +83,11 @@ void Data::output(const char *sname, const char *oname, const Para &para)
 	}
       }
       fclose(file);
+
+      for(size_t i = 0; i < n; ++i)
+	free(l[i].p);
+      free(l);
+      l = NULL;
     } else
       error("Data::output(): fail to create file \"%s\"\n", sname);
   }
