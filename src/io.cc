@@ -18,6 +18,7 @@
 
 #include "gray.h"
 #include <cstdlib>
+#include <cstring>
 
 typedef struct {
   size_t c, n;
@@ -25,6 +26,8 @@ typedef struct {
 } Log;
 
 static Log *l = NULL;
+
+extern float *snp2grid(const size_t, const size_t, const Log *);
 
 void Data::snapshot()
 {
@@ -68,13 +71,23 @@ void Data::output(const char *sname, const char *oname, const Para &para)
 
     FILE *file = fopen(sname, "wb");
     if(file) {
-      size_t m = sizeof(Point) / sizeof(real);
-      fwrite(&n, sizeof(size_t), 1, file);
-      fwrite(&m, sizeof(size_t), 1, file);
-      for(size_t i = 0; i < n; ++i) {
-	size_t c = l[i].c;
-	fwrite(&c, sizeof(size_t), 1, file);
-	fwrite(l[i].p, sizeof(Point), c, file);
+      if(!strcmp(sname+strlen(sname)-5, ".grid")) { // output grid
+	size_t side = 512;
+	fwrite(&side, sizeof(size_t), 1, file);
+	size_t n_nu = N_NU;
+	fwrite(&n_nu, sizeof(size_t), 1, file);
+	float *grid = snp2grid(side, n, l);
+	fwrite(grid, sizeof(float),  side * side * side * N_NU, file);
+	free(grid);
+      } else { // output rays
+	fwrite(&n, sizeof(size_t), 1, file);
+	size_t m = sizeof(Point) / sizeof(real);
+	fwrite(&m, sizeof(size_t), 1, file);
+	for(size_t i = 0; i < n; ++i) {
+	  size_t c = l[i].c;
+	  fwrite(&c, sizeof(size_t), 1, file);
+	  fwrite(l[i].p, sizeof(Point), c, file);
+	}
       }
       fclose(file);
     } else
