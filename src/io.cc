@@ -25,35 +25,36 @@ typedef struct {
   Point *p;
 } Log;
 
-static Log *l = NULL;
+static Log *rlog = NULL; // stands for ray-log
 
 extern float *rays2grid(const size_t, const size_t, const Log *);
 
 void Data::snapshot()
 {
-  if(!l) {
-    l = (Log *)malloc(sizeof(Log) * n);
+  if(!rlog) {
+    rlog = (Log *)malloc(sizeof(Log) * n);
     for(size_t i = 0; i < n; ++i) {
-      l[i].c = 0;
-      l[i].n = 256;
-      l[i].p = (Point *)malloc(sizeof(Point) * 256);
+      rlog[i].c = 0;
+      rlog[i].n = 256;
+      rlog[i].p = (Point *)malloc(sizeof(Point) * 256);
     }
   }
 
   const State *s = host();
   for(size_t i = 0; i < n; ++i) {
-    size_t c = l[i].c;
-    if(c && l[i].p[c-1].t == s[i].t)
+    size_t c = rlog[i].c;
+    if(c && rlog[i].p[c-1].t == s[i].t)
       continue;
 
-    if(c == l[i].n) {
-      l[i].p = (Point *)realloc(l[i].p, sizeof(Point) * (l[i].n += 256));
-      if(!l[i].p)
+    if(c == rlog[i].n) {
+      rlog[i].p = (Point *)realloc(rlog[i].p,
+				   sizeof(Point) * (rlog[i].n += 256));
+      if(!rlog[i].p)
 	error("NOT ENOUGH MEMORY!!!\n");
     }
 
-    point(l[i].p+c, s+i);
-    ++(l[i].c);
+    point(rlog[i].p+c, s+i);
+    ++(rlog[i].c);
   }
 }
 
@@ -71,7 +72,7 @@ void Data::output(const Para &para,
       error("Data::output(): fail to create file \"%s\"\n", imgs);
   }
 
-  if(rays && *rays && l) {
+  if(rays && *rays && rlog) {
     debug("Data::output(...): write all rays to \"%s\"\n", rays);
 
     FILE *file = fopen(rays, "wb");
@@ -80,16 +81,16 @@ void Data::output(const Para &para,
       size_t m = sizeof(Point) / sizeof(real);
       fwrite(&m, sizeof(size_t), 1, file);
       for(size_t i = 0; i < n; ++i) {
-	size_t c = l[i].c;
-	fwrite(&c, sizeof(size_t), 1, file);
-	fwrite(l[i].p, sizeof(Point), c, file);
+	size_t c = rlog[i].c;
+	fwrite(&c,        sizeof(size_t), 1, file);
+	fwrite(rlog[i].p, sizeof(Point),  c, file);
       }
       fclose(file);
     } else
       error("Data::output(): fail to create file \"%s\"\n", rays);
   }
 
-  if(grid && *grid && l) {
+  if(grid && *grid && rlog) {
     debug("Data::output(...): write source grid to \"%s\"\n", grid);
 
     FILE *file = fopen(grid, "wb");
@@ -98,17 +99,17 @@ void Data::output(const Para &para,
       fwrite(&side, sizeof(size_t), 1, file);
       size_t n_nu = N_NU;
       fwrite(&n_nu, sizeof(size_t), 1, file);
-      float *grid = rays2grid(side, n, l);
+      float *grid = rays2grid(side, n, rlog);
       fwrite(grid, sizeof(float),  side * side * side * n_nu, file);
       free(grid);
     } else
       error("Data::output(): fail to create file \"%s\"\n", grid);
   }
 
-  if(l) {
+  if(rlog) {
     for(size_t i = 0; i < n; ++i)
-      free(l[i].p);
-    free(l);
-    l = NULL;
+      free(rlog[i].p);
+    free(rlog);
+    rlog = NULL;
   }
 }
