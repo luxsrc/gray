@@ -27,7 +27,7 @@ typedef struct {
   Point *p;
 } Log;
 
-float *snp2grid(const size_t s, const size_t n, const Log *l)
+float *rays2grid(const size_t s, const size_t n, const Log *l)
 {
   double *dI = (double *)malloc(sizeof(double) * s * s * s * N_NU);
   for(size_t i = 0; i < s * s * s * N_NU; ++i)

@@ -27,7 +27,7 @@ typedef struct {
 
 static Log *l = NULL;
 
-extern float *snp2grid(const size_t, const size_t, const Log *);
+extern float *rays2grid(const size_t, const size_t, const Log *);
 
 void Data::snapshot()
 {
@@ -69,7 +69,7 @@ void Data::output(const char *sname, const char *oname, const Para &para)
 	fwrite(&side, sizeof(size_t), 1, file);
 	size_t n_nu = N_NU;
 	fwrite(&n_nu, sizeof(size_t), 1, file);
-	float *grid = snp2grid(side, n, l);
+	float *grid = rays2grid(side, n, l);
 	fwrite(grid, sizeof(float),  side * side * side * n_nu, file);
 	free(grid);
       } else { // output rays
