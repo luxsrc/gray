@@ -59,8 +59,9 @@ int main(int argc, char **argv)
   double t0  = T_START;
   double dt  = DT_DUMP;
 
-  const char *sname = NULL; // no snapshot by default
-  const char *oname = NULL; // no output   by default
+  const char *imgs = NULL;
+  const char *rays = NULL;
+  const char *grid = NULL;
 
   if(SIG_ERR == signal(SIGINT,  try_quit) ||
      SIG_ERR == signal(SIGTERM, try_quit))
@@ -79,12 +80,13 @@ int main(int argc, char **argv)
   for(int i = 1; i < argc; ++i) {
     const char *arg = argv[i], *val;
 
-         if((val = match("gpu",      arg))) gpu   = atoi(val);
-    else if((val = match("n",        arg))) n     = atoi(val);
-    else if((val = match("t0",       arg))) t0    = atof(val);
-    else if((val = match("dt",       arg))) dt    = atof(val);
-    else if((val = match("snapshot", arg))) sname =      val ;
-    else if((val = match("output",   arg))) oname =      val ;
+         if((val = match("gpu",  arg))) gpu  = atoi(val);
+    else if((val = match("n",    arg))) n    = atoi(val);
+    else if((val = match("t0",   arg))) t0   = atof(val);
+    else if((val = match("dt",   arg))) dt   = atof(val);
+    else if((val = match("imgs", arg))) imgs =      val ;
+    else if((val = match("rays", arg))) rays =      val ;
+    else if((val = match("grid", arg))) grid =      val ;
 
     if(val || para.config(arg))
       print("Set parameter \"%s\"\n", arg);
@@ -96,7 +98,7 @@ int main(int argc, char **argv)
   // Setup buffer
   Data data(n);
   data.init(t0);
-  if(sname) data.snapshot();
+  if(rays || grid) data.snapshot();
 
   // Main loop
   float ms, actual, peak;
@@ -105,11 +107,11 @@ int main(int argc, char **argv)
           data.t, ms, actual,
           1e-6 * scheme::flop() * actual / ms, 100 * actual / peak,
           1e-6 * (24 * sizeof(real) + scheme::rwsz()) * actual / ms);
-    if(sname && c == LIMIT) data.snapshot();
+    if((rays || grid) && c == LIMIT) data.snapshot();
     if(interrupted) break;
   }
 
   // Done
-  data.output(sname, oname, para);
+  data.output(para, imgs, rays, grid);
   return 0;
 }

@@ -57,49 +57,58 @@ void Data::snapshot()
   }
 }
 
-void Data::output(const char *sname, const char *oname, const Para &para)
+void Data::output(const Para &para,
+		  const char *imgs, const char *rays, const char *grid)
 {
-  if(sname && *sname) {
-    debug("Data::output(...): write snapshot \"%s\"\n", sname);
+  if(imgs && *imgs) {
+    debug("Data::output(...): write images to \"%s\"\n", imgs);
 
-    FILE *file = fopen(sname, "wb");
-    if(file) {
-      if(!strcmp(sname+strlen(sname)-5, ".grid")) { // output grid
-	size_t side = 512;
-	fwrite(&side, sizeof(size_t), 1, file);
-	size_t n_nu = N_NU;
-	fwrite(&n_nu, sizeof(size_t), 1, file);
-	float *grid = rays2grid(side, n, l);
-	fwrite(grid, sizeof(float),  side * side * side * n_nu, file);
-	free(grid);
-      } else { // output rays
-	fwrite(&n, sizeof(size_t), 1, file);
-	size_t m = sizeof(Point) / sizeof(real);
-	fwrite(&m, sizeof(size_t), 1, file);
-	for(size_t i = 0; i < n; ++i) {
-	  size_t c = l[i].c;
-	  fwrite(&c, sizeof(size_t), 1, file);
-	  fwrite(l[i].p, sizeof(Point), c, file);
-	}
-      }
-      fclose(file);
-
-      for(size_t i = 0; i < n; ++i)
-	free(l[i].p);
-      free(l);
-      l = NULL;
-    } else
-      error("Data::output(): fail to create file \"%s\"\n", sname);
-  }
-
-  if(oname && *oname) {
-    debug("Data::output(...): write output \"%s\"\n", oname);
-
-    FILE *file = fopen(oname, "wb");
+    FILE *file = fopen(imgs, "wb");
     if(file) {
       output(host(), &para.buf, file);
       fclose(file);
     } else
-      error("Data::output(): fail to create file \"%s\"\n", oname);
+      error("Data::output(): fail to create file \"%s\"\n", imgs);
+  }
+
+  if(rays && *rays && l) {
+    debug("Data::output(...): write all rays to \"%s\"\n", rays);
+
+    FILE *file = fopen(rays, "wb");
+    if(file) {
+      fwrite(&n, sizeof(size_t), 1, file);
+      size_t m = sizeof(Point) / sizeof(real);
+      fwrite(&m, sizeof(size_t), 1, file);
+      for(size_t i = 0; i < n; ++i) {
+	size_t c = l[i].c;
+	fwrite(&c, sizeof(size_t), 1, file);
+	fwrite(l[i].p, sizeof(Point), c, file);
+      }
+      fclose(file);
+    } else
+      error("Data::output(): fail to create file \"%s\"\n", rays);
+  }
+
+  if(grid && *grid && l) {
+    debug("Data::output(...): write source grid to \"%s\"\n", grid);
+
+    FILE *file = fopen(grid, "wb");
+    if(file) {
+      size_t side = 512;
+      fwrite(&side, sizeof(size_t), 1, file);
+      size_t n_nu = N_NU;
+      fwrite(&n_nu, sizeof(size_t), 1, file);
+      float *grid = rays2grid(side, n, l);
+      fwrite(grid, sizeof(float),  side * side * side * n_nu, file);
+      free(grid);
+    } else
+      error("Data::output(): fail to create file \"%s\"\n", grid);
+  }
+
+  if(l) {
+    for(size_t i = 0; i < n; ++i)
+      free(l[i].p);
+    free(l);
+    l = NULL;
   }
 }
