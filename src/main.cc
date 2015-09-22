@@ -67,6 +67,9 @@ int main(int argc, char **argv)
      SIG_ERR == signal(SIGTERM, try_quit))
     error("Fail to register signal handler [%s]\n", strerror(errno));
 
+  if(argc > 1 && !strcmp("--help", argv[1]))
+    return help(argv[0]);
+
   print("GRay: a massive parallel ODE integrator written in CUDA C/C++\n");
 #ifdef ENABLE_GL
   print("Press 'q' to quit, 'p' and 'r' to pulse and reverse the run\n");
