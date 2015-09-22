@@ -64,8 +64,8 @@ class Data {
 
   size_t solve(double, float &, float &, float &);
 
-  void snapshot(void);                         // implemented in "src/io.cc"
-  void output  (const char *, const char *, const Para &); // in "src/io.cc"
+  void snapshot(void); // implemented in "src/io.cc"
+  void output  (const Para &, const char *, const char *, const char *);
 #ifdef ENABLE_GL
   int  show(); // implemented in "src/optional/vis.cc"
 #endif
