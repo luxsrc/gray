@@ -39,15 +39,18 @@ static inline __device__ State ic(const size_t i, size_t n, const real t)
     alpha =  (i % n + half) / n - half;
     beta  = ((i / n + half) / m - half) * m / n;
 
-    x = c.r_obs * sin_obs - c.imgsz * beta * cos_obs;
-    y =                     c.imgsz * alpha         ;
-    z = c.r_obs * cos_obs + c.imgsz * beta * sin_obs;
+    x = c.r_obs * sin_obs - (c.imgy0 + c.imgsz * beta) * cos_obs;
+    y =                      c.imgx0 + c.imgsz * alpha          ;
+    z = c.r_obs * cos_obs + (c.imgy0 + c.imgsz * beta) * sin_obs;
 
     const real R2 = x * x + y * y;
 
     s.r     = sqrt(R2 + z * z);
     s.theta = acos(z / s.r);
     s.phi   = atan2(y, x);
+
+    if(s.phi >= M_PI) s.phi -= 2 * M_PI;
+    if(s.phi <  M_PI) s.phi += 2 * M_PI;
 
     s.kr     = c.r_obs / s.r;
     s.ktheta = (s.kr * z / s.r - cos_obs) / sqrt(R2);

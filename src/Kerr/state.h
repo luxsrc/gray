@@ -1,5 +1,5 @@
-// Copyright (C) 2012--2014 Chi-kwan Chan
-// Copyright (C) 2012--2014 Steward Observatory
+// Copyright (C) 2012--2015 Chi-kwan Chan & Lia Medeiros
+// Copyright (C) 2012--2015 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -25,8 +25,14 @@ typedef struct {
   real t, r, theta, phi;
   real kr, ktheta;
   real bimpact;   // impact parameter defined as L / E, constant
+  real padding;
   real I  [N_NU]; // specific intensity
   real tau[N_NU]; // optical depth
 } State;
+
+typedef struct {
+  real t, r, theta, phi;
+  real I[N_NU];
+} Point;
 
 #endif // STATE_H

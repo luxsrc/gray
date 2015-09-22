@@ -24,11 +24,13 @@
 #define DT_DUMP (-64)
 #define N_R     264 // large enough to hold our grids
 #define N_RS    8   // number of cells to skip near the outer boundary
-#define N_NU    5
+#define N_NU    12
 
 typedef struct {
   // Parameters for geodesic integration
   real imgsz;     // image size in GM/c^2
+  real imgx0;     // the location of alpha-origin
+  real imgy0;     // the location of beta-origin
   real r_obs;     // observer radius in GM/c^2
   real i_obs;     // observer theta in degrees
   real j_obs;     // observer phi in degrees

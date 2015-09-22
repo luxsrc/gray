@@ -52,6 +52,8 @@ static size_t fill(real *nu, const char *val)
 void Para::define(Const &c)
 {
   c.imgsz     = 64;
+  c.imgx0     = 0;
+  c.imgy0     = 0;
 #ifdef ENABLE_GL
   c.r_obs     = 256;
 #else
@@ -85,6 +87,8 @@ bool Para::config(Const &c, const char *arg)
   const char *val;
 
        if((val = match("imgsz", arg))) c.imgsz     =   atof(val);
+  else if((val = match("imgx0", arg))) c.imgx0     =   atof(val);
+  else if((val = match("imgy0", arg))) c.imgy0     =   atof(val);
   else if((val = match("r",     arg))) c.r_obs     =   atof(val);
   else if((val = match("i",     arg))) c.i_obs     =   atof(val);
   else if((val = match("j",     arg))) c.j_obs     =   atof(val);

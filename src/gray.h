@@ -70,4 +70,6 @@ extern void error(const char *, ...);
 #endif
 extern const char *match(const char *, const char *);
 
+extern int help(const char *);
+
 #endif // GRAY_H

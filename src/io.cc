@@ -1,5 +1,5 @@
-// Copyright (C) 2012--2014 Chi-kwan Chan
-// Copyright (C) 2012--2014 Steward Observatory
+// Copyright (C) 2012--2015 Chi-kwan Chan & Lia Medeiros
+// Copyright (C) 2012--2015 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -18,38 +18,98 @@
 
 #include "gray.h"
 #include <cstdlib>
+#include <cstring>
 
-void Data::snapshot(const char *format)
+typedef struct {
+  size_t c, n;
+  Point *p;
+} Log;
+
+static Log *rlog = NULL; // stands for ray-log
+
+extern float *rays2grid(const size_t, const size_t, const Log *);
+
+void Data::snapshot()
 {
-  if(format && *format)
-    debug("Data::snapshot(\"%s\")\n", format);
-  else
-    return;
+  if(!rlog) {
+    rlog = (Log *)malloc(sizeof(Log) * n);
+    for(size_t i = 0; i < n; ++i) {
+      rlog[i].c = 0;
+      rlog[i].n = 256;
+      rlog[i].p = (Point *)malloc(sizeof(Point) * 256);
+    }
+  }
 
-  char name[1024];
-  static int frame = 0;
-  snprintf(name, sizeof(name), format, frame++);
+  const State *s = host();
+  for(size_t i = 0; i < n; ++i) {
+    size_t c = rlog[i].c;
+    if(c && rlog[i].p[c-1].t == s[i].t)
+      continue;
 
-  FILE *file = fopen(name, "wb");
-  const void *h = host();
-  fwrite(&t, sizeof(double), 1, file);
-  fwrite(&m, sizeof(size_t), 1, file);
-  fwrite(&n, sizeof(size_t), 1, file);
-  fwrite( h, sizeof(State),  n, file);
-  fclose(file);
+    if(c == rlog[i].n) {
+      rlog[i].p = (Point *)realloc(rlog[i].p,
+				   sizeof(Point) * (rlog[i].n += 256));
+      if(!rlog[i].p)
+	error("NOT ENOUGH MEMORY!!!\n");
+    }
+
+    point(rlog[i].p+c, s+i);
+    ++(rlog[i].c);
+  }
 }
 
-void Data::output(const char *name, const Para &para)
+void Data::output(const Para &para,
+		  const char *imgs, const char *rays, const char *grid)
 {
-  if(name && *name)
-    debug("Data::output(\"%s\")\n", name);
-  else
-    return;
+  if(imgs && *imgs) {
+    debug("Data::output(...): write images to \"%s\"\n", imgs);
 
-  FILE *file = fopen(name, "w");
-  if(file) {
-    output(host(), &para.buf, file);
-    fclose(file);
-  } else
-    error("Data::output(): fail to create file \"%s\"\n", name);
+    FILE *file = fopen(imgs, "wb");
+    if(file) {
+      output(host(), &para.buf, file);
+      fclose(file);
+    } else
+      error("Data::output(): fail to create file \"%s\"\n", imgs);
+  }
+
+  if(rays && *rays && rlog) {
+    debug("Data::output(...): write all rays to \"%s\"\n", rays);
+
+    FILE *file = fopen(rays, "wb");
+    if(file) {
+      fwrite(&n, sizeof(size_t), 1, file);
+      size_t m = sizeof(Point) / sizeof(real);
+      fwrite(&m, sizeof(size_t), 1, file);
+      for(size_t i = 0; i < n; ++i) {
+	size_t c = rlog[i].c;
+	fwrite(&c,        sizeof(size_t), 1, file);
+	fwrite(rlog[i].p, sizeof(Point),  c, file);
+      }
+      fclose(file);
+    } else
+      error("Data::output(): fail to create file \"%s\"\n", rays);
+  }
+
+  if(grid && *grid && rlog) {
+    debug("Data::output(...): write source grid to \"%s\"\n", grid);
+
+    FILE *file = fopen(grid, "wb");
+    if(file) {
+      size_t side = 512;
+      fwrite(&side, sizeof(size_t), 1, file);
+      size_t n_nu = N_NU;
+      fwrite(&n_nu, sizeof(size_t), 1, file);
+      float *grid = rays2grid(side, n, rlog);
+      fwrite(grid, sizeof(float),  side * side * side * n_nu, file);
+      free(grid);
+    } else
+      error("Data::output(): fail to create file \"%s\"\n", grid);
+  }
+
+  if(rlog) {
+    for(size_t i = 0; i < n; ++i)
+      free(rlog[i].p);
+    free(rlog);
+    rlog = NULL;
+  }
 }

@@ -18,14 +18,26 @@
 # You should have received a copy of the GNU General Public License
 # along with GRay.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
 import os.path
-import gray
+import glob
+import re
 import numpy
+import gray
+import mockservation as mock
 
 lambdas = {'radio': 2,
-           'farIR': 6, # 1.3mm
+           '1.3mm': 6,
            'IR':    14,
            'X-ray': 23}
+
+if len(sys.argv) <= 1:
+    sim = "a9SANE,Tf"
+else:
+    sim = sys.argv[1]
+if not os.path.isdir("../"+sim):
+    print("\"{0}\" is not a valid simulation.  QUIT".format(sim))
+    raise SystemExit
 
 exist = False
 for key in lambdas:
@@ -38,9 +50,32 @@ if(exist):
     raise SystemExit
 
 c = 2.99792458e10
-for i in range(4988,5000):
-    data, nus, side = gray.load("{0},64.raw".format(i))
+l = glob.glob("../"+sim+"/*,16.raw")
+
+for f in sorted(l):
+    t = 10 * int(re.findall(r'\d+', os.path.basename(f))[0])
+
+    data, nus, side = gray.load(f)
+
+    d16 = data.reshape(30,128,4,128,4).mean(axis=4).mean(axis=2)
+    data, nus, side = gray.load(f.replace(",16.", ",64."))
+    data[:,192:320,192:320] = d16
+
+    d64 = data.reshape(30,128,4,128,4).mean(axis=4).mean(axis=2)
+    data, nus, side = gray.load(f.replace(",16.", ",256."))
+    data[:,192:320,192:320] = d64
+
+    d256= data.reshape(30,128,4,128,4).mean(axis=4).mean(axis=2)
+    data, nus, side = gray.load(f.replace(",16.", ",1024."))
+    data[:,192:320,192:320] = d256
+
     for l, j in lambdas.items():
-        time  = numpy.array([10 * i])
-        paras = {'wavelength (cm)': c / nus[j]}
-        gray.dump(l+".h5", data[j:j+1,:,:], time, side, paras)
+        name  = sim+","+l+".h5"
+        time  = numpy.array([t])
+        paras = {'authors':         "Chi-kwan Chan,Dimitrios Psaltis,Feryal \\\"Ozel,Lia Medeiros,Daniel Marrone,Aleksander S{\c a}dowski,Ramesh Narayan",
+                 'source':          "git@github.com:chanchikwan/gray.git",
+                 'code':            "2014ascl.soft03005C",
+                 'paper':           "2015arXiv150501500C",
+                 'model':           sim,
+                 'wavelength (cm)': c / nus[j]}
+        mock.dump(name, data[j:j+1,:,:], time, side, paras)

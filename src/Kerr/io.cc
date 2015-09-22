@@ -1,5 +1,5 @@
-// Copyright (C) 2014 Chi-kwan Chan
-// Copyright (C) 2014 Steward Observatory
+// Copyright (C) 2014,2015 Chi-kwan Chan & Lia Medeiros
+// Copyright (C) 2014,2015 Steward Observatory
 //
 // This file is part of GRay.
 //
@@ -19,6 +19,16 @@
 #include "../gray.h"
 #include <cstdlib>
 #include <cstdio>
+
+void Data::point(Point *p, const State *s)
+{
+  p->t     = s->t;
+  p->r     = s->r;
+  p->theta = s->theta;
+  p->phi   = s->phi;
+  for(int i = 0; i < N_NU; ++i)
+    p->I[i] = s->I[i];
+}
 
 void Data::output(const State *h, const Const *c, FILE *file)
 {
