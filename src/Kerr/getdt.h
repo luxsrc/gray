@@ -24,13 +24,13 @@ static inline __device__ real getdt(const State &s, real t,
   if(dt_max < 0)
     dt_max = -dt_max;
 
-  const real r_bh = 1 + sqrt(1 - c.a_spin * c.a_spin);
+  const real r_bh = 1 + SQRT(1 - c.a_spin * c.a_spin);
   if(s.r < r_bh + c.epsilon)
     return 0; // too close to the black hole
 
 #ifndef ENABLE_GL
-  const real xmax = fabs(c.imgx0) + c.imgsz / 2;
-  const real ymax = fabs(c.imgy0) + c.imgsz / 2;
+  const real xmax = FABS(c.imgx0) + c.imgsz / 2;
+  const real ymax = FABS(c.imgy0) + c.imgsz / 2;
   if((real)0.999 * s.r * s.r > c.r_obs * c.r_obs + xmax * xmax + ymax * ymax)
     return 0; // too far away from the black hole
 #endif
@@ -45,12 +45,12 @@ static inline __device__ real getdt(const State &s, real t,
     if(done)
       return 0; // integration no longer affect the intensity
 
-    const real cap  = s.r * (1 - pow(c.r[0]/c.r[c.n_r-1], (real)0.5/c.n_r));
+    const real cap  = s.r * (1 - POW(c.r[0]/c.r[c.n_r-1], (real)0.5/c.n_r));
     if(dt_max > cap)
       dt_max = cap;
   }
 
-  return min(c.dt_scale / (fabs(a.r / s.r) + fabs(a.theta) + fabs(a.phi)),
-             min(fabs((s.r - r_bh) / a.r / 2),
+  return MIN(c.dt_scale / (FABS(a.r / s.r) + FABS(a.theta) + FABS(a.phi)),
+             MIN(FABS((s.r - r_bh) / a.r / 2),
                  dt_max));
 }
