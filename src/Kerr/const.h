@@ -48,7 +48,7 @@ typedef struct {
   Field *field;
   size_t n_rx, n_r, n_theta, n_phi;
   real   Gamma;
-  real   r[N_R];
+  float  r[N_R];
 } Const;
 
 namespace harm {

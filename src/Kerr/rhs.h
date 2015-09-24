@@ -212,7 +212,7 @@ static inline __device__ State rhs(const State &s, real t)
 
   d.r     = s.kr;
   d.theta = s.ktheta;
-  if(!c.field || s.r < c.r[0]) return d;
+  if(!c.field || (float)s.r < c.r[0]) return d;
 
   bool stop_integrating = true;
   for(int i = 0; i < c.n_nu; ++i)
@@ -227,8 +227,8 @@ static inline __device__ State rhs(const State &s, real t)
     float F = 0.5f;
     int   I = c.n_r - N_RS - 1, i = I; // assume c.n_r > N_RS + 1
     if((float)s.r < c.r[i]) {
-      do I = i--; while(i && c.r[i] > s.r); // assume s.r >= c.r[0]
-      F = (s.r - c.r[i]) / (c.r[I] - c.r[i]);
+      do I = i--; while(i && c.r[i] > (float)s.r); // assume s.r >= c.r[0]
+      F = ((float)s.r - c.r[i]) / (c.r[I] - c.r[i]);
     } // else, constant extrapolate
 
     float G = 0.5f;
@@ -345,7 +345,7 @@ static inline __device__ State rhs(const State &s, real t)
               fgH * c.field[ijK].B3 + FgH * c.field[IjK].B3 +
               fGH * c.field[iJK].B3 + FGH * c.field[IJK].B3);
 
-    if(s.r > c.r[c.n_rx]) {
+    if((float)s.r > c.r[c.n_rx]) {
       // The flow is sub-Keplerian
       ur      = 0;
       utheta *= SQRT(c.r[c.n_rx] / (s.r + (real)EPSILON));
@@ -408,7 +408,7 @@ static inline __device__ State rhs(const State &s, real t)
             fGH * c.field[iJK].rho + FGH * c.field[IJK].rho);
     tgas = (Gamma - 1) * u / (rho + (real)EPSILON);
 
-    if(s.r > c.r[c.n_rx]) {
+    if((float)s.r > c.r[c.n_rx]) {
       const real invr = c.r[c.n_rx] / s.r;
       rho  *= invr;
       tgas *= invr;
