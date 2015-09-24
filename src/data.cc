@@ -32,7 +32,7 @@ Data::Data(size_t n_input)
 
   n   = n_input;
   m   = NVAR;
-  bsz = 64;
+  bsz = N_NU < 24 ? 64 : 32;
   gsz = (n - 1) / bsz + 1;
   t   = 0.0;
 
