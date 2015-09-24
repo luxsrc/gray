@@ -22,7 +22,7 @@ static inline __device__ State ic(const size_t i, size_t n, const real t)
 {
   State s = {0};
 
-  size_t m = (size_t)sqrt((real)n); // round down
+  size_t m = (size_t)SQRT((real)n); // round down
   while(n % m) --m;
   n /= m;
 
@@ -30,8 +30,8 @@ static inline __device__ State ic(const size_t i, size_t n, const real t)
   real kphi, alpha, beta;
   {
     const real deg2rad = M_PI / 180;
-    const real cos_obs = cos(deg2rad * c.i_obs);
-    const real sin_obs = sin(deg2rad * c.i_obs);
+    const real cos_obs = COS(deg2rad * c.i_obs);
+    const real sin_obs = SIN(deg2rad * c.i_obs);
     const real half    = .5;
 
     real x, y, z;
@@ -45,15 +45,15 @@ static inline __device__ State ic(const size_t i, size_t n, const real t)
 
     const real R2 = x * x + y * y;
 
-    s.r     = sqrt(R2 + z * z);
-    s.theta = acos(z / s.r);
-    s.phi   = atan2(y, x);
+    s.r     = SQRT(R2 + z * z);
+    s.theta = ACOS(z / s.r);
+    s.phi   = ATAN2(y, x);
 
     if(s.phi >= M_PI) s.phi -= 2 * M_PI;
     if(s.phi <  M_PI) s.phi += 2 * M_PI;
 
     s.kr     = c.r_obs / s.r;
-    s.ktheta = (s.kr * z / s.r - cos_obs) / sqrt(R2);
+    s.ktheta = (s.kr * z / s.r - cos_obs) / SQRT(R2);
       kphi   = -sin_obs * y / R2;
   }
 
@@ -63,7 +63,7 @@ static inline __device__ State ic(const size_t i, size_t n, const real t)
     {
       real tmp, s2, r2, a2, sum;
 
-      tmp = sin(s.theta);
+      tmp = SIN(s.theta);
       s2  = tmp * tmp;
       r2  = s.r * s.r;
       a2  = c.a_spin * c.a_spin;
@@ -84,7 +84,7 @@ static inline __device__ State ic(const size_t i, size_t n, const real t)
       real Delta    = g30_kphi * g30_kphi - g00 * (g11 * s.kr     * s.kr     +
                                                    g22 * s.ktheta * s.ktheta +
                                                    g33 *   kphi   *   kphi  );
-      E  = sqrt(Delta); // = -k_t
+      E  = SQRT(Delta); // = -k_t
       kt = -(g30_kphi + E) / g00;
     }
 

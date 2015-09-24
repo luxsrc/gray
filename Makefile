@@ -5,7 +5,7 @@ OPNI_PATH = /usr/local/OpenNI/2.2
 LEAP_PATH = /usr/local/LeapSDK
 
 NVCC   = $(CUDA_PATH)/bin/nvcc
-CFLAGS = -use_fast_math
+CFLAGS = -m64 -O3 -arch=compute_30
 
 ifeq ($(DEBUG),1) # use `make <prob> DEBUG=1` to enable debug messages
 	CPPFLAGS += -DEBUG
@@ -70,7 +70,7 @@ endif
 
 CPPFLAGS += -Isrc/$@
 CFLAGS   += $(addprefix --compiler-options ,\
-	      -Wextra -Wno-unused-function -Wno-deprecated) -m64 -O3
+	      -Wextra -Wno-unused-function -Wno-deprecated)
 
 help:
 	@echo 'The follow problems are avilable:'

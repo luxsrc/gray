@@ -53,7 +53,7 @@ static __device__ __constant__ real log_K2it_tab[] = {
 
 static inline __device__ real log_K2it(real te)
 {
-  const real h = log(te / (real)T_MIN) * (real)(T_GRID / log(T_MAX / T_MIN));
+  const real h = LOG(te / (real)T_MIN) * (real)(T_GRID / LOG(T_MAX / T_MIN));
   const int  i = h;
   const real d = h - i;
 
@@ -70,22 +70,22 @@ static inline __device__ real B_Planck(real nu, real te)
   f2 *= nu / (te + (real)EPSILON); // 1e-12 -- 1e+02
 
   return nu * (f2 > (real)1e-5 ?
-               f1 / (exp(f2) - 1) :
+               f1 / (EXP(f2) - 1) :
                (f1 / f2) / (1 + f2 / 2 + f2 * f2 / 6));
 } // 10+ FLOP
 
 static inline __device__ real Gaunt(real x, real y)
 {
-  const real sqrt_x = sqrt(x);
-  const real sqrt_y = sqrt(y);
+  const real sqrt_x = SQRT(x);
+  const real sqrt_y = SQRT(y);
 
   if(x > 1)
     return y > 1 ?
-           (real)sqrt(3.0 / M_PI) / sqrt_y :
-           (real)(sqrt(3.0) / M_PI) * ((real)log(4 / 1.78107241799) -
-                                       log(y + (real)EPSILON));
+           (real)SQRT(3.0 / M_PI) / sqrt_y :
+           (real)(SQRT(3.0) / M_PI) * ((real)LOG(4 / 1.78107241799) -
+                                       LOG(y + (real)EPSILON));
   else if(x * y > 1)
-    return (real)sqrt(12.0) / (sqrt_x * sqrt_y);
+    return (real)SQRT(12.0) / (sqrt_x * sqrt_y);
   else if(y > sqrt_x)
     return 1;
   else {
@@ -93,9 +93,9 @@ static inline __device__ real Gaunt(real x, real y)
     // Lightman (1979) and Novikov & Thorne (1973) are inconsistent;
     // it seems that both versions contain typos.
     // TODO: double-check the following formula
-    const real g = (real)(sqrt(3.0) / M_PI) *
-                   ((real)log(4.0 / pow(1.78107241799, 2.5)) +
-                    log(sqrt_x / (y + (real)EPSILON)));
+    const real g = (real)(SQRT(3.0) / M_PI) *
+                   ((real)LOG(4.0 / POW(1.78107241799, 2.5)) +
+                    LOG(sqrt_x / (y + (real)EPSILON)));
     return g > (real)EPSILON ? g : (real)EPSILON;
   }
 } // 3+ FLOP
@@ -108,14 +108,14 @@ static inline __device__ real L_j_ff(real nu, real te, real ne)
 
   real x = CONST_me * CONST_c * CONST_c / CONST_Ry;    // ~ 4e4
   real y = (CONST_h / (CONST_me * CONST_c * CONST_c)); // ~ 3e-21
-  real f = sqrt(CONST_G * CONST_mSun / (CONST_c * CONST_c) * 6.8e-38 /
-                (4 * M_PI * sqrt(CONST_me * CONST_c * CONST_c / CONST_kB)));
+  real f = SQRT(CONST_G * CONST_mSun / (CONST_c * CONST_c) * 6.8e-38 /
+                (4 * M_PI * SQRT(CONST_me * CONST_c * CONST_c / CONST_kB)));
 
   x *= te;      // ~ 1e+04
   y *= nu / te; // ~ 1e-10
   f *= ne;      // ~ 1e-15
 
-  return (c.m_BH * f * Gaunt(x, y)) * (f / (sqrt(te)*exp(y) + (real)EPSILON));
+  return (c.m_BH * f * Gaunt(x, y)) * (f / (SQRT(te)*EXP(y) + (real)EPSILON));
 } // 12 FLOP + FLOP(Gaunt) == 15+ FLOP
 
 // An approximate expression for thermal magnetobremsstrahlung
@@ -127,19 +127,19 @@ static inline __device__ real L_j_synchr(real nu, real te, real ne,
      cos_theta <=          -1 ||
      cos_theta >=           1) return 0;
 
-  const real nus = te * te * B * sqrt(1 - cos_theta * cos_theta) *
+  const real nus = te * te * B * SQRT(1 - cos_theta * cos_theta) *
                    (real)(CONST_e / (9 * M_PI * CONST_me * CONST_c)); // ~ 1e5
   const real x   = nu / (nus + (real)EPSILON); // 1e6 -- 1e18
 
   const real f      = (CONST_G * CONST_mSun / (CONST_c * CONST_c)) *
                       (M_SQRT2 * M_PI * CONST_e * CONST_e / (3 * CONST_c));
-  const real cbrtx  = cbrt(x);                                    // 1e2 -- 1e6
-  const real xx     = sqrt(x) + (real)1.88774862536 * sqrt(cbrtx);// 1e3 -- 1e9
+  const real cbrtx  = CBRT(x);                                    // 1e2 -- 1e6
+  const real xx     = SQRT(x) + (real)1.88774862536 * SQRT(cbrtx);// 1e3 -- 1e9
   const real log_K2 = (te > (real)T_MAX) ?
-                      log(2 * te * te - (real)0.5) :
+                      LOG(2 * te * te - (real)0.5) :
                       log_K2it(te);
 
-  return (c.m_BH * xx * exp(-cbrtx)) * (xx * exp(-log_K2)) * (f * ne * nus);
+  return (c.m_BH * xx * EXP(-cbrtx)) * (xx * EXP(-log_K2)) * (f * ne * nus);
 } // 25 FLOP + min(4 FLOP, FLOP(log_K2it)) == 29+ FLOP
 
 static inline __device__ State rhs(const State &s, real t)
@@ -151,7 +151,7 @@ static inline __device__ State rhs(const State &s, real t)
 
   real sin_theta, cos_theta, c2, cs, s2;
   {
-    sincos(s.theta, &sin_theta, &cos_theta);
+    SINCOS(s.theta, &sin_theta, &cos_theta);
 
     c2 = cos_theta * cos_theta;
     cs = cos_theta * sin_theta;
@@ -348,7 +348,7 @@ static inline __device__ State rhs(const State &s, real t)
     if(s.r > c.r[c.n_rx]) {
       // The flow is sub-Keplerian
       ur      = 0;
-      utheta *= sqrt(c.r[c.n_rx] / (s.r + (real)EPSILON));
+      utheta *= SQRT(c.r[c.n_rx] / (s.r + (real)EPSILON));
       uphi    = 0;
       // Zero out the magnetic field to void unrealistic synchrotron
       // radiation at large radius for the constant temperature model
@@ -358,7 +358,7 @@ static inline __device__ State rhs(const State &s, real t)
     }
 
     // Vector u
-    ut     = 1 / sqrt((real)EPSILON
+    ut     = 1 / SQRT((real)EPSILON
                       -(gKSP00                   +
                         gKSP11 * ur     * ur     +
                         gKSP22 * utheta * utheta +
@@ -394,7 +394,7 @@ static inline __device__ State rhs(const State &s, real t)
                                gKSP23 * btheta + gKSP33 * bphi));
     const real ibeta = bb / (2 * (c.Gamma-1) * u + (real)EPSILON);
     ti_te = (ibeta > c.threshold) ? c.Ti_Te_f : (1 + c.Ti_Te_d * R_SCHW / s.r);
-    b = sqrt(bb);
+    b = SQRT(bb);
   } // 285 FLOP
 
   // Construct the scalars rho and tgas
@@ -473,8 +473,8 @@ static inline __device__ State rhs(const State &s, real t)
     bkcos =  (k0 * bt + k1 * br + k2 * btheta + k3 * bphi) /
              (shift * b + (real)EPSILON);
 
-    b *= sqrt(c.ne_rho) *
-         (real)(CONST_c * sqrt(4 * M_PI * (CONST_mp_me + 1) * CONST_me));
+    b *= SQRT(c.ne_rho) *
+         (real)(CONST_c * SQRT(4 * M_PI * (CONST_mp_me + 1) * CONST_me));
     ne = c.ne_rho * rho;
     te = ti_te < 0 ? -ti_te : tgas * (real)CONST_mp_me / (ti_te+1);
   } // 25+ FLOP
@@ -484,7 +484,7 @@ static inline __device__ State rhs(const State &s, real t)
     const real B_nu   =   B_Planck(nu, te);
     const real L_j_nu = L_j_synchr(nu, te, ne, b, bkcos) + L_j_ff(nu, te, ne);
     if(L_j_nu > 0) {
-      d.I  [i] = -L_j_nu * exp(-s.tau[i]) / (shift * shift + (real)EPSILON);
+      d.I  [i] = -L_j_nu * EXP(-s.tau[i]) / (shift * shift + (real)EPSILON);
       d.tau[i] = -L_j_nu * shift          / (B_nu          + (real)EPSILON);
     }
   } // 12 FLOP + FLOP(B_Planck) + FLOP(L_j_synchr) + FLOP(L_j_ff) == 66+ FLOP

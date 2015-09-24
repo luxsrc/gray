@@ -22,7 +22,7 @@ static inline __device__ real xi(const State &s)
   {
     real tmp, s2, r2, a2, sum;
 
-    tmp  = sin(s.theta);
+    tmp  = SIN(s.theta);
     s2   = tmp * tmp ;
     r2   = s.r * s.r;
     a2   = c.a_spin * c.a_spin;
@@ -41,7 +41,7 @@ static inline __device__ real xi(const State &s)
     kphi =  (g30 + s.bimpact * g00) * tmp;
   }
 
-  return fabs(1 + (g11 * s.kr     * s.kr     +
+  return FABS(1 + (g11 * s.kr     * s.kr     +
                    g22 * s.ktheta * s.ktheta +
                    g33 *   kphi   *   kphi   +
                    g30 *   kt     *   kphi   * 2) / (g00 * kt * kt));

@@ -72,4 +72,25 @@ extern const char *match(const char *, const char *);
 
 extern int help(const char *);
 
+// Redefine math functions
+#ifdef SINGLE
+#  define FABS(x)         fabsf(x)
+#  define MIN(x, y)       fminf(x, y)
+
+#  define EXP(x)          __expf(x)
+#  define LOG(x)          __logf(x)
+#  define POW(x, y)       __powf(x, y)
+
+#  define SQRT(x)         __fsqrt_rn(x)
+#  define CBRT(x)         cbrtf(x)
+
+#  define SIN(x)          __sinf(x)
+#  define COS(x)          __cosf(x)
+#  define ACOS(x)         acosf(x)
+#  define ATAN2(y, x)     atan2f(y, x)
+#  define SINCOS(x, s, c) __sincosf(x, s, c)
+#else
+#  error double or mixed precisions may result incorrect answers
+#endif
+
 #endif // GRAY_H
