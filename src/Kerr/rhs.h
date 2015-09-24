@@ -224,23 +224,23 @@ static inline __device__ State rhs(const State &s, real t)
   real fg, Fg, fG, FG, fgh, Fgh, fGh, FGh, fgH, FgH, fGH, FGH;
   int  ij, Ij, iJ, IJ, ijk, Ijk, iJk, IJk, ijK, IjK, iJK, IJK;
   {
-    real F = (real)0.5;
-    int  I = c.n_r - N_RS - 1, i = I; // assume c.n_r > N_RS + 1
-    if(c.r[i] > s.r) {
+    float F = 0.5f;
+    int   I = c.n_r - N_RS - 1, i = I; // assume c.n_r > N_RS + 1
+    if((float)s.r < c.r[i]) {
       do I = i--; while(i && c.r[i] > s.r); // assume s.r >= c.r[0]
       F = (s.r - c.r[i]) / (c.r[I] - c.r[i]);
     } // else, constant extrapolate
 
-    real G = (real)0.5;
-    int  J = c.n_theta-1, j = J;
-    if(s.theta < c.coord[i].theta * (1-F) +
-                 c.coord[I].theta *    F)
+    float G = 0.5f;
+    int   J = c.n_theta-1, j = J;
+    if((float)s.theta < c.coord[i].theta * (1-F) +
+                        c.coord[I].theta *    F)
       j = J = 0; // constant extrapolation
     else {
-      real theta = c.coord[j*c.n_r + i].theta * (1-F)  +
-                   c.coord[j*c.n_r + I].theta *    F;
-      if(theta > s.theta) {
-	real Theta;
+      float theta = c.coord[j*c.n_r + i].theta * (1-F)  +
+                    c.coord[j*c.n_r + I].theta *    F;
+      if((float)s.theta < theta) {
+	float Theta;
         do {
           J = j--;
           Theta = theta;
@@ -251,8 +251,8 @@ static inline __device__ State rhs(const State &s, real t)
       } // else, constant extrapolation
     }
 
-    real H = (s.phi - (real)(M_PI/180) * c.j_obs) / (real)(2*M_PI);
-    H -= floor(H);
+    float H = (s.phi - (float)(M_PI/180) * c.j_obs) / (float)(2*M_PI);
+    H -= floorf(H);
     H *= c.n_phi;
     int k = H, K = k == c.n_phi-1 ? 0 : k+1;
     H -= k;
@@ -269,7 +269,7 @@ static inline __device__ State rhs(const State &s, real t)
 
     if(i > c.n_rx) {
       I = i = c.n_rx;
-      F = (real)0.5;
+      F = 0.5f;
     }
 
     fgh = (1-F) * (1-G) * (1-H);
