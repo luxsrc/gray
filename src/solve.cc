@@ -23,7 +23,7 @@
 
 size_t Data::solve(double dt, float &elapse, float &actual, float &peak)
 {
-  debug("Data::evlove(%g)\n", dt);
+  debug("Data::solve(%g)\n", dt);
   cudaError_t err;
 
   if(cudaSuccess != (err = cudaEventRecord(time0, 0)))
