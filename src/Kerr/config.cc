@@ -64,7 +64,7 @@ void Para::define(Const &c)
   c.a_spin    = 0.999;
   c.dt_scale  = 1.0 / 32;
 #ifdef ENABLE_GL
-  c.epsilon   = 1.0 / 32; // do get too close so we can get out...
+  c.epsilon   = 1.0 / 32; // do not get too close so we can still escape...
 #else
   c.epsilon   = 1e-3;
 #endif

@@ -24,7 +24,7 @@
 #define DT_DUMP (-64)
 #define N_R     264 // large enough to hold our grids
 #define N_RS    8   // number of cells to skip near the outer boundary
-#define N_NU    12
+#define N_NU    4
 
 typedef struct {
   // Parameters for geodesic integration
@@ -48,7 +48,7 @@ typedef struct {
   Field *field;
   size_t n_rx, n_r, n_theta, n_phi;
   real   Gamma;
-  real   r[N_R];
+  float  r[N_R];
 } Const;
 
 namespace harm {

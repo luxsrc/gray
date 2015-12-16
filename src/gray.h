@@ -73,7 +73,28 @@ extern const char *match(const char *, const char *);
 extern int help(const char *);
 
 // Redefine math functions
-#ifdef SINGLE
+#if defined(DOUBLE)
+#  if N_NU > 3
+#    warning In double precision model, GRay produces wrong answer if N_NU > 3
+#  endif
+#  define FABS(x)         fabs(x)
+#  define MIN(x, y)       fmin(x, y)
+
+#  define EXP(x)          exp(x)
+#  define LOG(x)          log(x)
+#  define POW(x, y)       pow(x, y)
+
+#  define SQRT(x)         sqrt(x)
+#  define CBRT(x)         cbrt(x)
+
+#  define SIN(x)          sin(x)
+#  define COS(x)          cos(x)
+#  define ACOS(x)         acos(x)
+#  define ATAN2(y, x)     atan2(y, x)
+#  define SINCOS(x, s, c) sincos(x, s, c)
+#elif defined(MIXED)
+#  error Double or mixed precisions may result incorrect answers
+#elif defined(SINGLE)
 #  define FABS(x)         fabsf(x)
 #  define MIN(x, y)       fminf(x, y)
 
@@ -89,8 +110,6 @@ extern int help(const char *);
 #  define ACOS(x)         acosf(x)
 #  define ATAN2(y, x)     atan2f(y, x)
 #  define SINCOS(x, s, c) __sincosf(x, s, c)
-#else
-#  error double or mixed precisions may result incorrect answers
 #endif
 
 #endif // GRAY_H
