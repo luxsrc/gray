@@ -69,8 +69,8 @@ the structure and flow of GRay:
     +--Construct data using Data::Data() in "data.cc", which allocates
     |  memory on both host and device
     |
-    +--Call Data::init(), which is declared in "init.cc" and includes
-    |  "*/init.h" to initialize data
+    +--Call Data::init(), which is declared in "core.cu" and includes
+    |  "*/ic.h" to initialize data
     |
     +--Dump initial condition using Data::snapshot() in "io.cc" if
     |  format is provided
@@ -89,4 +89,4 @@ the structure and flow of GRay:
     |  +-->--->--->--->--->--->--->--->--->--->--->--->--->--->--->--->--->-`
     |
     +--Create final output by calling Data::output() in "io.cc", which
-       uses a different Data::output() in "*/output.cc"
+       uses a different Data::output() in "*/io.cc"
