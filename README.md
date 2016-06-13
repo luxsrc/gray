@@ -51,7 +51,7 @@ of command line parameters support by GRay, simply type
          ...
 
 The Makefile will then compile GRay and place the executable in bin/.
-To run GRay so it creates snapshot every 100 GM/c^3, type
+To run GRay so it records variables every 100 GM/c^3, type
 
     gray$ bin/GRay-Kerr dt=-100 rays=demo.rays imgs=demo.raw
     GRay: a massive parallel ODE integrator written in CUDA C/C++
