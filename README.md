@@ -29,6 +29,27 @@ mode disabled and in single-precision, simply type
     gray$ mk Kerr GL=0 SINGLE=1
     Compiling Kerr... DONE.  Use `bin/GRay-Kerr` to run GRay.
 
+Unlike many codes in astrophysics, GRay does not use configuration
+files.  Instead, it takes command line arguments to setup simulations.
+This design makes it easy to perform large parameter studies as an
+user can easily loop through parameters using shell scripts.  In
+addition, modern high-performance computing clusters use queuing
+systems like LSF and PBS.  These systems require submission scripts,
+which serve the purpose of configuration files anyway.  To get a list
+of command line parameters support by GRay, simply type
+
+    gray$ bin/GRay-Kerr --help
+    usage: bin/GRay-Kerr [OPTION] [PARAMETER=VALUE ...]
+
+    Available OPTION includes:
+         --help  display this help and exit
+
+    Available PARAMETER includes:
+         gpu    gpu id for running the job
+         n      total number of rays
+         t0     start time
+         ...
+
 The Makefile will then compile GRay and place the executable in bin/.
 To run GRay so it creates snapshot every 100 GM/c^3, type
 
