@@ -1,5 +1,5 @@
-# Copyright (C) 2015 Chi-kwan Chan & Lia Medeiros
-# Copyright (C) 2015 Steward Observatory
+# Copyright (C) 2015,2016 Chi-kwan Chan & Lia Medeiros
+# Copyright (C) 2015,2016 Steward Observatory
 #
 # This file is part of GRay.
 #
@@ -37,15 +37,15 @@ def isqrt(n):
         y = (x + n // x) // 2
     return x
 
-def load(name):
-    """ Load a GRay raw data file """
+def load_imgs(name):
+    """ Load a GRay raw image(s) file """
     ext = path.splitext(name)[1][1:]
-    if ext != "raw":
+    if ext != "imgs" and ext != "raw":
         raise NameError("Fail to load file \"{0}\", "
                         "which is in an unsupported format".format(name))
 
     with open(name, "rb") as file:
-        print("Loading GRay raw file \"{0}\"".format(name))
+        print("Loading GRay raw image(s) file \"{0}\"".format(name))
 
         # Read the ASCII header
         head = np.array(list(map(float, readline(file).split())))
@@ -60,14 +60,25 @@ def load(name):
         # Done
         return imgs, nus, size * ((np.arange(0, n) + 0.5) / n - 0.5)
 
-def rays(name):
+def load_rays(name):
+    """ Load a GRay ray(s) file """
+    ext = path.splitext(name)[1][1:]
+    if ext != "rays":
+        raise NameError("Fail to load file \"{0}\", "
+                        "which is in an unsupported format".format(name))
+
     r = []
     with open(name, "rb") as f:
+        # Number of rays and number of variables for each point in a ray
         n = np.fromfile(f, np.uint64, 2)
+
+        # For each ray...
         for i in range(n[0]):
-            c = np.fromfile(f, np.uint64,  1)
+            c = np.fromfile(f, np.uint64,  1) # number of points in a ray
             d = np.fromfile(f, np.float32, c * n[1])
             r.append(d.reshape(c, n[1]))
+
+    # Done
     return r
 
 def d(f):

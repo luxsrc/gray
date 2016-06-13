@@ -69,7 +69,8 @@ To run GRay so it creates snapshot every 100 GM/c^3, type
 Note that the dt parameter must be negative because in ray tracing we
 integrate the rays backward.  The rays file "demo.rays" and images
 file "demo.raw" store all the rays and the final images, respectively,
-as described in the help page.
+as described in the help page.  Some IDL and Python scripts are
+available in tools/ to read these output files.
 
 
 Code Structure
