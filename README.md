@@ -53,24 +53,23 @@ of command line parameters support by GRay, simply type
 The Makefile will then compile GRay and place the executable in bin/.
 To run GRay so it creates snapshot every 100 GM/c^3, type
 
-    gray$ bin/GRay-Kerr snapshot=%02d.raw dt=-100
+    gray$ bin/GRay-Kerr dt=-100 rays=demo.rays imgs=demo.raw
     GRay: a massive parallel ODE integrator written in CUDA C/C++
     Press 'Ctrl+C' to quit
-    Set parameter "snapshot=%02d.raw"
     Set parameter "dt=-100"
-    1 GPU is found --- running on GPU 0
-    "GeForce GT 650M" with 1023.69MiB global and 48KiB shared memory
-    t = -100.00; 64 ms/1048576 steps ~ 10.49 Gflops (100.00%), 3.96 GB/s
-    t = -200.00; 64 ms/1048576 steps ~ 10.50 Gflops (100.00%), 3.96 GB/s
-    t = -300.00; 79 ms/1310720 steps ~ 10.58 Gflops (100.00%), 3.99 GB/s
+    Set parameter "rays=demo.rays"
+    Set parameter "imgs=demo.raw"
+    2 GPUs are found --- running on GPU 0
+    "Tesla K20Xm" with 5759.56MiB global and 48KiB shared memory
+    t = -100.00; 29 ms/1048576 steps ~ 18.43 Gflops (100.00%), 5.72 GB/s
+    t = -200.00; 27 ms/1048576 steps ~ 19.71 Gflops (100.00%), 6.11 GB/s
+    t = -300.00; 34 ms/1310720 steps ~ 19.67 Gflops (100.00%), 6.10 GB/s
     ...
 
 Note that the dt parameter must be negative because in ray tracing we
-integrate the rays backward.  The snapshot files "00.raw", "01.raw",
-"02.raw", ..., named by the snapshot parameter contains the full state
-dump of the run.  The final output "out.raw" is controlled by
-src/Kerr/output.cc, and is currently used to output a ray tracing
-image.
+integrate the rays backward.  The rays file "demo.rays" and images
+file "demo.raw" store all the rays and the final images, respectively,
+as described in the help page.
 
 
 Code Structure
