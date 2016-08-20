@@ -37,13 +37,26 @@ conf(Lux_job *ego, const char *restrict arg)
 static int
 init(Lux_job *ego)
 {
+	struct options *opts = &EGO->options;
+
+	size_t ray_sz = sizeof(real) * 8;
+	size_t n_rays = opts->w_rays * opts->h_rays;
+
+	Lux_opencl *ocl;
+	cl_mem      data;
+
 	lux_debug("GRay2: initializing job %p\n", ego);
 
-	CKR(EGO->ocl = lux_load("opencl", NULL), cleanup);
+	CKR(ocl  = lux_load("opencl", NULL),                                cleanup1);
+	CKR(data = ocl->mk(ocl->super, CL_MEM_READ_WRITE, ray_sz * n_rays), cleanup2);
 
+	EGO->ocl  = ocl;
+	EGO->data = data;
 	return EXIT_SUCCESS;
 
- cleanup:
+ cleanup2:
+	lux_unload(ocl);
+ cleanup1:
 	return EXIT_FAILURE;
 }
 
@@ -75,8 +88,12 @@ LUX_MKMOD(const void *opts)
 void
 LUX_RMMOD(void *ego)
 {
+	Lux_opencl *ocl = EGO->ocl;
+
 	lux_debug("GRay2: destructing instance %p\n", ego);
 
+	if(EGO->data)
+		ocl->rm(EGO->data);
 	if(EGO->ocl)
 		lux_unload(EGO->ocl);
 	free(ego);

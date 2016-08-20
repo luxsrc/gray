@@ -21,6 +21,7 @@
 #define _GRAY_H_
 
 #include <lux/job.h>
+#include <lux/numeric.h>
 #include <lux/opencl.h>
 #include "options.h"
 
@@ -28,6 +29,7 @@ struct gray {
 	Lux_job        super;
 	struct options options;
 	Lux_opencl    *ocl;
+	cl_mem         data;
 };
 
 #endif /* _GRAY_H */
