@@ -13,5 +13,10 @@ options.h
 # Makefile etc
 !*file
 
+# Documentations
+html/
+latex/
+!*.md
+
 # Data files
 !*.?sv

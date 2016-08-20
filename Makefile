@@ -1,4 +1,4 @@
-SUBDIRS = sim
+SUBDIRS = sim doc
 
 ifeq ($(MAKECMDGOALS),)
 	GOALS = all
