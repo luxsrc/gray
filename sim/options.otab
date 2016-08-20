@@ -1,0 +1,18 @@
+# Spacetime geometry
+double	a_spin:a	= 1	= strtod(val, &rem);	/**< dimensionless black hole spin */
+
+# Initial conditions
+double	w_img:w	= 64	= strtod(val, &rem);	/**< width  of the image in \f$GM/c^2\f$ */
+double	h_img:h	= 64	= strtod(val, &rem);	/**< height of the image in \f$GM/c^2\f$ */
+double	r_obs:r	= 1024	= strtod(val, &rem);	/**< distance of the image from the black hole */
+double	i_obs:i	= 60	= strtod(val, &rem);	/**< inclination angle of the image in degrees */
+double	j_obs:j	= 0	= strtod(val, &rem);	/**< azimuthal   angle of the image in degrees */
+
+# Numerical setup
+size_t	w_rays:W	= 512	= strtoul(val, &rem, 0);	/**< number of rays along the width  of the image */
+size_t	h_rays:H	= 512	= strtoul(val, &rem, 0);	/**< number of rays along the height of the image */
+
+# Implementation and runtime parameters
+unsigned	i_platform:ip	= 0	= strtoul(val, &rem, 0);	/**< index of platform to use */
+unsigned	i_device:id	= 0	= strtoul(val, &rem, 0);	/**< index of device   to use */
+const char *	precision:p	= "double"	= val;	/**< real type */
