@@ -22,10 +22,12 @@
 
 #include <lux/job.h>
 #include <lux/opencl.h>
+#include "options.h"
 
 struct gray {
-	Lux_job     super;
-	Lux_opencl *ocl;
+	Lux_job        super;
+	struct options options;
+	Lux_opencl    *ocl;
 };
 
 #endif /* _GRAY_H */

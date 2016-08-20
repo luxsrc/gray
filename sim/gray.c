@@ -31,7 +31,7 @@ conf(Lux_job *ego, const char *restrict arg)
 {
 	lux_debug("GRay2: configuring job %p with argument \"%s\"\n", ego, arg);
 
-	return EXIT_SUCCESS;
+	return options_config(&EGO->options, arg);
 }
 
 static int
@@ -67,6 +67,7 @@ LUX_MKMOD(const void *opts)
 		EGO->super.conf = conf;
 		EGO->super.init = init;
 		EGO->super.exec = exec;
+		options_init(&EGO->options);
 	}
 	return ego;
 }
