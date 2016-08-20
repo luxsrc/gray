@@ -1,0 +1,17 @@
+# Global settings
+*
+!*/
+
+# Source codes
+!*.[hc]
+!*.cl
+
+# Optgen-ed files
+!*.otab
+options.h
+
+# Makefile etc
+!*file
+
+# Data files
+!*.?sv
