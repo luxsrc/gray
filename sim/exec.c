@@ -17,27 +17,13 @@
  * You should have received a copy of the GNU General Public License
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef _GRAY_H_
-#define _GRAY_H_
+#include <lux.h>
+#include "gray.h"
 
-#include <lux/check.h>
-#include <lux/job.h>
-#include <lux/numeric.h>
-#include <lux/opencl.h>
-#include "options.h"
+int
+exec(Lux_job *ego)
+{
+	lux_debug("GRay2: executing job %p\n", ego);
 
-struct gray {
-	Lux_job        super;
-	struct options options;
-	Lux_opencl    *ocl;
-	cl_mem         data;
-};
-
-#define EGO ((struct gray *)ego)
-#define CKR lux_check_func_success
-
-extern int conf(Lux_job *, const char *);
-extern int init(Lux_job *);
-extern int exec(Lux_job *);
-
-#endif /* _GRAY_H */
+	return EXIT_SUCCESS;
+}

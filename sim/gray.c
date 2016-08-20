@@ -18,55 +18,9 @@
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <lux.h>
-#include <lux/check.h>
 #include <lux/mangle.h>
 #include <lux/zalloc.h>
 #include "gray.h"
-
-#define EGO ((struct gray *)ego)
-#define CKR lux_check_func_success
-
-static int
-conf(Lux_job *ego, const char *restrict arg)
-{
-	lux_debug("GRay2: configuring job %p with argument \"%s\"\n", ego, arg);
-
-	return options_config(&EGO->options, arg);
-}
-
-static int
-init(Lux_job *ego)
-{
-	struct options *opts = &EGO->options;
-
-	size_t ray_sz = sizeof(real) * 8;
-	size_t n_rays = opts->w_rays * opts->h_rays;
-
-	Lux_opencl *ocl;
-	cl_mem      data;
-
-	lux_debug("GRay2: initializing job %p\n", ego);
-
-	CKR(ocl  = lux_load("opencl", NULL),                                cleanup1);
-	CKR(data = ocl->mk(ocl->super, CL_MEM_READ_WRITE, ray_sz * n_rays), cleanup2);
-
-	EGO->ocl  = ocl;
-	EGO->data = data;
-	return EXIT_SUCCESS;
-
- cleanup2:
-	lux_unload(ocl);
- cleanup1:
-	return EXIT_FAILURE;
-}
-
-static int
-exec(Lux_job *ego)
-{
-	lux_debug("GRay2: executing job %p\n", ego);
-
-	return EXIT_SUCCESS;
-}
 
 void *
 LUX_MKMOD(const void *opts)

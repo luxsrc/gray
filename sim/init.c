@@ -17,27 +17,31 @@
  * You should have received a copy of the GNU General Public License
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef _GRAY_H_
-#define _GRAY_H_
+#include <lux.h>
+#include "gray.h"
 
-#include <lux/check.h>
-#include <lux/job.h>
-#include <lux/numeric.h>
-#include <lux/opencl.h>
-#include "options.h"
+int
+init(Lux_job *ego)
+{
+	struct options *opts = &EGO->options;
 
-struct gray {
-	Lux_job        super;
-	struct options options;
-	Lux_opencl    *ocl;
-	cl_mem         data;
-};
+	size_t ray_sz = sizeof(real) * 8;
+	size_t n_rays = opts->w_rays * opts->h_rays;
 
-#define EGO ((struct gray *)ego)
-#define CKR lux_check_func_success
+	Lux_opencl *ocl;
+	cl_mem      data;
 
-extern int conf(Lux_job *, const char *);
-extern int init(Lux_job *);
-extern int exec(Lux_job *);
+	lux_debug("GRay2: initializing job %p\n", ego);
 
-#endif /* _GRAY_H */
+	CKR(ocl  = lux_load("opencl", NULL),                                cleanup1);
+	CKR(data = ocl->mk(ocl->super, CL_MEM_READ_WRITE, ray_sz * n_rays), cleanup2);
+
+	EGO->ocl  = ocl;
+	EGO->data = data;
+	return EXIT_SUCCESS;
+
+ cleanup2:
+	lux_unload(ocl);
+ cleanup1:
+	return EXIT_FAILURE;
+}
