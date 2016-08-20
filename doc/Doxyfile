@@ -101,7 +101,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = mainpage.md ../sim
+INPUT                  = ../README.md ../sim
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.h *.c *.cl
 RECURSIVE              = YES
