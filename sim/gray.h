@@ -21,9 +21,11 @@
 #define _GRAY_H_
 
 #include <lux/job.h>
+#include <lux/opencl.h>
 
 struct gray {
-	Lux_job super;
+	Lux_job     super;
+	Lux_opencl *ocl;
 };
 
 #endif /* _GRAY_H */

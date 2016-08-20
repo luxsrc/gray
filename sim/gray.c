@@ -18,11 +18,13 @@
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <lux.h>
+#include <lux/check.h>
 #include <lux/mangle.h>
-#include <stdlib.h>
+#include <lux/zalloc.h>
 #include "gray.h"
 
 #define EGO ((struct gray *)ego)
+#define CKR lux_check_func_success
 
 static int
 conf(Lux_job *ego, const char *restrict arg)
@@ -37,7 +39,12 @@ init(Lux_job *ego)
 {
 	lux_debug("GRay2: initializing job %p\n", ego);
 
+	CKR(EGO->ocl = lux_load("opencl", NULL), cleanup);
+
 	return EXIT_SUCCESS;
+
+ cleanup:
+	return EXIT_FAILURE;
 }
 
 static int
@@ -55,12 +62,11 @@ LUX_MKMOD(const void *opts)
 
 	lux_debug("GRay2: constructing with configuration %p\n", opts);
 
-	ego = malloc(sizeof(struct gray));
+	ego = zalloc(sizeof(struct gray));
 	if(ego) {
-		EGO->super.banner = NULL;
-		EGO->super.conf   = conf;
-		EGO->super.init   = init;
-		EGO->super.exec   = exec;
+		EGO->super.conf = conf;
+		EGO->super.init = init;
+		EGO->super.exec = exec;
 	}
 	return ego;
 }
@@ -70,5 +76,7 @@ LUX_RMMOD(void *ego)
 {
 	lux_debug("GRay2: destructing instance %p\n", ego);
 
+	if(EGO->ocl)
+		lux_unload(EGO->ocl);
 	free(ego);
 }
