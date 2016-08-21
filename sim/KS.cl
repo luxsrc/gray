@@ -162,8 +162,6 @@ icond(double r_obs, double i_obs, double j_obs, double alpha, double beta)
  ** the RHS uses many matrix-vector products, which are optimized in
  ** modern hardwares.
  **
- ** \todo Take advantage of built-in vector operators in OpenCL
- **
  ** \return The right hand sides of the geodesic equations
  **/
 double8
@@ -171,13 +169,16 @@ rhs(double8 s)
 {
 	double4 q = s.s0123;
 	double4 u = s.s4567;
-	double4 a; /* "acceleration", not black hole spin */
 
 	double f,  dx_f,  dy_f,  dz_f;
 	double lx, dx_lx, dy_lx, dz_lx;
 	double ly, dx_ly, dy_ly, dz_ly;
 	double lz, dx_lz, dy_lz, dz_lz;
-	double tmp;
+
+	double  hDxu, hDyu, hDzu;
+	double4 uD;
+	double  tmp;
+
 	{
 		double dx_r, dy_r, dz_r;
 		double r, ir, iss;
@@ -237,47 +238,39 @@ rhs(double8 s)
 	}
 
 	{
-		double hDxu, hDyu, hDzu;
-		double uDt, uDx, uDy, uDz;
+		double  flu;
+		double4 Dx, Dy, Dz;
 		{
-			double flu;
-			double Dxt, Dyt, Dzt;
-			{
-				double lu = u.s0 + lx * u.s1 + ly * u.s2 + lz * u.s3;
-				flu = f * lu;
-				Dxt = dx_f * lu + f * (dx_lx * u.s1 + dx_ly * u.s2 + dx_lz * u.s3);
-				Dyt = dy_f * lu + f * (dy_lx * u.s1 + dy_ly * u.s2 + dy_lz * u.s3);
-				Dzt = dz_f * lu + f * (dz_lx * u.s1 + dz_ly * u.s2 + dz_lz * u.s3); /* 31 (-12) FLOPs */
-			}
-			double Dxx = Dxt * lx + flu * dx_lx;
-			double Dxy = Dxt * ly + flu * dx_ly;
-			double Dxz = Dxt * lz + flu * dx_lz; /* 9 (-3) FLOPs */
-
-			double Dyx = Dyt * lx + flu * dy_lx;
-			double Dyy = Dyt * ly + flu * dy_ly;
-			double Dyz = Dyt * lz + flu * dy_lz; /* 9 (-3) FLOPs */
-
-			double Dzx = Dzt * lx + flu * dz_lx;
-			double Dzy = Dzt * ly + flu * dz_ly;
-			double Dzz = Dzt * lz + flu * dz_lz; /* 9 (-3) FLOPs */
-
-			hDxu = 0.5 * (Dxt * u.s0 + Dxx * u.s1 + Dxy * u.s2 + Dxz * u.s3);
-			hDyu = 0.5 * (Dyt * u.s0 + Dyx * u.s1 + Dyy * u.s2 + Dyz * u.s3);
-			hDzu = 0.5 * (Dzt * u.s0 + Dzx * u.s1 + Dzy * u.s2 + Dzz * u.s3); /* 24 (-9) FLOPs */
-
-			uDt = u.s1 * Dxt + u.s2 * Dyt + u.s3 * Dzt;
-			uDx = u.s1 * Dxx + u.s2 * Dyx + u.s3 * Dzx;
-			uDy = u.s1 * Dxy + u.s2 * Dyy + u.s3 * Dzy;
-			uDz = u.s1 * Dxz + u.s2 * Dyz + u.s3 * Dzz; /* 20 (-8) FLOPs */
-
-			tmp = f * (-uDt + lx * (uDx - hDxu) + ly * (uDy - hDyu) + lz * (uDz - hDzu)); /* 10 (-3) FLOPs */
+			double lu = u.s0 + lx * u.s1 + ly * u.s2 + lz * u.s3;
+			flu   = f * lu;
+			Dx.s0 = dx_f * lu + f * (dx_lx * u.s1 + dx_ly * u.s2 + dx_lz * u.s3);
+			Dy.s0 = dy_f * lu + f * (dy_lx * u.s1 + dy_ly * u.s2 + dy_lz * u.s3);
+			Dz.s0 = dz_f * lu + f * (dz_lx * u.s1 + dz_ly * u.s2 + dz_lz * u.s3); /* 31 (-12) FLOPs */
 		}
+		Dx.s1 = Dx.s0 * lx + flu * dx_lx;
+		Dx.s2 = Dx.s0 * ly + flu * dx_ly;
+		Dx.s3 = Dx.s0 * lz + flu * dx_lz; /* 9 (-3) FLOPs */
 
-		a.s0 =        uDt -      tmp;
-		a.s1 = hDxu - uDx + lx * tmp;
-		a.s2 = hDyu - uDy + ly * tmp;
-		a.s3 = hDzu - uDz + lz * tmp; /* 10 (-3) FLOPs */
+		Dy.s1 = Dy.s0 * lx + flu * dy_lx;
+		Dy.s2 = Dy.s0 * ly + flu * dy_ly;
+		Dy.s3 = Dy.s0 * lz + flu * dy_lz; /* 9 (-3) FLOPs */
+
+		Dz.s1 = Dz.s0 * lx + flu * dz_lx;
+		Dz.s2 = Dz.s0 * ly + flu * dz_ly;
+		Dz.s3 = Dz.s0 * lz + flu * dz_lz; /* 9 (-3) FLOPs */
+
+		hDxu = 0.5 * dot(Dx, u);
+		hDyu = 0.5 * dot(Dy, u);
+		hDzu = 0.5 * dot(Dz, u); /* 24 (-9) FLOPs */
+
+		uD  = u.s1 * Dx + u.s2 * Dy + u.s3 * Dz; /* 20 (-8) FLOPs */
+
+		tmp = f * (-uD.s0 + lx * (uD.s1 - hDxu) + ly * (uD.s2 - hDyu) + lz * (uD.s3 - hDzu)); /* 10 (-3) FLOPs */
 	}
 
-	return (double8){u, a};
+	return (double8){u,
+			        uD.s0 -      tmp,
+			 hDxu - uD.s1 + lx * tmp,
+			 hDyu - uD.s2 + ly * tmp,
+			 hDzu - uD.s3 + lz * tmp}; /* 10 (-3) FLOPs */
 }
