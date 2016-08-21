@@ -5,6 +5,7 @@
 # Source codes
 !*.[hc]
 !*.cl
+!*.py
 
 # Optgen-ed files
 !*.otab

@@ -28,18 +28,20 @@ dump(Lux_job *ego, const char *restrict name)
 {
 	struct param *p = &EGO->param;
 
-	const size_t sz = sizeof(cl_double8);
-	const size_t n  = p->h_rays * p->w_rays;
+	const size_t sz     = sizeof(double);
+	const size_t n_vars = sizeof(cl_double8) / sz;
+	const size_t n_rays = p->h_rays * p->w_rays;
 
-	void *d = EGO->ocl->mmap(EGO->ocl, EGO->diag, sizeof(double) * n);
-	void *h = EGO->ocl->mmap(EGO->ocl, EGO->data, sz * n);
+	void *d = EGO->ocl->mmap(EGO->ocl, EGO->diag, sz * n_rays);
+	void *h = EGO->ocl->mmap(EGO->ocl, EGO->data, sz * n_rays * n_vars);
 
 	FILE *f = fopen(name, "wb");
-	fwrite(&sz,        sizeof(size_t), 1, f);
-	fwrite(&p->w_rays, sizeof(size_t), 1, f);
-	fwrite(&p->h_rays, sizeof(size_t), 1, f);
-	fwrite( h,         sz,             n, f);
-	fwrite( d,         sizeof(double), n, f);
+	fwrite(&sz,        sizeof(size_t), 1,      f);
+	fwrite(&n_vars,    sizeof(size_t), 1,      f);
+	fwrite(&p->w_rays, sizeof(size_t), 1,      f);
+	fwrite(&p->h_rays, sizeof(size_t), 1,      f);
+	fwrite( h,         sz * n_vars,    n_rays, f);
+	fwrite( d,         sz,             n_rays, f);
 	fclose(f);
 
 	EGO->ocl->munmap(EGO->ocl, EGO->diag, d);
