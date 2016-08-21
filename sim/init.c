@@ -19,6 +19,7 @@
  */
 #include <lux.h>
 #include "gray.h"
+#include <stdio.h>
 
 int
 init(Lux_job *ego)
@@ -31,7 +32,8 @@ init(Lux_job *ego)
 	const size_t gsz[] = {p->h_rays, p->w_rays};
 	const size_t bsz[] = {1, 1};
 
-	const char *src[] = {"sim/AoS.cl", NULL};
+	char buf[1024];
+	const char *src[] = {buf, "sim/AoS.cl", NULL};
 	struct LuxOopencl opts = {0, 0, CL_DEVICE_TYPE_DEFAULT, NULL, src};
 
 	Lux_opencl *ocl;
@@ -39,6 +41,14 @@ init(Lux_job *ego)
 	cl_kernel   init, evol;
 
 	lux_debug("GRay2: initializing job %p\n", ego);
+
+	snprintf(buf, sizeof(buf),
+	         "__constant double a_spin = %g;\n"
+	         "__constant size_t w_rays = %zu;\n"
+	         "__constant size_t h_rays = %zu;\n",
+	         p->a_spin,
+	         p->w_rays,
+	         p->h_rays);
 
 	CKR(ocl  = lux_load("opencl", &opts),                               cleanup1);
 	CKR(data = ocl->mk(ocl->super, CL_MEM_READ_WRITE, ray_sz * n_rays), cleanup2);
