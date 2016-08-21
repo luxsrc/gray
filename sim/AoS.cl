@@ -17,6 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/** \file
+ ** Array-of-Structures driver kernels
+ **
+ ** GRay2 uses OpenCL's just-in-time compilation feature to implement
+ ** run-time configurable algorithms.  In this file we implement
+ ** Array-of-Structures driver kernels init() and evol().
+ **/
+
+/** OpenCL driver kernel for initializing states */
 __kernel void
 init(__global double  *diagno,
      __global double8 *states,
@@ -39,6 +49,7 @@ init(__global double  *diagno,
 	}
 }
 
+/** OpenCL driver kernel for evolving the geodesic equations */
 __kernel void
 evol(__global double  *diagno,
      __global double8 *states,
