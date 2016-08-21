@@ -21,7 +21,7 @@
 #include "gray.h"
 #include <stdio.h>
 
-/* TODO: implment load() */
+/** \todo implement load() */
 
 void
 dump(Lux_job *ego, const char *restrict name)

@@ -38,7 +38,7 @@ exec(Lux_job *ego)
 
 	dump(ego, "0000.raw");
 
-	/* TODO: check errors */
+	/** \todo check errors */
 	ocl->set(ocl, EGO->evol, 0, sizeof(cl_mem), &EGO->diag);
 	ocl->set(ocl, EGO->evol, 1, sizeof(cl_mem), &EGO->data);
 	ocl->set(ocl, EGO->evol, 2, sizeof(double), &dt);

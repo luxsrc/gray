@@ -56,7 +56,7 @@ init(Lux_job *ego)
 	CKR(init = ocl->mkkern(ocl, "init"),                                        cleanup4);
 	CKR(evol = ocl->mkkern(ocl, "evol"),                                        cleanup5);
 
-	/* TODO: check errors */
+	/** \todo check errors */
 	ocl->set(ocl, init, 0, sizeof(cl_mem), &diag);
 	ocl->set(ocl, init, 1, sizeof(cl_mem), &data);
 	ocl->set(ocl, init, 2, sizeof(double), &i->w_img);
