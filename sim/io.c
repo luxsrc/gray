@@ -31,7 +31,7 @@ dump(Lux_job *ego, const char *restrict name)
 	const size_t sz = sizeof(cl_double8);
 	const size_t n  = opts->h_rays * opts->w_rays;
 
-	void *h = clEnqueueMapBuffer(EGO->ocl->queue[0], EGO->data,
+	void *h = clEnqueueMapBuffer(EGO->ocl->que, EGO->data,
 	                             CL_TRUE, CL_MAP_READ, 0, sz * n,
 	                             0, NULL, NULL, NULL);
 
@@ -42,6 +42,6 @@ dump(Lux_job *ego, const char *restrict name)
 	fwrite( h,            sz,             n, f);
 	fclose(f);
 
-	clEnqueueUnmapMemObject(EGO->ocl->queue[0], EGO->data,
+	clEnqueueUnmapMemObject(EGO->ocl->que, EGO->data,
 	                        h, 0, NULL, NULL);
 }
