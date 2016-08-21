@@ -24,10 +24,10 @@
 int
 exec(Lux_job *ego)
 {
-	struct options *opts = &EGO->options;
-	Lux_opencl     *ocl  =  EGO->ocl;
+	struct param *p   = &EGO->param;
+	Lux_opencl   *ocl =  EGO->ocl;
 
-	const size_t gsz[] = {opts->h_rays, opts->w_rays};
+	const size_t gsz[] = {p->h_rays, p->w_rays};
 	const size_t bsz[] = {1, 1};
 
 	const double dt = 0.1;

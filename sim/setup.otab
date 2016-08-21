@@ -1,0 +1,4 @@
+# Job setup/configuration
+unsigned	i_platform:ip	= 0	= strtoul(val, &rem, 0);	/**< index of platform to use */
+unsigned	i_device:id	= 0	= strtoul(val, &rem, 0);	/**< index of device   to use */
+const char *	precision:p	= "double"	= val;	/**< real type */

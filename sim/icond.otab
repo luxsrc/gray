@@ -1,0 +1,6 @@
+# Initial conditions
+double	w_img:w	= 64	= strtod(val, &rem);	/**< width  of the image in \f$GM/c^2\f$ */
+double	h_img:h	= 64	= strtod(val, &rem);	/**< height of the image in \f$GM/c^2\f$ */
+double	r_obs:r	= 1024	= strtod(val, &rem);	/**< distance of the image from the black hole */
+double	i_obs:i	= 60	= strtod(val, &rem);	/**< inclination angle of the image in degrees */
+double	j_obs:j	= 0	= strtod(val, &rem);	/**< azimuthal   angle of the image in degrees */

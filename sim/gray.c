@@ -34,7 +34,9 @@ LUX_MKMOD(const void *opts)
 		EGO->super.conf = conf;
 		EGO->super.init = init;
 		EGO->super.exec = exec;
-		options_init(&EGO->options);
+		icond_init(&EGO->icond);
+		param_init(&EGO->param);
+		setup_init(&EGO->setup);
 	}
 	return ego;
 }

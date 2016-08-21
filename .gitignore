@@ -8,7 +8,9 @@
 
 # Optgen-ed files
 !*.otab
-options.h
+icond.h
+param.h
+setup.h
 
 # Makefile etc
 !*file

@@ -24,14 +24,18 @@
 #include <lux/job.h>
 #include <lux/numeric.h>
 #include <lux/opencl.h>
-#include "options.h"
+#include "icond.h"
+#include "param.h"
+#include "setup.h"
 
 struct gray {
-	Lux_job        super;
-	struct options options;
-	Lux_opencl    *ocl;
-	cl_mem         data;
-	cl_kernel      evol;
+	Lux_job      super;
+	struct icond icond;
+	struct param param;
+	struct setup setup;
+	Lux_opencl  *ocl;
+	cl_mem       data;
+	cl_kernel    evol;
 };
 
 #define EGO ((struct gray *)ego)

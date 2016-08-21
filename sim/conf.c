@@ -25,5 +25,7 @@ conf(Lux_job *ego, const char *restrict arg)
 {
 	lux_debug("GRay2: configuring job %p with argument \"%s\"\n", ego, arg);
 
-	return options_config(&EGO->options, arg);
+	return icond_config(&EGO->icond, arg) &&
+	       param_config(&EGO->param, arg) &&
+	       setup_config(&EGO->setup, arg);
 }

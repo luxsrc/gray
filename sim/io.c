@@ -26,18 +26,18 @@
 void
 dump(Lux_job *ego, const char *restrict name)
 {
-	struct options *opts = &EGO->options;
+	struct param *p = &EGO->param;
 
 	const size_t sz = sizeof(cl_double8);
-	const size_t n  = opts->h_rays * opts->w_rays;
+	const size_t n  = p->h_rays * p->w_rays;
 
 	void *h = EGO->ocl->mmap(EGO->ocl, EGO->data, sz * n);
 
 	FILE *f = fopen(name, "wb");
-	fwrite(&sz,           sizeof(size_t), 1, f);
-	fwrite(&opts->w_rays, sizeof(size_t), 1, f);
-	fwrite(&opts->h_rays, sizeof(size_t), 1, f);
-	fwrite( h,            sz,             n, f);
+	fwrite(&sz,        sizeof(size_t), 1, f);
+	fwrite(&p->w_rays, sizeof(size_t), 1, f);
+	fwrite(&p->h_rays, sizeof(size_t), 1, f);
+	fwrite( h,         sz,             n, f);
 	fclose(f);
 
 	EGO->ocl->munmap(EGO->ocl, EGO->data, h);
