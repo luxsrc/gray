@@ -21,38 +21,27 @@
 #include "gray.h"
 #include <stdio.h>
 
-int
-exec(Lux_job *ego)
+/* TODO: implment load() */
+
+void
+dump(Lux_job *ego, const char *restrict name)
 {
 	struct options *opts = &EGO->options;
-	Lux_opencl     *ocl  =  EGO->ocl;
 
-	const size_t gsz[] = {opts->h_rays, opts->w_rays};
-	const size_t bsz[] = {1, 1};
+	const size_t sz = sizeof(cl_double8);
+	const size_t n  = opts->h_rays * opts->w_rays;
 
-	const double dt = 0.1;
-	size_t       i;
+	void *h = clEnqueueMapBuffer(EGO->ocl->queue[0], EGO->data,
+	                             CL_TRUE, CL_MAP_READ, 0, sz * n,
+	                             0, NULL, NULL, NULL);
 
-	lux_debug("GRay2: executing job %p\n", ego);
+	FILE *f = fopen(name, "wb");
+	fwrite(&sz,           sizeof(size_t), 1, f);
+	fwrite(&opts->w_rays, sizeof(size_t), 1, f);
+	fwrite(&opts->h_rays, sizeof(size_t), 1, f);
+	fwrite( h,            sz,             n, f);
+	fclose(f);
 
-	dump(ego, "0000.raw");
-
-	/* TODO: check errors */
-	clSetKernelArg(EGO->evol, 0, sizeof(cl_mem), &EGO->data);
-	clSetKernelArg(EGO->evol, 1, sizeof(double), &dt);
-
-	for(i = 0; i < 10; ++i) {
-		char buf[64];
-
-		lux_print("%zu: %4.1f -> %4.1f", i, i*dt, (i+1)*dt);
-
-		ocl->exec(ocl, EGO->evol, 2, gsz, bsz);
-
-		snprintf(buf, sizeof(buf), "%04zu.raw", i+1);
-		dump(ego, buf);
-
-		lux_print(": DONE\n");
-	}
-
-	return EXIT_SUCCESS;
+	clEnqueueUnmapMemObject(EGO->ocl->queue[0], EGO->data,
+	                        h, 0, NULL, NULL);
 }

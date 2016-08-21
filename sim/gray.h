@@ -37,8 +37,9 @@ struct gray {
 #define EGO ((struct gray *)ego)
 #define CKR lux_check_func_success
 
-extern int conf(Lux_job *, const char *);
-extern int init(Lux_job *);
-extern int exec(Lux_job *);
+extern int  conf(Lux_job *, const char *);
+extern int  init(Lux_job *);
+extern int  exec(Lux_job *);
+extern void dump(Lux_job *, const char *);
 
 #endif /* _GRAY_H */
