@@ -37,7 +37,7 @@ init(Lux_job *ego)
 	struct LuxOopencl opts = {0, 0, CL_DEVICE_TYPE_CPU, NULL, src};
 
 	Lux_opencl *ocl;
-	cl_mem      data;
+	cl_mem      diag, data;
 	cl_kernel   init, evol;
 
 	lux_debug("GRay2: initializing job %p\n", ego);
@@ -50,30 +50,35 @@ init(Lux_job *ego)
 	         p->w_rays,
 	         p->h_rays);
 
-	CKR(ocl  = lux_load("opencl", &opts),                               cleanup1);
-	CKR(data = ocl->mk(ocl->super, CL_MEM_READ_WRITE, ray_sz * n_rays), cleanup2);
-	CKR(init = ocl->mkkern(ocl, "init"),                                cleanup3);
-	CKR(evol = ocl->mkkern(ocl, "evol"),                                cleanup4);
+	CKR(ocl  = lux_load("opencl", &opts),                                       cleanup1);
+	CKR(diag = ocl->mk(ocl->super, CL_MEM_READ_WRITE, sizeof(double) * n_rays), cleanup2);
+	CKR(data = ocl->mk(ocl->super, CL_MEM_READ_WRITE, ray_sz         * n_rays), cleanup3);
+	CKR(init = ocl->mkkern(ocl, "init"),                                        cleanup4);
+	CKR(evol = ocl->mkkern(ocl, "evol"),                                        cleanup5);
 
 	/* TODO: check errors */
-	ocl->set(ocl, init, 0, sizeof(cl_mem), &data);
-	ocl->set(ocl, init, 1, sizeof(double), &i->w_img);
-	ocl->set(ocl, init, 2, sizeof(double), &i->h_img);
-	ocl->set(ocl, init, 3, sizeof(double), &i->r_obs);
-	ocl->set(ocl, init, 4, sizeof(double), &i->i_obs);
-	ocl->set(ocl, init, 5, sizeof(double), &i->j_obs);
+	ocl->set(ocl, init, 0, sizeof(cl_mem), &diag);
+	ocl->set(ocl, init, 1, sizeof(cl_mem), &data);
+	ocl->set(ocl, init, 2, sizeof(double), &i->w_img);
+	ocl->set(ocl, init, 3, sizeof(double), &i->h_img);
+	ocl->set(ocl, init, 4, sizeof(double), &i->r_obs);
+	ocl->set(ocl, init, 5, sizeof(double), &i->i_obs);
+	ocl->set(ocl, init, 6, sizeof(double), &i->j_obs);
 	ocl->exec(ocl, init, 2, gsz, bsz);
 	ocl->rmkern(init);
 
 	EGO->ocl  = ocl;
+	EGO->diag = diag;
 	EGO->data = data;
 	EGO->evol = evol;
 	return EXIT_SUCCESS;
 
- cleanup4:
+ cleanup5:
 	ocl->rmkern(init);
- cleanup3:
+ cleanup4:
 	ocl->rm(data);
+ cleanup3:
+	ocl->rm(diag);
  cleanup2:
 	lux_unload(ocl);
  cleanup1:

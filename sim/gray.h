@@ -34,6 +34,7 @@ struct gray {
 	struct param param;
 	struct setup setup;
 	Lux_opencl  *ocl;
+	cl_mem       diag;
 	cl_mem       data;
 	cl_kernel    evol;
 };
