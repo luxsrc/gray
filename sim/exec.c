@@ -38,8 +38,8 @@ exec(Lux_job *ego)
 	dump(ego, "0000.raw");
 
 	/* TODO: check errors */
-	clSetKernelArg(EGO->evol, 0, sizeof(cl_mem), &EGO->data);
-	clSetKernelArg(EGO->evol, 1, sizeof(double), &dt);
+	ocl->set(ocl, EGO->evol, 0, sizeof(cl_mem), &EGO->data);
+	ocl->set(ocl, EGO->evol, 1, sizeof(double), &dt);
 
 	for(i = 0; i < 10; ++i) {
 		char buf[64];

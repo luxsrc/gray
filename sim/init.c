@@ -46,12 +46,12 @@ init(Lux_job *ego)
 	CKR(evol = ocl->mkkern(ocl, "evol"),                                cleanup4);
 
 	/* TODO: check errors */
-	clSetKernelArg(init, 0, sizeof(cl_mem), &data);
-	clSetKernelArg(init, 1, sizeof(double), &i->w_img);
-	clSetKernelArg(init, 2, sizeof(double), &i->h_img);
-	clSetKernelArg(init, 3, sizeof(double), &i->r_obs);
-	clSetKernelArg(init, 4, sizeof(double), &i->i_obs);
-	clSetKernelArg(init, 5, sizeof(double), &i->j_obs);
+	ocl->set(ocl, init, 0, sizeof(cl_mem), &data);
+	ocl->set(ocl, init, 1, sizeof(double), &i->w_img);
+	ocl->set(ocl, init, 2, sizeof(double), &i->h_img);
+	ocl->set(ocl, init, 3, sizeof(double), &i->r_obs);
+	ocl->set(ocl, init, 4, sizeof(double), &i->i_obs);
+	ocl->set(ocl, init, 5, sizeof(double), &i->j_obs);
 	ocl->exec(ocl, init, 2, gsz, bsz);
 	ocl->rmkern(init);
 
