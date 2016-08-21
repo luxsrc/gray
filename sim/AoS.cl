@@ -17,20 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <lux.h>
-#include "gray.h"
-
-int
-exec(Lux_job *ego)
+__kernel void
+init(__global double8 *s)
 {
-	Lux_opencl *ocl = EGO->ocl;
-	cl_kernel   evol;
+	/* TODO: call initial conditions icond() */
+}
 
-	lux_debug("GRay2: executing job %p\n", ego);
-
-	CKR(evol = ocl->mkkern(ocl, "evol"), cleanup);
-
-	return EXIT_SUCCESS;
- cleanup:
-	return EXIT_FAILURE;
+__kernel void
+evol(__global double8 *s)
+{
+	/* TODO: loop through a numerical integrator integrate() */
 }
