@@ -23,3 +23,10 @@ icond(double r_obs, double i_obs, double j_obs, double alpha, double beta)
 	/* TODO: actually implement the initial conditions */
 	return (double8){0, 0, 0, 0, 0, 0, 0, 0};
 }
+
+static double8
+rhs(double8 s)
+{
+	/* TODO: actually implement the right hand side */
+	return (double8){s.s4567, 0, 0, 0, 0};
+}

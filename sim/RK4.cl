@@ -20,6 +20,9 @@
 double8
 integrate(double8 s, double dt)
 {
-	/* TODO: actually implement the integrator */
-	return s;
+	double8 k1 = dt * rhs(s       );
+	double8 k2 = dt * rhs(s + k1/2);
+	double8 k3 = dt * rhs(s + k2/2);
+	double8 k4 = dt * rhs(s + k3  );
+	return s + (k1 + 2*(k2 + k3) + k4)/6;
 }
