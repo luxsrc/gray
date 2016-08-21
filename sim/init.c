@@ -17,7 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <lux.h>
 #include "gray.h"
 #include <stdio.h>
 

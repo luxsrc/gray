@@ -30,10 +30,12 @@
 #ifndef _GRAY_H_
 #define _GRAY_H_
 
+#include <lux.h>
 #include <lux/check.h>
 #include <lux/job.h>
 #include <lux/numeric.h>
 #include <lux/opencl.h>
+
 #include "icond.h"
 #include "param.h"
 #include "setup.h"
