@@ -18,39 +18,48 @@
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
 __kernel void
-init(__global double *d, __global double8 *s,
+init(__global double  *diagno,
+     __global double8 *states,
      const double w_img, const double h_img,
      const double r_obs, const double i_obs, const double j_obs)
 {
-	const size_t i = get_global_id(1); /* for w, fastest changing index */
 	const size_t j = get_global_id(0); /* for h, slowest changing index */
+	const size_t i = get_global_id(1); /* for w, fastest changing index */
+	const size_t h = i + j * w_rays;
 
 	if(i < w_rays && j < h_rays) {
-		const size_t h = i + j * w_rays;
-
+		/* Compute initial conditions from parameters */
 		double  alpha = ((i + 0.5) / w_rays - 0.5) * w_img;
 		double  beta  = ((j + 0.5) / h_rays - 0.5) * h_img;
-		double8 S     = icond(r_obs, i_obs, j_obs, alpha, beta);
+		double8 s     = icond(r_obs, i_obs, j_obs, alpha, beta);
 
-		d[h] = getuu(S.s0123, S.s4567); /* diagnostic */
-		s[h] = S;
+		/* Output to global array */
+		diagno[h] = getuu(s.s0123, s.s4567);
+		states[h] = s;
 	}
 }
 
 __kernel void
-evol(__global double *d, __global double8 *s,
-     double dt)
+evol(__global double  *diagno,
+     __global double8 *states,
+     const double dt, const size_t n_sub)
 {
-	const size_t i = get_global_id(1); /* for w, fastest changing index */
 	const size_t j = get_global_id(0); /* for h, slowest changing index */
+	const size_t i = get_global_id(1); /* for w, fastest changing index */
+	const size_t h = i + j * w_rays;
 
 	if(i < w_rays && j < h_rays) {
-		const size_t h = i + j * w_rays;
+		/* Input from global array */
+		double8 s = states[h];
 
-		/* TODO: a for loop */
-		double8 S = integrate(s[h], dt);
+		/* Substepping */
+		double ddt = dt / n_sub;
+		size_t i;
+		for(i = 0; i < n_sub; ++i)
+			s = integrate(s, ddt);
 
-		d[h] = getuu(S.s0123, S.s4567); /* diagnostic */
-		s[h] = S;
+		/* Output to global array */
+		diagno[h] = getuu(s.s0123, s.s4567);
+		states[h] = s;
 	}
 }

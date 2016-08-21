@@ -30,7 +30,8 @@ exec(Lux_job *ego)
 	const size_t gsz[] = {p->h_rays, p->w_rays};
 	const size_t bsz[] = {1, 1};
 
-	const double dt = 0.1;
+	const double dt    = 0.1;
+	size_t       n_sub = 10;
 	size_t       i;
 
 	lux_debug("GRay2: executing job %p\n", ego);
@@ -41,6 +42,7 @@ exec(Lux_job *ego)
 	ocl->set(ocl, EGO->evol, 0, sizeof(cl_mem), &EGO->diag);
 	ocl->set(ocl, EGO->evol, 1, sizeof(cl_mem), &EGO->data);
 	ocl->set(ocl, EGO->evol, 2, sizeof(double), &dt);
+	ocl->set(ocl, EGO->evol, 3, sizeof(size_t), &n_sub);
 
 	for(i = 0; i < 10; ++i) {
 		char buf[64];
