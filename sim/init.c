@@ -26,7 +26,9 @@ init(Lux_job *ego)
 	struct options *opts = &EGO->options;
 
 	size_t ray_sz = sizeof(real) * 8;
-	size_t n_rays = opts->w_rays * opts->h_rays;
+	size_t n_rays = opts->h_rays * opts->w_rays;
+	const size_t gsz[] = {opts->h_rays, opts->w_rays};
+	const size_t bsz[] = {1, 1};
 
 	const char       *src[] = {"sim/AoS.cl", NULL};
 	struct LuxOopencl opts  = {0, CL_DEVICE_TYPE_DEFAULT, NULL, src};
@@ -41,6 +43,14 @@ init(Lux_job *ego)
 	CKR(data = ocl->mk(ocl->super, CL_MEM_READ_WRITE, ray_sz * n_rays), cleanup2);
 	CKR(init = ocl->mkkern(ocl, "init"),                                cleanup3);
 
+	/* TODO: check errors */
+	clSetKernelArg(init, 0, sizeof(cl_mem), &data);
+	clSetKernelArg(init, 1, sizeof(double), &opts->w_img);
+	clSetKernelArg(init, 2, sizeof(double), &opts->h_img);
+	clSetKernelArg(init, 3, sizeof(double), &opts->r_obs);
+	clSetKernelArg(init, 4, sizeof(double), &opts->i_obs);
+	clSetKernelArg(init, 5, sizeof(double), &opts->j_obs);
+	ocl->exec(ocl, init, 2, gsz, bsz);
 	ocl->rmkern(init);
 
 	EGO->ocl  = ocl;

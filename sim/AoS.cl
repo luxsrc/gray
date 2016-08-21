@@ -18,7 +18,9 @@
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
 __kernel void
-init(__global double8 *s)
+init(__global double8 *s,
+     const double w_img, const double h_img,
+     const double r_obs, const double i_obs, const double j_obs)
 {
 	/* TODO: call initial conditions icond() */
 }
