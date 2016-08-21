@@ -20,8 +20,18 @@
 double8
 icond(double r_obs, double i_obs, double j_obs, double alpha, double beta)
 {
-	/* TODO: actually implement the initial conditions */
-	return (double8){0, 0, 0, 0, 0, 0, 0, 0};
+	double  ci, si = sincos(M_PI * i_obs / 180.0, &ci);
+	double  cj, sj = sincos(M_PI * j_obs / 180.0, &cj);
+
+	double  R = r_obs * si - beta  * ci; /* cylindrical radius */
+	double  z = r_obs * ci + beta  * si;
+	double  y = R     * sj - alpha * cj;
+	double  x = R     * cj + alpha * sj;
+
+	double4 q = (double4){0.0, x, y, z};
+	double4 u = (double4){1.0, si * cj, si * sj, ci};
+
+	return (double8){q, u};
 }
 
 static double8
