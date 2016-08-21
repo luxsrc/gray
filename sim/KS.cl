@@ -17,6 +17,38 @@
  * You should have received a copy of the GNU General Public License
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/** \file
+ ** Cartesian Kerr-Schild coordinate specific schemes
+ **
+ ** Implement the coordinate specific functions getuu(), icond(), and
+ ** rhs() in the Cartesian form of the Kerr-Schild coordiantes.  Let
+ ** \f$t\f$, \f$x\f$, \f$y\f$, \f$z\f$ be the coordinates, the
+ ** Cartesian Kerr-Schild metric is given by
+ ** \f[
+ **   g_{\mu\nu} = \gamma_{\mu\nu} + f l_\mu l_\nu
+ ** \f]
+ ** where \f$\gamma_{\mu\nu}\f$ is the Minkowski metric, \f$f\f$ and
+ ** \f$l_\mu\f$ are defined by
+ ** \f[
+ **   f = \frac{2r^3}{r^4 + a^2 z^2} \mbox{ and }
+ **   l_\mu = \left(1, \frac{rx + ay}{r^2 + a^2},
+ **                    \frac{ry - ax}{r^2 + a^2},
+ **                    \frac{z}{r}\right),
+ ** \f]
+ ** respectively, and \f$r\f$ is defined implicitly by\f$ x^2 + y^2 +
+ ** z^2 = r^2 + a^2 (1 - z^2 / r^2)\f$.
+ **/
+
+/**
+ ** Sqaure of vector u at the spacetime event q in Kerr-Schild coordiantes
+ **
+ ** Compute \f$u\cdot u \equiv g_{\alpha\beta} u^\alpha u^\beta\f$,
+ ** where \f$g_{\alpha\beta}\f$ is the Cartesian form of the
+ ** Kerr-Schild metric.
+ **
+ ** \return The square of u at q
+ **/
 double
 getuu(double4 q, double4 u)
 {
@@ -43,6 +75,24 @@ getuu(double4 q, double4 u)
 	        dot(gz, u) * u.s3);
 }
 
+/**
+ ** Initial conditions of a ray in an image plane
+ **
+ ** To perform ray tracing calculations of an image in Kerr spacetime,
+ ** we follow Johannsen & Psaltis (2010) and consider an observer
+ ** viewing the central black hole from a large distance \p r_obs and
+ ** at an inclination angle \p i_obs from its rotation axis (see
+ ** Figure 1 of Psaltis & Johannsen 2012).  We set up a virtual image
+ ** plane that is perpendicular to the line of sight and centered at
+ ** \f$\phi\f$ = \p j_obs of the spacetime.  We define the set of
+ ** local Cartesian coordinates (\p alpha, \p beta) on the image plane
+ ** such that the \p beta axis is along the same fiducial plane and
+ ** the \p alpha axis is perpendicular to it.  These input parameters
+ ** define a unique ray, whose initial spacetime position and
+ ** wavevector are then computed by icond().
+ **
+ ** \return The initial conditions of a ray
+ **/
 double8
 icond(double r_obs, double i_obs, double j_obs, double alpha, double beta)
 {
@@ -85,6 +135,37 @@ icond(double r_obs, double i_obs, double j_obs, double alpha, double beta)
 	return (double8){q, u};
 }
 
+/**
+ ** Right hand sides of the geodesic equations in Kerr-Schild coordiantes
+ **
+ ** One of the breakthroughs we achieve in GRay2 is that, by a series
+ ** of mathematical manipulations and regrouping, we significantly
+ ** reduce the operation count of the geodesic equations in the
+ ** Cartesian Kerr-Schild coordinates.  Let \f$\lambda\f$ be the
+ ** affine parameter and \f$\dot{x}^\mu \equiv dx^\mu/d\lambda\f$.  We
+ ** show in Chan et al. (2017) that the geodesic equations in the
+ ** Cartesian KS coordinates can be optimized to the following form:
+ ** \f[
+ **  \ddot{x}^\mu = - \left(\eta^{\mu\beta} \dot{x}^\alpha -
+ **                         \frac{1}{2}\eta^{\mu\alpha} \dot{x}^\beta\right)
+ **                 \dot{x}_{\beta,\alpha} + F l^\mu
+ ** \f]
+ ** where
+ ** \f[
+ **   F = f \left(l^\beta \dot{x}^\alpha -
+ **               \frac{1}{2}l^\alpha \dot{x}^\beta\right)
+ **       \dot{x}_{\beta,\alpha}.
+ ** \f]
+ ** In this new form, the right hand sides (RHS) of the geodesic
+ ** equations have only ~65% more floating-point operations than in
+ ** the Boyer-Lindquist coordinates.  Furthermore, the evaluation of
+ ** the RHS uses many matrix-vector products, which are optimized in
+ ** modern hardwares.
+ **
+ ** \todo Take advantage of built-in vector operators in OpenCL
+ **
+ ** \return The right hand sides of the geodesic equations
+ **/
 double8
 rhs(double8 s)
 {
