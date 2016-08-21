@@ -17,6 +17,15 @@
  * You should have received a copy of the GNU General Public License
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/**
+ ** OpenCL implementation of the classical 4th-order Runge-Kutta integrator
+ **
+ ** Assuming rhs() is provided, this function performs the classical
+ ** 4th-order Runge-Kutta integrator with a single step size dt.
+ **
+ ** \return The new state
+ **/
 double8
 integrate(double8 s, double dt)
 {
