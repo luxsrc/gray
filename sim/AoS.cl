@@ -22,12 +22,29 @@ init(__global double8 *s,
      const double w_img, const double h_img,
      const double r_obs, const double i_obs, const double j_obs)
 {
-	/* TODO: call initial conditions icond() */
+	const size_t i = get_global_id(1); /* for w, fastest changing index */
+	const size_t j = get_global_id(0); /* for h, slowest changing index */
+
+	if(i < w_rays && j < h_rays) {
+		const size_t h = i + j * w_rays;
+
+		double alpha = ((i + 0.5) / w_rays - 0.5) * w_img;
+		double beta  = ((j + 0.5) / h_rays - 0.5) * h_img;
+
+		s[h] = icond(r_obs, i_obs, j_obs, alpha, beta);
+	}
 }
 
 __kernel void
 evol(__global double8 *s,
      const double dt)
 {
-	/* TODO: loop through a numerical integrator integrate() */
+	const size_t i = get_global_id(1); /* for w, fastest changing index */
+	const size_t j = get_global_id(0); /* for h, slowest changing index */
+
+	if(i < w_rays && j < h_rays) {
+		const size_t h = i + j * w_rays;
+
+		s[h] = integrate(s[h], dt);
+	}
 }
