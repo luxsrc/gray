@@ -17,6 +17,19 @@
  * You should have received a copy of the GNU General Public License
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/** \page newopts New Run-Time Options
+ **
+ ** Turn hard-wired constants into run-time options
+ **
+ ** GRay2 uses the lux framework and hence follows lux's approach to
+ ** support many run-time options.  To turn hard-wired constants into
+ ** run-time options, one needs to
+ **
+ **   -# Add an option table ".otab" file
+ **   -# Add the automatically generated structure to "sim/gray.h"
+ **   -# Add the automatically generated configure function to "sim/conf.c"
+ **/
 #include "gray.h"
 
 int
