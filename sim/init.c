@@ -34,7 +34,7 @@ init(Lux_job *ego)
 
 	char buf[1024];
 	const char *src[] = {buf, "sim/KS.cl", "sim/RK4.cl", "sim/AoS.cl", NULL};
-	struct LuxOopencl opts = {0, 0, CL_DEVICE_TYPE_DEFAULT, NULL, src};
+	struct LuxOopencl opts = {0, 0, CL_DEVICE_TYPE_CPU, NULL, src};
 
 	Lux_opencl *ocl;
 	cl_mem      data;
