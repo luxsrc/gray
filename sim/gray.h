@@ -31,6 +31,7 @@ struct gray {
 	struct options options;
 	Lux_opencl    *ocl;
 	cl_mem         data;
+	cl_kernel      evol;
 };
 
 #define EGO ((struct gray *)ego)

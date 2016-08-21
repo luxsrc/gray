@@ -26,7 +26,8 @@ init(__global double8 *s,
 }
 
 __kernel void
-evol(__global double8 *s)
+evol(__global double8 *s,
+     const double dt)
 {
 	/* TODO: loop through a numerical integrator integrate() */
 }

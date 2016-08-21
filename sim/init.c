@@ -30,18 +30,19 @@ init(Lux_job *ego)
 	const size_t gsz[] = {opts->h_rays, opts->w_rays};
 	const size_t bsz[] = {1, 1};
 
-	const char       *src[] = {"sim/AoS.cl", NULL};
-	struct LuxOopencl opts  = {0, CL_DEVICE_TYPE_DEFAULT, NULL, src};
+	const char *src[] = {"sim/AoS.cl", NULL};
+	struct LuxOopencl ocl_opts = {0, 0, CL_DEVICE_TYPE_DEFAULT, NULL, src};
 
 	Lux_opencl *ocl;
 	cl_mem      data;
-	cl_kernel   init;
+	cl_kernel   init, evol;
 
 	lux_debug("GRay2: initializing job %p\n", ego);
 
-	CKR(ocl  = lux_load("opencl", &opts),                               cleanup1);
+	CKR(ocl  = lux_load("opencl", &ocl_opts),                           cleanup1);
 	CKR(data = ocl->mk(ocl->super, CL_MEM_READ_WRITE, ray_sz * n_rays), cleanup2);
 	CKR(init = ocl->mkkern(ocl, "init"),                                cleanup3);
+	CKR(evol = ocl->mkkern(ocl, "evol"),                                cleanup4);
 
 	/* TODO: check errors */
 	clSetKernelArg(init, 0, sizeof(cl_mem), &data);
@@ -55,8 +56,11 @@ init(Lux_job *ego)
 
 	EGO->ocl  = ocl;
 	EGO->data = data;
+	EGO->evol = evol;
 	return EXIT_SUCCESS;
 
+ cleanup4:
+	ocl->rmkern(init);
  cleanup3:
 	ocl->rm(data);
  cleanup2:

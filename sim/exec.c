@@ -23,14 +23,26 @@
 int
 exec(Lux_job *ego)
 {
-	Lux_opencl *ocl = EGO->ocl;
-	cl_kernel   evol;
+	struct options *opts = &EGO->options;
+	Lux_opencl     *ocl  =  EGO->ocl;
+
+	const size_t gsz[] = {opts->h_rays, opts->w_rays};
+	const size_t bsz[] = {1, 1};
+
+	const double dt = 0.1;
+	size_t       i;
 
 	lux_debug("GRay2: executing job %p\n", ego);
 
-	CKR(evol = ocl->mkkern(ocl, "evol"), cleanup);
+	/* TODO: check errors */
+	clSetKernelArg(EGO->evol, 0, sizeof(cl_mem), &EGO->data);
+	clSetKernelArg(EGO->evol, 1, sizeof(double), &dt);
+
+	for(i = 0; i < 10; ++i) {
+		lux_print("%zu: %4.1f -> %4.1f", i, i*dt, (i+1)*dt);
+		ocl->exec(ocl, EGO->evol, 2, gsz, bsz);
+		lux_print(": DONE\n");
+	}
 
 	return EXIT_SUCCESS;
- cleanup:
-	return EXIT_FAILURE;
 }
