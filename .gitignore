@@ -8,7 +8,7 @@
 !*.py
 
 # Optgen-ed files
-!*.otab
+!*.opts
 icond.h
 param.h
 setup.h

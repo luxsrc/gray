@@ -26,7 +26,7 @@
  ** support many run-time options.  To turn hard-wired constants into
  ** run-time options, one needs to
  **
- **   -# Add an option table ".otab" file
+ **   -# Add an option table ".opts" file
  **   -# Add the automatically generated structure to "sim/gray.h"
  **   -# Add the automatically generated configure function to "sim/conf.c"
  **/

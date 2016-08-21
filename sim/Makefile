@@ -1,6 +1,6 @@
 all: gray.la
 
-%.h: %.otab
+%.h: %.opts
 	lux-optgen $<
 
 gray.la: gray.h *.c icond.h param.h setup.h
