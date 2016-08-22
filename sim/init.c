@@ -90,7 +90,7 @@ init(Lux_job *ego)
 	opts.base    = init;
 	opts.iplf    = s->i_platform;
 	opts.idev    = s->i_device;
-	opts.devtype = CL_DEVICE_TYPE_CPU;
+	opts.devtype = s->device_type;
 	opts.src     = src;
 
 	CKR(ocl   = lux_load("opencl", &opts),                                cleanup1);
