@@ -36,8 +36,6 @@
 #include <lux/numeric.h>
 #include <lux/opencl.h>
 
-#include "strtoprec.h"
-
 #include "icond.h"
 #include "param.h"
 #include "setup.h"

@@ -38,10 +38,10 @@ exec(Lux_job *ego)
 	dump(ego, "0000.raw");
 
 	/** \todo check errors */
-	ocl->set(ocl, EGO->evol, 0, sizeof(cl_mem), &EGO->diag);
-	ocl->set(ocl, EGO->evol, 1, sizeof(cl_mem), &EGO->data);
-	ocl->set(ocl, EGO->evol, 2, sizeof(double), &dt);
-	ocl->set(ocl, EGO->evol, 3, sizeof(size_t), &n_sub);
+	ocl->setM(ocl, EGO->evol, 0, EGO->diag);
+	ocl->setM(ocl, EGO->evol, 1, EGO->data);
+	ocl->setR(ocl, EGO->evol, 2, dt);
+	ocl->setW(ocl, EGO->evol, 3, n_sub);
 
 	for(i = 0; i < 10; ++i) {
 		char buf[64];

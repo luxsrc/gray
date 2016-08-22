@@ -28,7 +28,7 @@
  ** developers simply need to load this module with a list of OpenCL
  ** source codes, e.g.,
  ** \code{.c}
- **   const char *buf   = "static constant double a_spin = 0.999;\n";
+ **   const char *buf   = "static constant real a_spin = 0.999;\n";
  **   const char *src[] = {buf, "sim/KS.cl", "sim/RK4.cl", "sim/AoS.cl", NULL};
  **   const char *flags = "-cl-mad-enable";
  **   struct LuxOopencl otps = {..., flags, src};
@@ -80,7 +80,7 @@ init(Lux_job *ego)
 	lux_debug("GRay2: initializing job %p\n", ego);
 
 	snprintf(buf, sizeof(buf),
-	         "__constant double a_spin = %g;\n"
+	         "__constant real   a_spin = %g;\n"
 	         "__constant size_t w_rays = %zu;\n"
 	         "__constant size_t h_rays = %zu;\n",
 	         p->a_spin,
@@ -91,6 +91,7 @@ init(Lux_job *ego)
 	opts.iplf    = s->i_platform;
 	opts.idev    = s->i_device;
 	opts.devtype = s->device_type;
+	opts.realsz  = s->precision;
 	opts.src     = src;
 
 	CKR(ocl   = lux_load("opencl", &opts),                                cleanup1);
@@ -100,13 +101,13 @@ init(Lux_job *ego)
 	CKR(evol  = ocl->mkkern(ocl, "integrate_drv"),                        cleanup5);
 
 	/** \todo check errors */
-	ocl->set(ocl, icond, 0, sizeof(cl_mem), &diag);
-	ocl->set(ocl, icond, 1, sizeof(cl_mem), &data);
-	ocl->set(ocl, icond, 2, sizeof(double), &i->w_img);
-	ocl->set(ocl, icond, 3, sizeof(double), &i->h_img);
-	ocl->set(ocl, icond, 4, sizeof(double), &i->r_obs);
-	ocl->set(ocl, icond, 5, sizeof(double), &i->i_obs);
-	ocl->set(ocl, icond, 6, sizeof(double), &i->j_obs);
+	ocl->setM(ocl, icond, 0, diag);
+	ocl->setM(ocl, icond, 1, data);
+	ocl->setR(ocl, icond, 2, i->w_img);
+	ocl->setR(ocl, icond, 3, i->h_img);
+	ocl->setR(ocl, icond, 4, i->r_obs);
+	ocl->setR(ocl, icond, 5, i->i_obs);
+	ocl->setR(ocl, icond, 6, i->j_obs);
 	ocl->exec(ocl, icond, 2, gsz, bsz);
 	ocl->rmkern(ocl, icond);
 
