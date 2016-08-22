@@ -28,10 +28,10 @@
 
 /** OpenCL driver kernel for initializing states */
 __kernel void
-init(__global double  *diagno,
-     __global double8 *states,
-     const double w_img, const double h_img,
-     const double r_obs, const double i_obs, const double j_obs)
+icond_drv(__global double  *diagno,
+          __global double8 *states,
+          const double w_img, const double h_img,
+          const double r_obs, const double i_obs, const double j_obs)
 {
 	const size_t j = get_global_id(0); /* for h, slowest changing index */
 	const size_t i = get_global_id(1); /* for w, fastest changing index */
@@ -49,11 +49,11 @@ init(__global double  *diagno,
 	}
 }
 
-/** OpenCL driver kernel for evolving the geodesic equations */
+/** OpenCL driver kernel for integrating the geodesic equations */
 __kernel void
-evol(__global double  *diagno,
-     __global double8 *states,
-     const double dt, const size_t n_sub)
+integrate_drv(__global double  *diagno,
+              __global double8 *states,
+              const double dt, const size_t n_sub)
 {
 	const size_t j = get_global_id(0); /* for h, slowest changing index */
 	const size_t i = get_global_id(1); /* for w, fastest changing index */

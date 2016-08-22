@@ -36,9 +36,9 @@
  ** \endcode
  ** and then an OpenCL kernel can be obtained and run by
  ** \code{.c}
- **   cl_kernel init = ocl->mkkern(ocl, "init");
+ **   cl_kernel icond = ocl->mkkern(ocl, "icond_drv");
  **   ...
- **   clEnqueueNDRangeKernel(ocl->que, init, ...);
+ **   clEnqueueNDRangeKernel(ocl->que, icond, ...);
  ** \endcode
  ** Therefore, with this powerful lux module, it is straightforward to
  ** add a new OpenCL kernels to GRay2:
@@ -62,6 +62,7 @@ init(Lux_job *ego)
 {
 	struct icond *i = &EGO->icond;
 	struct param *p = &EGO->param;
+	struct setup *s = &EGO->setup;
 
 	size_t ray_sz = sizeof(real) * 8;
 	size_t n_rays = p->h_rays * p->w_rays;
@@ -70,11 +71,11 @@ init(Lux_job *ego)
 
 	char buf[1024];
 	const char *src[] = {buf, "KS.cl", "RK4.cl", "AoS.cl", NULL};
-	struct LuxOopencl opts = {init, 0, 0, CL_DEVICE_TYPE_CPU, NULL, src};
+	struct LuxOopencl opts = OPENCL_NULL;
 
 	Lux_opencl *ocl;
 	cl_mem      diag, data;
-	cl_kernel   init, evol;
+	cl_kernel   icond, evol;
 
 	lux_debug("GRay2: initializing job %p\n", ego);
 
@@ -86,22 +87,28 @@ init(Lux_job *ego)
 	         p->w_rays,
 	         p->h_rays);
 
-	CKR(ocl  = lux_load("opencl", &opts),                                cleanup1);
-	CKR(diag = ocl->mk(ocl, CL_MEM_READ_WRITE, sizeof(double) * n_rays), cleanup2);
-	CKR(data = ocl->mk(ocl, CL_MEM_READ_WRITE, ray_sz         * n_rays), cleanup3);
-	CKR(init = ocl->mkkern(ocl, "init"),                                 cleanup4);
-	CKR(evol = ocl->mkkern(ocl, "evol"),                                 cleanup5);
+	opts.base    = init;
+	opts.iplf    = s->i_platform;
+	opts.idev    = s->i_device;
+	opts.devtype = CL_DEVICE_TYPE_CPU;
+	opts.src     = src;
+
+	CKR(ocl   = lux_load("opencl", &opts),                                cleanup1);
+	CKR(diag  = ocl->mk(ocl, CL_MEM_READ_WRITE, sizeof(double) * n_rays), cleanup2);
+	CKR(data  = ocl->mk(ocl, CL_MEM_READ_WRITE, ray_sz         * n_rays), cleanup3);
+	CKR(icond = ocl->mkkern(ocl, "icond_drv"),                            cleanup4);
+	CKR(evol  = ocl->mkkern(ocl, "integrate_drv"),                        cleanup5);
 
 	/** \todo check errors */
-	ocl->set(ocl, init, 0, sizeof(cl_mem), &diag);
-	ocl->set(ocl, init, 1, sizeof(cl_mem), &data);
-	ocl->set(ocl, init, 2, sizeof(double), &i->w_img);
-	ocl->set(ocl, init, 3, sizeof(double), &i->h_img);
-	ocl->set(ocl, init, 4, sizeof(double), &i->r_obs);
-	ocl->set(ocl, init, 5, sizeof(double), &i->i_obs);
-	ocl->set(ocl, init, 6, sizeof(double), &i->j_obs);
-	ocl->exec(ocl, init, 2, gsz, bsz);
-	ocl->rmkern(ocl, init);
+	ocl->set(ocl, icond, 0, sizeof(cl_mem), &diag);
+	ocl->set(ocl, icond, 1, sizeof(cl_mem), &data);
+	ocl->set(ocl, icond, 2, sizeof(double), &i->w_img);
+	ocl->set(ocl, icond, 3, sizeof(double), &i->h_img);
+	ocl->set(ocl, icond, 4, sizeof(double), &i->r_obs);
+	ocl->set(ocl, icond, 5, sizeof(double), &i->i_obs);
+	ocl->set(ocl, icond, 6, sizeof(double), &i->j_obs);
+	ocl->exec(ocl, icond, 2, gsz, bsz);
+	ocl->rmkern(ocl, icond);
 
 	EGO->ocl  = ocl;
 	EGO->diag = diag;
@@ -110,7 +117,7 @@ init(Lux_job *ego)
 	return EXIT_SUCCESS;
 
  cleanup5:
-	ocl->rmkern(ocl, init);
+	ocl->rmkern(ocl, icond);
  cleanup4:
 	ocl->rm(ocl, data);
  cleanup3:
