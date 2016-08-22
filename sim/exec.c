@@ -29,9 +29,9 @@ exec(Lux_job *ego)
 	const size_t gsz[] = {p->h_rays, p->w_rays};
 	const size_t bsz[] = {1, 1};
 
-	const double dt    = -1.0;
-	size_t       n_sub = 1024;
-	size_t       i;
+	double dt    = -1.0;
+	size_t n_sub = 1024;
+	size_t i;
 
 	lux_debug("GRay2: executing job %p\n", ego);
 
