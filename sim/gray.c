@@ -18,7 +18,6 @@
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gray.h"
-#include <lux/mangle.h>
 #include <lux/zalloc.h>
 
 void *

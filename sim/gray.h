@@ -33,6 +33,7 @@
 #include <lux.h>
 #include <lux/check.h>
 #include <lux/job.h>
+#include <lux/mangle.h>
 #include <lux/numeric.h>
 #include <lux/opencl.h>
 
@@ -61,6 +62,9 @@ struct gray {
 
 #define EGO ((struct gray *)ego)
 #define CKR lux_check_func_success
+
+void *LUX_MKMOD(const void *);
+void  LUX_RMMOD(void *);
 
 /** Configuration method in the Lux_Job interface */
 extern int  conf(Lux_job *, const char *);

@@ -55,6 +55,7 @@
  ** build them as a single program.
  **/
 #include "gray.h"
+#include <lux/dlfcn.h>
 #include <stdio.h>
 
 int
@@ -69,8 +70,9 @@ init(Lux_job *ego)
 	const size_t bsz[] = {1, 1};
 
 	char buf[1024];
-	const char *src[] = {buf, "sim/KS.cl", "sim/RK4.cl", "sim/AoS.cl", NULL};
-	struct LuxOopencl opts = {0, 0, CL_DEVICE_TYPE_CPU, NULL, src};
+	const char *src[] = {buf, "KS.cl", "RK4.cl", "AoS.cl", NULL};
+	const char *selfpath = dlfname(LUX_MKMOD);
+	struct LuxOopencl opts = {0, 0, CL_DEVICE_TYPE_CPU, NULL, selfpath, src};
 
 	Lux_opencl *ocl;
 	cl_mem      diag, data;
