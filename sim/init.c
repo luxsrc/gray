@@ -86,11 +86,11 @@ init(Lux_job *ego)
 	         p->w_rays,
 	         p->h_rays);
 
-	CKR(ocl  = lux_load("opencl", &opts),                                       cleanup1);
-	CKR(diag = ocl->mk(ocl->super, CL_MEM_READ_WRITE, sizeof(double) * n_rays), cleanup2);
-	CKR(data = ocl->mk(ocl->super, CL_MEM_READ_WRITE, ray_sz         * n_rays), cleanup3);
-	CKR(init = ocl->mkkern(ocl, "init"),                                        cleanup4);
-	CKR(evol = ocl->mkkern(ocl, "evol"),                                        cleanup5);
+	CKR(ocl  = lux_load("opencl", &opts),                                cleanup1);
+	CKR(diag = ocl->mk(ocl, CL_MEM_READ_WRITE, sizeof(double) * n_rays), cleanup2);
+	CKR(data = ocl->mk(ocl, CL_MEM_READ_WRITE, ray_sz         * n_rays), cleanup3);
+	CKR(init = ocl->mkkern(ocl, "init"),                                 cleanup4);
+	CKR(evol = ocl->mkkern(ocl, "evol"),                                 cleanup5);
 
 	/** \todo check errors */
 	ocl->set(ocl, init, 0, sizeof(cl_mem), &diag);
@@ -101,7 +101,7 @@ init(Lux_job *ego)
 	ocl->set(ocl, init, 5, sizeof(double), &i->i_obs);
 	ocl->set(ocl, init, 6, sizeof(double), &i->j_obs);
 	ocl->exec(ocl, init, 2, gsz, bsz);
-	ocl->rmkern(init);
+	ocl->rmkern(ocl, init);
 
 	EGO->ocl  = ocl;
 	EGO->diag = diag;
@@ -110,11 +110,11 @@ init(Lux_job *ego)
 	return EXIT_SUCCESS;
 
  cleanup5:
-	ocl->rmkern(init);
+	ocl->rmkern(ocl, init);
  cleanup4:
-	ocl->rm(data);
+	ocl->rm(ocl, data);
  cleanup3:
-	ocl->rm(diag);
+	ocl->rm(ocl, diag);
  cleanup2:
 	lux_unload(ocl);
  cleanup1:
