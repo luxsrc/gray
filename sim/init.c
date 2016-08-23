@@ -115,7 +115,7 @@ init(Lux_job *ego)
 	ocl->setR(ocl, icond, 4, i->r_obs);
 	ocl->setR(ocl, icond, 5, i->i_obs);
 	ocl->setR(ocl, icond, 6, i->j_obs);
-	ocl->exec(ocl, icond, 2, shape, NULL);
+	ocl->exec(ocl, icond, 2, shape);
 	ocl->rmkern(ocl, icond);
 
 	/* Create the "evol" kernel: save EGO->bsz_max for ego->exec() */

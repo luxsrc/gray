@@ -49,7 +49,7 @@ exec(Lux_job *ego)
 
 		lux_print("%zu: %4.1f -> %4.1f", i, i*dt, (i+1)*dt);
 
-		ns = ocl->exec(ocl, EGO->evol, 2, shape, NULL);
+		ns = ocl->exec(ocl, EGO->evol, 2, shape);
 
 		snprintf(buf, sizeof(buf), "%04zu.raw", i+1);
 		dump(ego, buf);
