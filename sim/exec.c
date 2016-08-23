@@ -54,10 +54,7 @@ exec(Lux_job *ego)
 		snprintf(buf, sizeof(buf), "%04zu.raw", i+1);
 		dump(ego, buf);
 
-		lux_print(": DONE (%.3gms/dump/img, "
-		                  "%.3gus/step/img, "
-		                  "%.3gns/step/ray)\n",
-		          1e-6 * ns, 1e-3 * ns / n_sub, ns / n_sub / n_rays);
+		lux_print(": DONE (%.3gns/step/ray)\n", ns/n_sub/n_rays);
 	}
 
 	return EXIT_SUCCESS;
