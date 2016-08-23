@@ -30,7 +30,7 @@ def load_raw(name):
         print("Loading GRay2 raw file \"{}\"... ".format(name), end="")
 
         d = np.fromfile(f, dtype=np.uint64, count=4)
-        t = np.double if d[0] == 8 else np.float
+        t = np.double if d[0] == 8 else np.single
         n = d[1]
         w = d[2]
         h = d[3]
