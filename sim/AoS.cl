@@ -42,10 +42,13 @@ icond_drv(__global real *diagno,
 		real  alpha = ((i + 0.5) / w_rays - 0.5) * w_img;
 		real  beta  = ((j + 0.5) / h_rays - 0.5) * h_img;
 		real8 s     = icond(r_obs, i_obs, j_obs, alpha, beta);
+		int   k;
 
 		/* Output to global array */
 		diagno[h] = getuu(s.s0123, s.s4567);
-		*(real8 *)(states + h * n_vars) = s;
+
+		for(k = 0; k < 8; ++k)
+			states[h * n_vars + k] = ((real *)&s)[k];
 	}
 }
 
@@ -61,7 +64,11 @@ integrate_drv(__global real *diagno,
 
 	if(i < w_rays && j < h_rays) {
 		/* Input from global array */
-		real8 s = *(real8 *)(states + h * n_vars);
+		real8 s;
+		int   k;
+
+		for(k = 0; k < 8; ++k)
+			((real *)&s)[k] = states[h * n_vars + k];
 
 		/* Substepping */
 		real ddt = dt / n_sub;
@@ -71,6 +78,8 @@ integrate_drv(__global real *diagno,
 
 		/* Output to global array */
 		diagno[h] = getuu(s.s0123, s.s4567);
-		*(real8 *)(states + h * n_vars) = s;
+
+		for(k = 0; k < 8; ++k)
+			states[h * n_vars + k] = ((real *)&s)[k];
 	}
 }
