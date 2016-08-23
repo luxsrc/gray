@@ -26,9 +26,10 @@ void
 dump(Lux_job *ego, const char *restrict name)
 {
 	struct param *p = &EGO->param;
+	struct setup *s = &EGO->setup;
 
-	const size_t sz     = sizeof(double);
-	const size_t n_vars = sizeof(cl_double8) / sz;
+	const size_t sz     = s->precision;
+	const size_t n_vars = 8;
 	const size_t n_rays = p->h_rays * p->w_rays;
 
 	void *d = EGO->ocl->mmap(EGO->ocl, EGO->diag, sz * n_rays);

@@ -64,8 +64,9 @@ init(Lux_job *ego)
 	struct param *p = &EGO->param;
 	struct setup *s = &EGO->setup;
 
-	size_t ray_sz = sizeof(real) * 8;
-	size_t n_rays = p->h_rays * p->w_rays;
+	size_t diag_sz = s->precision;
+	size_t ray_sz  = s->precision * 8;
+	size_t n_rays  = p->h_rays * p->w_rays;
 	const size_t gsz[] = {p->h_rays, p->w_rays};
 	const size_t bsz[] = {1, 1};
 
@@ -94,11 +95,11 @@ init(Lux_job *ego)
 	opts.realsz  = s->precision;
 	opts.src     = src;
 
-	CKR(ocl   = lux_load("opencl", &opts),                                cleanup1);
-	CKR(diag  = ocl->mk(ocl, CL_MEM_READ_WRITE, sizeof(double) * n_rays), cleanup2);
-	CKR(data  = ocl->mk(ocl, CL_MEM_READ_WRITE, ray_sz         * n_rays), cleanup3);
-	CKR(icond = ocl->mkkern(ocl, "icond_drv"),                            cleanup4);
-	CKR(evol  = ocl->mkkern(ocl, "integrate_drv"),                        cleanup5);
+	CKR(ocl   = lux_load("opencl", &opts),                         cleanup1);
+	CKR(diag  = ocl->mk(ocl, CL_MEM_READ_WRITE, diag_sz * n_rays), cleanup2);
+	CKR(data  = ocl->mk(ocl, CL_MEM_READ_WRITE, ray_sz  * n_rays), cleanup3);
+	CKR(icond = ocl->mkkern(ocl, "icond_drv"),                     cleanup4);
+	CKR(evol  = ocl->mkkern(ocl, "integrate_drv"),                 cleanup5);
 
 	/** \todo check errors */
 	ocl->setM(ocl, icond, 0, diag);
