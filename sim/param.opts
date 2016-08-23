@@ -6,3 +6,4 @@ double	a_spin:a	= 1	= strtod(val, &rem);	/**< dimensionless black hole spin */
 # Numerical setup
 size_t	w_rays:W	= 512	= strtoul(val, &rem, 0);	/**< number of rays along the width  of the image */
 size_t	h_rays:H	= 512	= strtoul(val, &rem, 0);	/**< number of rays along the height of the image */
+size_t	n_freq:F	= 0	= strtoul(val, &rem, 0);	/**< number of frequencies channel; 0 means turning off radiative transfer */
