@@ -18,6 +18,14 @@
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** \file
+ ** Classical 4th-order Runge-Kutta integrator
+ **
+ ** GRay2 uses OpenCL's just-in-time compilation feature to implement
+ ** a run-time configurable algorithms.  In this file we implement the
+ ** classical 4th-order Runge-Kutta integrator in integrate().
+ **/
+
 /**
  ** OpenCL implementation of the classical 4th-order Runge-Kutta integrator
  **
@@ -27,7 +35,8 @@
  ** \return The new state
  **/
 real8
-integrate(real8 s, real dt)
+integrate(real8 s,  /**< State of the ray */
+          real  dt) /**< Step size        */
 {
 	real8 k1 = dt * rhs(s              );
 	real8 k2 = dt * rhs(s + K(0.5) * k1);
