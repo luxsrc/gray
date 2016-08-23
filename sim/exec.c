@@ -26,9 +26,8 @@ exec(Lux_job *ego)
 	struct param *p   = &EGO->param;
 	Lux_opencl   *ocl =  EGO->ocl;
 
-	const size_t n_rays =  p->h_rays * p->w_rays;
-	const size_t gsz[]  = {p->h_rays,  p->w_rays};
-	const size_t bsz[]  = {1, 1};
+	const size_t n_rays  =  p->h_rays * p->w_rays;
+	const size_t shape[] = {p->h_rays,  p->w_rays};
 
 	double dt    = -1.0;
 	size_t n_sub = 1024;
@@ -50,7 +49,7 @@ exec(Lux_job *ego)
 
 		lux_print("%zu: %4.1f -> %4.1f", i, i*dt, (i+1)*dt);
 
-		ns = ocl->exec(ocl, EGO->evol, 2, gsz, bsz);
+		ns = ocl->exec(ocl, EGO->evol, 2, shape, NULL);
 
 		snprintf(buf, sizeof(buf), "%04zu.raw", i+1);
 		dump(ego, buf);
