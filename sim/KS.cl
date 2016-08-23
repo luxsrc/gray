@@ -50,7 +50,8 @@
  ** \return The square of u at q
  **/
 real
-getuu(real4 q, real4 u)
+getuu(real4 q, /**< Spacetime event "location" */
+      real4 u) /**< The vector being squared   */
 {
 	real  aa = a_spin * a_spin;
 	real  zz = q.s3 * q.s3;
@@ -94,7 +95,11 @@ getuu(real4 q, real4 u)
  ** \return The initial conditions of a ray
  **/
 real8
-icond(real r_obs, real i_obs, real j_obs, real alpha, real beta)
+icond(real r_obs, /**< Distance of the observer from the black hole */
+      real i_obs, /**< Inclination angle of the observer in degrees */
+      real j_obs, /**< Azimuthal   angle of the observer in degrees */
+      real alpha, /**< One of the local Cartesian coordinates       */
+      real beta)  /**< The other  local Cartesian coordinate        */
 {
 	real  deg2rad = K(3.14159265358979323846264338327950288) / K(180.0);
 	real  ci, si  = sincos(deg2rad * i_obs, &ci);
@@ -166,7 +171,7 @@ icond(real r_obs, real i_obs, real j_obs, real alpha, real beta)
  ** \return The right hand sides of the geodesic equations
  **/
 real8
-rhs(real8 s)
+rhs(real8 s) /**< State of the ray */
 {
 	real4 q = s.s0123;
 	real4 u = s.s4567;
