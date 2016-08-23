@@ -54,20 +54,20 @@ getuu(real4 q, real4 u)
 {
 	real  aa = a_spin * a_spin;
 	real  zz = q.s3 * q.s3;
-	real  kk = 0.5 * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
+	real  kk = K(0.5) * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
 	real  dd = sqrt(kk * kk + aa * zz);
 	real  rr = dd + kk;
 	real  r  = sqrt(rr);
 
-	real  f  = 2.0 * rr * r / (rr * rr + aa * zz);
+	real  f  = K(2.0) * rr * r / (rr * rr + aa * zz);
 	real  lx = (r * q.s1 + a_spin * q.s2) / (rr + aa);
 	real  ly = (r * q.s2 - a_spin * q.s1) / (rr + aa);
 	real  lz = q.s3 / r;
 
-	real4 gt = {-1. + f*1.*1.,      f*1.*lx,      f*1.*ly,      f*1.*lz};
-	real4 gx = {      f*lx*1., 1. + f*lx*lx,      f*lx*ly,      f*lx*lz};
-	real4 gy = {      f*ly*1.,      f*ly*lx, 1. + f*ly*ly,      f*ly*lz};
-	real4 gz = {      f*lz*1.,      f*lz*lx,      f*lz*ly, 1. + f*lz*lz};
+	real4 gt = {-1 + f   ,     f*   lx,     f*   ly,     f*   lz};
+	real4 gx = {     f*lx, 1 + f*lx*lx,     f*lx*ly,     f*lx*lz};
+	real4 gy = {     f*ly,     f*ly*lx, 1 + f*ly*ly,     f*ly*lz};
+	real4 gz = {     f*lz,     f*lz*lx,     f*lz*ly, 1 + f*lz*lz};
 
 	return (dot(gt, u) * u.s0 +
 	        dot(gx, u) * u.s1 +
@@ -97,41 +97,41 @@ real8
 icond(real r_obs, real i_obs, real j_obs, real alpha, real beta)
 {
 	real  deg2rad = K(3.14159265358979323846264338327950288) / K(180.0);
-	real  ci, si = sincos(deg2rad * i_obs, &ci);
-	real  cj, sj = sincos(deg2rad * j_obs, &cj);
+	real  ci, si  = sincos(deg2rad * i_obs, &ci);
+	real  cj, sj  = sincos(deg2rad * j_obs, &cj);
 
-	real  R = r_obs * si - beta  * ci; /* cylindrical radius */
-	real  z = r_obs * ci + beta  * si;
-	real  y = R     * sj - alpha * cj;
-	real  x = R     * cj + alpha * sj;
+	real  R0 = r_obs * si - beta  * ci; /* cylindrical radius */
+	real  z  = r_obs * ci + beta  * si;
+	real  y  = R0    * sj - alpha * cj;
+	real  x  = R0    * cj + alpha * sj;
 
-	real4 q = (real4){0.0, x, y, z};
-	real4 u = (real4){1.0, si * cj, si * sj, ci};
+	real4 q  = (real4){0, x, y, z};
+	real4 u  = (real4){1, si * cj, si * sj, ci};
 
 	real  aa = a_spin * a_spin;
 	real  zz = q.s3 * q.s3;
-	real  kk = 0.5 * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
+	real  kk = K(0.5) * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
 	real  dd = sqrt(kk * kk + aa * zz);
 	real  rr = dd + kk;
 	real  r  = sqrt(rr);
 
-	real  f  = 2.0 * rr * r / (rr * rr + aa * zz);
+	real  f  = K(2.0) * rr * r / (rr * rr + aa * zz);
 	real  lx = (r * q.s1 + a_spin * q.s2) / (rr + aa);
 	real  ly = (r * q.s2 - a_spin * q.s1) / (rr + aa);
 	real  lz = q.s3 / r;
 
-	real4 gt = {-1. + f*1.*1.,      f*1.*lx,      f*1.*ly,      f*1.*lz};
-	real4 gx = {      f*lx*1., 1. + f*lx*lx,      f*lx*ly,      f*lx*lz};
-	real4 gy = {      f*ly*1.,      f*ly*lx, 1. + f*ly*ly,      f*ly*lz};
-	real4 gz = {      f*lz*1.,      f*lz*lx,      f*lz*ly, 1. + f*lz*lz};
+	real4 gt = {-1 + f   ,     f*   lx,     f*   ly,     f*   lz};
+	real4 gx = {     f*lx, 1 + f*lx*lx,     f*lx*ly,     f*lx*lz};
+	real4 gy = {     f*ly,     f*ly*lx, 1 + f*ly*ly,     f*ly*lz};
+	real4 gz = {     f*lz,     f*lz*lx,     f*lz*ly, 1 + f*lz*lz};
 
 	real  A  =  gt.s0;
-	real  B  =  dot(gt.s123, u.s123) * 2;
+	real  B  =  dot(gt.s123, u.s123) * K(2.0);
 	real  C  = (dot(gx.s123, u.s123) * u.s1 +
-	              dot(gy.s123, u.s123) * u.s2 +
-	              dot(gz.s123, u.s123) * u.s3);
+	            dot(gy.s123, u.s123) * u.s2 +
+	            dot(gz.s123, u.s123) * u.s3);
 
-	u.s123 /= -(B + sqrt(B * B - 4 * A * C)) / (2 * A);
+	u.s123 /= -(B + sqrt(B * B - K(4.0) * A * C)) / (K(2.0) * A);
 
 	return (real8){q, u};
 }
@@ -185,38 +185,39 @@ rhs(real8 s)
 		real r, ir, iss;
 		{
 			real aa = a_spin * a_spin;
-			real rr;
+			real rr, tmp2;
 			{
 				real zz = q.s3 * q.s3;
 				real dd;
 				{
-					real kk = 0.5 * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
+					real kk = K(0.5) * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
 					dd = sqrt(kk * kk + aa * zz);
 					rr = dd + kk;
 				}
 				r  = sqrt(rr);
-				ir = 1.0 / r;
+				ir = K(1.0) / r;
 				{
 					real ss = rr + aa;
-					iss  = 1.0 / ss;
-					tmp  = 0.5 / (r * dd);
+					iss  = K(1.0) / ss;
+					tmp  = K(0.5) / (r * dd);
 					dz_r = tmp * ss * q.s3;
 					tmp *= rr;
 				}
 				dy_r = tmp * q.s2;
 				dx_r = tmp * q.s1;
-				tmp  = 2.0 / (rr + aa * zz / rr);
+				tmp  = K(2.0) / (rr + aa * zz / rr);
 			}
+			tmp2 = K(3.0) - K(2.0) * rr * tmp;
 			f    = tmp *  r;
-			dx_f = tmp *  dx_r * (3.0 - 2.0 * rr * tmp);
-			dy_f = tmp *  dy_r * (3.0 - 2.0 * rr * tmp);
-			dz_f = tmp * (dz_r * (3.0 - 2.0 * rr * tmp) - tmp * aa * q.s3 * ir);
+			dx_f = tmp *  dx_r * tmp2;
+			dy_f = tmp *  dy_r * tmp2;
+			dz_f = tmp * (dz_r * tmp2 - tmp * aa * q.s3 * ir);
 		} /* 48 (-8) FLOPs; estimated FLoating-point OPerations, the number
 		     in the parentheses is (the negative of) the number of FMA */
 		{
-			real m2r  = -2.0 * r;
-			real issr =  iss * r;
-			real issa =  iss * a_spin;
+			real m2r  = K(-2.0) * r;
+			real issr = iss     * r;
+			real issa = iss     * a_spin;
 
 			lx    = iss * (q.s1 * r + q.s2 * a_spin);
 			tmp   = iss * (q.s1 + m2r * lx);
@@ -260,9 +261,9 @@ rhs(real8 s)
 		Dz.s2 = Dz.s0 * ly + flu * dz_ly;
 		Dz.s3 = Dz.s0 * lz + flu * dz_lz; /* 9 (-3) FLOPs */
 
-		hDxu = 0.5 * dot(Dx, u);
-		hDyu = 0.5 * dot(Dy, u);
-		hDzu = 0.5 * dot(Dz, u); /* 24 (-9) FLOPs */
+		hDxu = K(0.5) * dot(Dx, u);
+		hDyu = K(0.5) * dot(Dy, u);
+		hDzu = K(0.5) * dot(Dz, u); /* 24 (-9) FLOPs */
 
 		uD  = u.s1 * Dx + u.s2 * Dy + u.s3 * Dz; /* 20 (-8) FLOPs */
 
