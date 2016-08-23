@@ -71,8 +71,8 @@ integrate_drv(__global real *diagno,
 			((real *)&s)[k] = states[h * n_vars + k];
 
 		/* Substepping */
-		real ddt = dt / n_sub;
-		size_t i;
+		real  ddt = dt / n_sub;
+		whole i;
 		for(i = 0; i < n_sub; ++i)
 			s = integrate(s, ddt);
 
