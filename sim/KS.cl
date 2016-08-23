@@ -49,25 +49,25 @@
  **
  ** \return The square of u at q
  **/
-double
-getuu(double4 q, double4 u)
+real
+getuu(real4 q, real4 u)
 {
-	double  aa = a_spin * a_spin;
-	double  zz = q.s3 * q.s3;
-	double  kk = 0.5 * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
-	double  dd = sqrt(kk * kk + aa * zz);
-	double  rr = dd + kk;
-	double  r  = sqrt(rr);
+	real  aa = a_spin * a_spin;
+	real  zz = q.s3 * q.s3;
+	real  kk = 0.5 * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
+	real  dd = sqrt(kk * kk + aa * zz);
+	real  rr = dd + kk;
+	real  r  = sqrt(rr);
 
-	double  f  = 2.0 * rr * r / (rr * rr + aa * zz);
-	double  lx = (r * q.s1 + a_spin * q.s2) / (rr + aa);
-	double  ly = (r * q.s2 - a_spin * q.s1) / (rr + aa);
-	double  lz = q.s3 / r;
+	real  f  = 2.0 * rr * r / (rr * rr + aa * zz);
+	real  lx = (r * q.s1 + a_spin * q.s2) / (rr + aa);
+	real  ly = (r * q.s2 - a_spin * q.s1) / (rr + aa);
+	real  lz = q.s3 / r;
 
-	double4 gt = {-1. + f*1.*1.,      f*1.*lx,      f*1.*ly,      f*1.*lz};
-	double4 gx = {      f*lx*1., 1. + f*lx*lx,      f*lx*ly,      f*lx*lz};
-	double4 gy = {      f*ly*1.,      f*ly*lx, 1. + f*ly*ly,      f*ly*lz};
-	double4 gz = {      f*lz*1.,      f*lz*lx,      f*lz*ly, 1. + f*lz*lz};
+	real4 gt = {-1. + f*1.*1.,      f*1.*lx,      f*1.*ly,      f*1.*lz};
+	real4 gx = {      f*lx*1., 1. + f*lx*lx,      f*lx*ly,      f*lx*lz};
+	real4 gy = {      f*ly*1.,      f*ly*lx, 1. + f*ly*ly,      f*ly*lz};
+	real4 gz = {      f*lz*1.,      f*lz*lx,      f*lz*ly, 1. + f*lz*lz};
 
 	return (dot(gt, u) * u.s0 +
 	        dot(gx, u) * u.s1 +
@@ -93,46 +93,46 @@ getuu(double4 q, double4 u)
  **
  ** \return The initial conditions of a ray
  **/
-double8
-icond(double r_obs, double i_obs, double j_obs, double alpha, double beta)
+real8
+icond(real r_obs, real i_obs, real j_obs, real alpha, real beta)
 {
-	double  ci, si = sincos(M_PI * i_obs / 180.0, &ci);
-	double  cj, sj = sincos(M_PI * j_obs / 180.0, &cj);
+	real  ci, si = sincos(M_PI * i_obs / 180.0, &ci);
+	real  cj, sj = sincos(M_PI * j_obs / 180.0, &cj);
 
-	double  R = r_obs * si - beta  * ci; /* cylindrical radius */
-	double  z = r_obs * ci + beta  * si;
-	double  y = R     * sj - alpha * cj;
-	double  x = R     * cj + alpha * sj;
+	real  R = r_obs * si - beta  * ci; /* cylindrical radius */
+	real  z = r_obs * ci + beta  * si;
+	real  y = R     * sj - alpha * cj;
+	real  x = R     * cj + alpha * sj;
 
-	double4 q = (double4){0.0, x, y, z};
-	double4 u = (double4){1.0, si * cj, si * sj, ci};
+	real4 q = (real4){0.0, x, y, z};
+	real4 u = (real4){1.0, si * cj, si * sj, ci};
 
-	double  aa = a_spin * a_spin;
-	double  zz = q.s3 * q.s3;
-	double  kk = 0.5 * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
-	double  dd = sqrt(kk * kk + aa * zz);
-	double  rr = dd + kk;
-	double  r  = sqrt(rr);
+	real  aa = a_spin * a_spin;
+	real  zz = q.s3 * q.s3;
+	real  kk = 0.5 * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
+	real  dd = sqrt(kk * kk + aa * zz);
+	real  rr = dd + kk;
+	real  r  = sqrt(rr);
 
-	double  f  = 2.0 * rr * r / (rr * rr + aa * zz);
-	double  lx = (r * q.s1 + a_spin * q.s2) / (rr + aa);
-	double  ly = (r * q.s2 - a_spin * q.s1) / (rr + aa);
-	double  lz = q.s3 / r;
+	real  f  = 2.0 * rr * r / (rr * rr + aa * zz);
+	real  lx = (r * q.s1 + a_spin * q.s2) / (rr + aa);
+	real  ly = (r * q.s2 - a_spin * q.s1) / (rr + aa);
+	real  lz = q.s3 / r;
 
-	double4 gt = {-1. + f*1.*1.,      f*1.*lx,      f*1.*ly,      f*1.*lz};
-	double4 gx = {      f*lx*1., 1. + f*lx*lx,      f*lx*ly,      f*lx*lz};
-	double4 gy = {      f*ly*1.,      f*ly*lx, 1. + f*ly*ly,      f*ly*lz};
-	double4 gz = {      f*lz*1.,      f*lz*lx,      f*lz*ly, 1. + f*lz*lz};
+	real4 gt = {-1. + f*1.*1.,      f*1.*lx,      f*1.*ly,      f*1.*lz};
+	real4 gx = {      f*lx*1., 1. + f*lx*lx,      f*lx*ly,      f*lx*lz};
+	real4 gy = {      f*ly*1.,      f*ly*lx, 1. + f*ly*ly,      f*ly*lz};
+	real4 gz = {      f*lz*1.,      f*lz*lx,      f*lz*ly, 1. + f*lz*lz};
 
-	double  A  =  gt.s0;
-	double  B  =  dot(gt.s123, u.s123) * 2;
-	double  C  = (dot(gx.s123, u.s123) * u.s1 +
+	real  A  =  gt.s0;
+	real  B  =  dot(gt.s123, u.s123) * 2;
+	real  C  = (dot(gx.s123, u.s123) * u.s1 +
 	              dot(gy.s123, u.s123) * u.s2 +
 	              dot(gz.s123, u.s123) * u.s3);
 
 	u.s123 /= -(B + sqrt(B * B - 4 * A * C)) / (2 * A);
 
-	return (double8){q, u};
+	return (real8){q, u};
 }
 
 /**
@@ -164,39 +164,39 @@ icond(double r_obs, double i_obs, double j_obs, double alpha, double beta)
  **
  ** \return The right hand sides of the geodesic equations
  **/
-double8
-rhs(double8 s)
+real8
+rhs(real8 s)
 {
-	double4 q = s.s0123;
-	double4 u = s.s4567;
+	real4 q = s.s0123;
+	real4 u = s.s4567;
 
-	double f,  dx_f,  dy_f,  dz_f;
-	double lx, dx_lx, dy_lx, dz_lx;
-	double ly, dx_ly, dy_ly, dz_ly;
-	double lz, dx_lz, dy_lz, dz_lz;
+	real f,  dx_f,  dy_f,  dz_f;
+	real lx, dx_lx, dy_lx, dz_lx;
+	real ly, dx_ly, dy_ly, dz_ly;
+	real lz, dx_lz, dy_lz, dz_lz;
 
-	double  hDxu, hDyu, hDzu;
-	double4 uD;
-	double  tmp;
+	real  hDxu, hDyu, hDzu;
+	real4 uD;
+	real  tmp;
 
 	{
-		double dx_r, dy_r, dz_r;
-		double r, ir, iss;
+		real dx_r, dy_r, dz_r;
+		real r, ir, iss;
 		{
-			double aa = a_spin * a_spin;
-			double rr;
+			real aa = a_spin * a_spin;
+			real rr;
 			{
-				double zz = q.s3 * q.s3;
-				double dd;
+				real zz = q.s3 * q.s3;
+				real dd;
 				{
-					double kk = 0.5 * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
+					real kk = 0.5 * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
 					dd = sqrt(kk * kk + aa * zz);
 					rr = dd + kk;
 				}
 				r  = sqrt(rr);
 				ir = 1.0 / r;
 				{
-					double ss = rr + aa;
+					real ss = rr + aa;
 					iss  = 1.0 / ss;
 					tmp  = 0.5 / (r * dd);
 					dz_r = tmp * ss * q.s3;
@@ -213,9 +213,9 @@ rhs(double8 s)
 		} /* 48 (-8) FLOPs; estimated FLoating-point OPerations, the number
 		     in the parentheses is (the negative of) the number of FMA */
 		{
-			double m2r  = -2.0 * r;
-			double issr =  iss * r;
-			double issa =  iss * a_spin;
+			real m2r  = -2.0 * r;
+			real issr =  iss * r;
+			real issa =  iss * a_spin;
 
 			lx    = iss * (q.s1 * r + q.s2 * a_spin);
 			tmp   = iss * (q.s1 + m2r * lx);
@@ -238,10 +238,10 @@ rhs(double8 s)
 	}
 
 	{
-		double  flu;
-		double4 Dx, Dy, Dz;
+		real  flu;
+		real4 Dx, Dy, Dz;
 		{
-			double lu = u.s0 + lx * u.s1 + ly * u.s2 + lz * u.s3;
+			real lu = u.s0 + lx * u.s1 + ly * u.s2 + lz * u.s3;
 			flu   = f * lu;
 			Dx.s0 = dx_f * lu + f * (dx_lx * u.s1 + dx_ly * u.s2 + dx_lz * u.s3);
 			Dy.s0 = dy_f * lu + f * (dy_lx * u.s1 + dy_ly * u.s2 + dy_lz * u.s3);
@@ -268,9 +268,9 @@ rhs(double8 s)
 		tmp = f * (-uD.s0 + lx * (uD.s1 - hDxu) + ly * (uD.s2 - hDyu) + lz * (uD.s3 - hDzu)); /* 10 (-3) FLOPs */
 	}
 
-	return (double8){u,
-			        uD.s0 -      tmp,
-			 hDxu - uD.s1 + lx * tmp,
-			 hDyu - uD.s2 + ly * tmp,
-			 hDzu - uD.s3 + lz * tmp}; /* 10 (-3) FLOPs */
+	return (real8){u,
+		              uD.s0 -      tmp,
+		       hDxu - uD.s1 + lx * tmp,
+		       hDyu - uD.s2 + ly * tmp,
+		       hDzu - uD.s3 + lz * tmp}; /* 10 (-3) FLOPs */
 }

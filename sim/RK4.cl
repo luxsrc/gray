@@ -26,12 +26,12 @@
  **
  ** \return The new state
  **/
-double8
-integrate(double8 s, double dt)
+real8
+integrate(real8 s, real dt)
 {
-	double8 k1 = dt * rhs(s           );
-	double8 k2 = dt * rhs(s + 0.5 * k1);
-	double8 k3 = dt * rhs(s + 0.5 * k2);
-	double8 k4 = dt * rhs(s +       k3);
-	return s + (k1 + 2.0 * (k2 + k3) + k4) / 6.0;
+	real8 k1 = dt * rhs(s              );
+	real8 k2 = dt * rhs(s + K(0.5) * k1);
+	real8 k3 = dt * rhs(s + K(0.5) * k2);
+	real8 k4 = dt * rhs(s +          k3);
+	return s + (k1 + K(2.0) * (k2 + k3) + k4) / K(6.0);
 }

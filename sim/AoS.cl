@@ -28,10 +28,10 @@
 
 /** OpenCL driver kernel for initializing states */
 __kernel void
-icond_drv(__global double  *diagno,
-          __global double8 *states,
-          const double w_img, const double h_img,
-          const double r_obs, const double i_obs, const double j_obs)
+icond_drv(__global real  *diagno,
+          __global real8 *states,
+          const real w_img, const real h_img,
+          const real r_obs, const real i_obs, const real j_obs)
 {
 	const size_t j = get_global_id(0); /* for h, slowest changing index */
 	const size_t i = get_global_id(1); /* for w, fastest changing index */
@@ -39,9 +39,9 @@ icond_drv(__global double  *diagno,
 
 	if(i < w_rays && j < h_rays) {
 		/* Compute initial conditions from parameters */
-		double  alpha = ((i + 0.5) / w_rays - 0.5) * w_img;
-		double  beta  = ((j + 0.5) / h_rays - 0.5) * h_img;
-		double8 s     = icond(r_obs, i_obs, j_obs, alpha, beta);
+		real  alpha = ((i + 0.5) / w_rays - 0.5) * w_img;
+		real  beta  = ((j + 0.5) / h_rays - 0.5) * h_img;
+		real8 s     = icond(r_obs, i_obs, j_obs, alpha, beta);
 
 		/* Output to global array */
 		diagno[h] = getuu(s.s0123, s.s4567);
@@ -51,9 +51,9 @@ icond_drv(__global double  *diagno,
 
 /** OpenCL driver kernel for integrating the geodesic equations */
 __kernel void
-integrate_drv(__global double  *diagno,
-              __global double8 *states,
-              const double dt, const size_t n_sub)
+integrate_drv(__global real  *diagno,
+              __global real8 *states,
+              const real dt, const whole n_sub)
 {
 	const size_t j = get_global_id(0); /* for h, slowest changing index */
 	const size_t i = get_global_id(1); /* for w, fastest changing index */
@@ -61,10 +61,10 @@ integrate_drv(__global double  *diagno,
 
 	if(i < w_rays && j < h_rays) {
 		/* Input from global array */
-		double8 s = states[h];
+		real8 s = states[h];
 
 		/* Substepping */
-		double ddt = dt / n_sub;
+		real ddt = dt / n_sub;
 		size_t i;
 		for(i = 0; i < n_sub; ++i)
 			s = integrate(s, ddt);
