@@ -70,7 +70,7 @@ init(Lux_job *ego)
 	const size_t shape[] = {p->h_rays,  p->w_rays};
 
 	char buf[1024];
-	const char *src[] = {buf, "KS.cl", "RK4.cl", s->driver, NULL};
+	const char *src[] = {buf, p->coordinates, s->scheme, s->driver, NULL};
 	struct LuxOopencl opts = OPENCL_NULL;
 
 	Lux_opencl        *ocl;
