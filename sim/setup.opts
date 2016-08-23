@@ -5,3 +5,4 @@ cl_device_type	device_type:type	= CL_DEVICE_TYPE_CPU	= strtotype(val);	/**< type
 size_t	precision:p	= sizeof(float)	= strtoprec(val);	/**< size of real type */
 const char *	scheme:scm	= "RK4"	= val;	/**< integration scheme */
 const char *	driver:drv	= "AoS"	= val;	/**< memory layout */
+const char *	kflags:kf	= "-w"	= val;	/**< kernl compilation flags */

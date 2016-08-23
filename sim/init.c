@@ -96,6 +96,7 @@ init(Lux_job *ego)
 	opts.idev    = s->i_device;
 	opts.devtype = s->device_type;
 	opts.realsz  = s->precision;
+	opts.flags   = s->kflags;
 	opts.src     = src;
 
 	/* Load the OpenCL module with opts */
