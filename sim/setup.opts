@@ -6,3 +6,4 @@ size_t	precision:p	= sizeof(float)	= strtoprec(val);	/**< size of real type */
 const char *	scheme:scm	= "RK4"	= val;	/**< integration scheme */
 const char *	driver:drv	= "AoS"	= val;	/**< memory layout */
 const char *	kflags:kf	= "-w"	= val;	/**< kernl compilation flags */
+const char *	outfile:out	= "%04d.raw"	= val;	/**< output file name format */

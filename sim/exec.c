@@ -24,18 +24,21 @@ int
 exec(Lux_job *ego)
 {
 	struct param *p   = &EGO->param;
+	struct setup *s   = &EGO->setup;
 	Lux_opencl   *ocl =  EGO->ocl;
 
 	const size_t n_rays  =  p->h_rays * p->w_rays;
 	const size_t shape[] = {p->h_rays,  p->w_rays};
 
+	char   buf[64];
 	double dt    = -1.0;
 	size_t n_sub = 1024;
 	size_t i;
 
 	lux_debug("GRay2: executing job %p\n", ego);
 
-	dump(ego, "0000.raw");
+	snprintf(buf, sizeof(buf), s->outfile, 0);
+	dump(ego, buf);
 
 	/** \todo check errors */
 	ocl->setM(ocl, EGO->evol, 0, EGO->diag);
@@ -44,14 +47,13 @@ exec(Lux_job *ego)
 	ocl->setW(ocl, EGO->evol, 3, n_sub);
 
 	for(i = 0; i < 10; ++i) {
-		char   buf[64];
 		double ns;
 
 		lux_print("%zu: %4.1f -> %4.1f", i, i*dt, (i+1)*dt);
 
 		ns = ocl->exec(ocl, EGO->evol, 2, shape);
 
-		snprintf(buf, sizeof(buf), "%04zu.raw", i+1);
+		snprintf(buf, sizeof(buf), s->outfile, i+1);
 		dump(ego, buf);
 
 		lux_print(": DONE (%.3gns/step/ray)\n", ns/n_sub/n_rays);
