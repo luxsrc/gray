@@ -96,8 +96,9 @@ getuu(real4 q, real4 u)
 real8
 icond(real r_obs, real i_obs, real j_obs, real alpha, real beta)
 {
-	real  ci, si = sincos(M_PI * i_obs / 180.0, &ci);
-	real  cj, sj = sincos(M_PI * j_obs / 180.0, &cj);
+	real  deg2rad = K(3.14159265358979323846264338327950288) / K(180.0);
+	real  ci, si = sincos(deg2rad * i_obs, &ci);
+	real  cj, sj = sincos(deg2rad * j_obs, &cj);
 
 	real  R = r_obs * si - beta  * ci; /* cylindrical radius */
 	real  z = r_obs * ci + beta  * si;
