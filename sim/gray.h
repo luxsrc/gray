@@ -56,7 +56,7 @@ struct gray {
 	Lux_opencl  *ocl;
 	cl_mem       diag;
 	cl_mem       data;
-	cl_kernel    evol;
+	kernel_t     evol;
 };
 
 #define EGO ((struct gray *)ego)

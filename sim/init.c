@@ -77,7 +77,7 @@ init(Lux_job *ego)
 
 	Lux_opencl *ocl;
 	cl_mem      diag, data;
-	cl_kernel   icond, evol;
+	kernel_t    icond, evol;
 
 	lux_debug("GRay2: initializing job %p\n", ego);
 
@@ -98,12 +98,18 @@ init(Lux_job *ego)
 	opts.realsz  = s->precision;
 	opts.src     = src;
 
-	CKR(ocl   = lux_load("opencl", &opts),                             cleanup1);
-	CKR(diag  = ocl->mk(ocl, CL_MEM_READ_WRITE, sz * n_rays),          cleanup2);
-	CKR(data  = ocl->mk(ocl, CL_MEM_READ_WRITE, sz * n_rays * n_vars), cleanup3);
-	CKR(icond = ocl->mkkern(ocl, "icond_drv"),                         cleanup4);
-	CKR(evol  = ocl->mkkern(ocl, "integrate_drv"),                     cleanup5);
+	/* Load the OpenCL module with opts */
+	CKR(ocl = lux_load("opencl", &opts), cleanup1);
 
+	/* Allocate diagnostic and states/data buffers */
+	CKR(diag = ocl->mk(ocl, CL_MEM_READ_WRITE, sz * n_rays),          cleanup2);
+	CKR(data = ocl->mk(ocl, CL_MEM_READ_WRITE, sz * n_rays * n_vars), cleanup3);
+
+	/* Create the "init" kernel: use EGO->bsz_max as a tmp variable */
+	icond = ocl->mkkern(ocl, "icond_drv");
+	CKR(icond.k, cleanup4);
+
+	/* Initialize the states buffer */
 	/** \todo check errors */
 	ocl->setM(ocl, icond, 0, diag);
 	ocl->setM(ocl, icond, 1, data);
@@ -115,14 +121,16 @@ init(Lux_job *ego)
 	ocl->exec(ocl, icond, 2, gsz, bsz);
 	ocl->rmkern(ocl, icond);
 
+	/* Create the "evol" kernel: save EGO->bsz_max for ego->exec() */
+	evol = ocl->mkkern(ocl, "integrate_drv");
+	CKR(evol.k, cleanup4);
+
 	EGO->ocl  = ocl;
 	EGO->diag = diag;
 	EGO->data = data;
 	EGO->evol = evol;
 	return EXIT_SUCCESS;
 
- cleanup5:
-	ocl->rmkern(ocl, icond);
  cleanup4:
 	ocl->rm(ocl, data);
  cleanup3:
