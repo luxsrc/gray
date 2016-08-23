@@ -70,7 +70,7 @@ init(Lux_job *ego)
 	const size_t shape[] = {p->h_rays,  p->w_rays};
 
 	char buf[1024];
-	const char *src[] = {buf, "KS.cl", "RK4.cl", "AoS.cl", NULL};
+	const char *src[] = {buf, "KS.cl", "RK4.cl", s->driver, NULL};
 	struct LuxOopencl opts = OPENCL_NULL;
 
 	Lux_opencl        *ocl;
@@ -83,10 +83,12 @@ init(Lux_job *ego)
 	         "__constant real   a_spin = %g;\n"
 	         "__constant size_t w_rays = %zu;\n"
 	         "__constant size_t h_rays = %zu;\n"
+	         "__constant size_t n_rays = %zu;\n"
 	         "__constant size_t n_vars = %zu;\n",
 	         p->a_spin,
 	         p->w_rays,
 	         p->h_rays,
+	         n_rays,
 	         n_vars);
 
 	opts.base    = init;
