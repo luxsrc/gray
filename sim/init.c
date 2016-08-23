@@ -84,10 +84,12 @@ init(Lux_job *ego)
 	snprintf(buf, sizeof(buf),
 	         "__constant real   a_spin = %g;\n"
 	         "__constant size_t w_rays = %zu;\n"
-	         "__constant size_t h_rays = %zu;\n",
+	         "__constant size_t h_rays = %zu;\n"
+	         "__constant size_t n_vars = %zu;\n",
 	         p->a_spin,
 	         p->w_rays,
-	         p->h_rays);
+	         p->h_rays,
+	         n_vars);
 
 	opts.base    = init;
 	opts.iplf    = s->i_platform;
