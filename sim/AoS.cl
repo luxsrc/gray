@@ -23,30 +23,34 @@
  **
  ** GRay2 uses OpenCL's just-in-time compilation feature to implement
  ** run-time configurable algorithms.  In this file we implement
- ** Array-of-Structures driver kernels init() and evol().
+ ** Array-of-Structures driver kernels icond_drv() and integrate_drv().
  **/
 
 /** OpenCL driver kernel for initializing states */
 __kernel void
-icond_drv(__global real *diagno,
-          __global real *states,
-          const real w_img, const real h_img,
-          const real r_obs, const real i_obs, const real j_obs)
+icond_drv(__global real *diagno, /**< Buffer for storing diagnostic information */
+          __global real *states, /**< Buffer for storing the states of the rays */
+          const    real  w_img,  /**< Width  of the image in \f$GM/c^2\f$       */
+          const    real  h_img,  /**< Height of the image in \f$GM/c^2\f$       */
+          const    real  r_obs,  /**< Distance of the image from the black hole */
+          const    real  i_obs,  /**< Inclination angle of the image in degrees */
+          const    real  j_obs)  /**< Azimuthal   angle of the image in degrees */
 {
 	const size_t j = get_global_id(0); /* for h, slowest changing index */
 	const size_t i = get_global_id(1); /* for w, fastest changing index */
 	const size_t h = i + j * w_rays;
 
 	if(i < w_rays && j < h_rays) {
-		/* Compute initial conditions from parameters */
-		real  alpha = ((i + 0.5) / w_rays - 0.5) * w_img;
-		real  beta  = ((j + 0.5) / h_rays - 0.5) * h_img;
-		real8 s     = icond(r_obs, i_obs, j_obs, alpha, beta);
+		real8 s;
 		int   k;
+
+		/* Compute initial conditions from parameters */
+		real alpha = ((i + 0.5) / w_rays - 0.5) * w_img;
+		real beta  = ((j + 0.5) / h_rays - 0.5) * h_img;
+		s = icond(r_obs, i_obs, j_obs, alpha, beta);
 
 		/* Output to global array */
 		diagno[h] = getuu(s.s0123, s.s4567);
-
 		for(k = 0; k < 8; ++k)
 			states[h * n_vars + k] = ((real *)&s)[k];
 	}
@@ -54,19 +58,20 @@ icond_drv(__global real *diagno,
 
 /** OpenCL driver kernel for integrating the geodesic equations */
 __kernel void
-integrate_drv(__global real *diagno,
-              __global real *states,
-              const real dt, const whole n_sub)
+integrate_drv(__global real *diagno, /**< Buffer for storing diagnostic information */
+              __global real *states, /**< Buffer for storing the states of the rays */
+              const    real  dt,     /**< Step size                                 */
+              const    whole n_sub)  /**< Number of sub-steps                       */
 {
 	const size_t j = get_global_id(0); /* for h, slowest changing index */
 	const size_t i = get_global_id(1); /* for w, fastest changing index */
 	const size_t h = i + j * w_rays;
 
 	if(i < w_rays && j < h_rays) {
-		/* Input from global array */
 		real8 s;
 		int   k;
 
+		/* Input from global array */
 		for(k = 0; k < 8; ++k)
 			((real *)&s)[k] = states[h * n_vars + k];
 
@@ -78,7 +83,6 @@ integrate_drv(__global real *diagno,
 
 		/* Output to global array */
 		diagno[h] = getuu(s.s0123, s.s4567);
-
 		for(k = 0; k < 8; ++k)
 			states[h * n_vars + k] = ((real *)&s)[k];
 	}
