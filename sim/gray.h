@@ -53,10 +53,10 @@ struct gray {
 	struct icond icond;
 	struct param param;
 	struct setup setup;
-	Lux_opencl  *ocl;
-	cl_mem       diag;
-	cl_mem       data;
-	kernel_t     evol;
+	Lux_opencl        *ocl;
+	Lux_opencl_kernel *evol;
+	cl_mem diag;
+	cl_mem data;
 };
 
 #define EGO ((struct gray *)ego)

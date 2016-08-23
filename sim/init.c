@@ -75,9 +75,9 @@ init(Lux_job *ego)
 	const char *src[] = {buf, "KS.cl", "RK4.cl", "AoS.cl", NULL};
 	struct LuxOopencl opts = OPENCL_NULL;
 
-	Lux_opencl *ocl;
-	cl_mem      diag, data;
-	kernel_t    icond, evol;
+	Lux_opencl        *ocl;
+	Lux_opencl_kernel *icond, *evol;
+	cl_mem diag, data;
 
 	lux_debug("GRay2: initializing job %p\n", ego);
 
@@ -106,8 +106,7 @@ init(Lux_job *ego)
 	CKR(data = ocl->mk(ocl, CL_MEM_READ_WRITE, sz * n_rays * n_vars), cleanup3);
 
 	/* Create the "init" kernel: use EGO->bsz_max as a tmp variable */
-	icond = ocl->mkkern(ocl, "icond_drv");
-	CKR(icond.k, cleanup4);
+	CKR(icond = ocl->mkkern(ocl, "icond_drv"), cleanup4);
 
 	/* Initialize the states buffer */
 	/** \todo check errors */
@@ -122,8 +121,7 @@ init(Lux_job *ego)
 	ocl->rmkern(ocl, icond);
 
 	/* Create the "evol" kernel: save EGO->bsz_max for ego->exec() */
-	evol = ocl->mkkern(ocl, "integrate_drv");
-	CKR(evol.k, cleanup4);
+	CKR(evol = ocl->mkkern(ocl, "integrate_drv"), cleanup4);
 
 	EGO->ocl  = ocl;
 	EGO->diag = diag;
