@@ -56,6 +56,9 @@ struct gray {
 	struct param param;
 	struct setup setup;
 
+	size_t n_coor;
+	size_t n_info;
+
 	Lux_opencl *ocl;
 	cl_mem data;
 	cl_mem info;

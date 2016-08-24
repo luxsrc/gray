@@ -60,8 +60,8 @@ _init(Lux_job *ego)
 
 	const size_t sz     = s->precision;
 	const size_t n_rays = p->h_rays * p->w_rays;
-	const size_t n_data = p->n_freq * 2 + 8;
-	const size_t n_info = 1;
+	const size_t n_data = EGO->n_coor + p->n_freq * 2;
+	const size_t n_info = EGO->n_info;
 
 	cl_mem_flags flags  = CL_MEM_READ_WRITE;
 
@@ -126,6 +126,8 @@ LUX_MKMOD(const void *opts)
 		icond_init(&EGO->icond);
 		param_init(&EGO->param);
 		setup_init(&EGO->setup);
+		EGO->n_coor = 8; /* \todo adjust using setup.coordinates */
+		EGO->n_info = 1; /* \todo adjust using setup.coordinates */
 	}
 	return ego;
 }
