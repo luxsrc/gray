@@ -41,17 +41,17 @@ exec(Lux_job *ego)
 	dump(ego, buf);
 
 	/** \todo check errors */
-	ocl->setM(ocl, EGO->evol, 0, EGO->diag);
-	ocl->setM(ocl, EGO->evol, 1, EGO->data);
-	ocl->setR(ocl, EGO->evol, 2, dt);
-	ocl->setW(ocl, EGO->evol, 3, n_sub);
+	ocl->setM(ocl, EGO->evolve, 0, EGO->info);
+	ocl->setM(ocl, EGO->evolve, 1, EGO->data);
+	ocl->setR(ocl, EGO->evolve, 2, dt);
+	ocl->setW(ocl, EGO->evolve, 3, n_sub);
 
 	for(i = 0; i < 10; ++i) {
 		double ns;
 
 		lux_print("%zu: %4.1f -> %4.1f", i, i*dt, (i+1)*dt);
 
-		ns = ocl->exec(ocl, EGO->evol, 2, shape);
+		ns = ocl->exec(ocl, EGO->evolve, 2, shape);
 
 		snprintf(buf, sizeof(buf), s->outfile, i+1);
 		dump(ego, buf);

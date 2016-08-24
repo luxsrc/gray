@@ -49,14 +49,16 @@
  ** runtime.
  **/
 struct gray {
-	Lux_job      super;
+	Lux_job super;
+
 	struct icond icond;
 	struct param param;
 	struct setup setup;
-	Lux_opencl        *ocl;
-	Lux_opencl_kernel *evol;
-	cl_mem diag;
+
+	Lux_opencl *ocl;
 	cl_mem data;
+	cl_mem info;
+	Lux_opencl_kernel *evolve;
 };
 
 #define EGO ((struct gray *)ego)

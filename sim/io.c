@@ -32,7 +32,7 @@ dump(Lux_job *ego, const char *restrict name)
 	const size_t n_vars = p->n_freq * 2 + 8;
 	const size_t n_rays = p->h_rays * p->w_rays;
 
-	void *d = EGO->ocl->mmap(EGO->ocl, EGO->diag, sz * n_rays);
+	void *d = EGO->ocl->mmap(EGO->ocl, EGO->info, sz * n_rays);
 	void *h = EGO->ocl->mmap(EGO->ocl, EGO->data, sz * n_rays * n_vars);
 
 	FILE *f = fopen(name, "wb");
@@ -44,6 +44,6 @@ dump(Lux_job *ego, const char *restrict name)
 	fwrite( d,         sz,             n_rays, f);
 	fclose(f);
 
-	EGO->ocl->munmap(EGO->ocl, EGO->diag, d);
+	EGO->ocl->munmap(EGO->ocl, EGO->info, d);
 	EGO->ocl->munmap(EGO->ocl, EGO->data, h);
 }

@@ -47,8 +47,10 @@ LUX_RMMOD(void *ego)
 
 	lux_debug("GRay2: destructing instance %p\n", ego);
 
-	if(EGO->evol)
-		ocl->rmkern(ocl, EGO->evol);
+	if(EGO->evolve)
+		ocl->rmkern(ocl, EGO->evolve);
+	if(EGO->info)
+		ocl->rm(ocl, EGO->info);
 	if(EGO->data)
 		ocl->rm(ocl, EGO->data);
 	if(EGO->ocl)
