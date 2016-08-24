@@ -176,10 +176,10 @@ rhs(real8 s) /**< State of the ray */
 	real4 q = s.s0123;
 	real4 u = s.s4567;
 
-	real f,  dx_f,  dy_f,  dz_f;
-	real lx, dx_lx, dy_lx, dz_lx;
-	real ly, dx_ly, dy_ly, dz_ly;
-	real lz, dx_lz, dy_lz, dz_lz;
+	real  f,  dx_f,  dy_f,  dz_f;
+	real  lx, dx_lx, dy_lx, dz_lx;
+	real  ly, dx_ly, dy_ly, dz_ly;
+	real  lz, dx_lz, dy_lz, dz_lz;
 
 	real  hDxu, hDyu, hDzu;
 	real4 uD;

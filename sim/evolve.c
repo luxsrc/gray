@@ -18,17 +18,17 @@
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gray.h"
-#include <stdio.h>
 
 double
 evolve(Lux_job *ego)
 {
-	Lux_opencl   *ocl     =  EGO->ocl;
-	struct param *p       = &EGO->param;
-	const  size_t shape[] = {p->h_rays,  p->w_rays};
+	Lux_opencl *ocl = EGO->ocl;
 
-	double dt    = -1.0;
-	size_t n_sub = 1024;
+	struct param *p = &EGO->param;
+
+	const double dt      = -1.0;
+	const size_t n_sub   = 1024;
+	const size_t shape[] = {p->h_rays, p->w_rays};
 
 	ocl->setM(ocl, EGO->evolve, 0, EGO->data);
 	ocl->setM(ocl, EGO->evolve, 1, EGO->info);

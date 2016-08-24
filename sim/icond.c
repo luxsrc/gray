@@ -18,18 +18,18 @@
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gray.h"
-#include <stdio.h>
 
 void
 icond(Lux_job *ego)
 {
 	Lux_opencl *ocl = EGO->ocl;
 
-	Lux_opencl_kernel *icond;
+	struct icond *i = &EGO->icond;
+	struct param *p = &EGO->param;
 
-	struct icond *i       = &EGO->icond;
-	struct param *p       = &EGO->param;
-	const  size_t shape[] = {p->h_rays,  p->w_rays};
+	const size_t shape[] = {p->h_rays, p->w_rays};
+
+	Lux_opencl_kernel *icond;
 
 	lux_debug("GRay2: executing job %p\n", ego);
 

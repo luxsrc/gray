@@ -19,6 +19,7 @@
  */
 
 /** \file
+ **
  ** Data structure definitions and function declarations for GRay2
  **
  ** GRay2 is implemented as a lux module.  Its run-time data is stored
@@ -41,7 +42,7 @@
 #include "setup.h"
 
 /**
- ** Run-time data for GRay2
+ ** Run-time data structure for GRay2
  **
  ** To take advantage of all the low level features provided by lux,
  ** GRay2 is implemented as a lux module.  Its runtime data is stored
@@ -64,16 +65,16 @@ struct gray {
 #define EGO ((struct gray *)ego)
 #define CKR lux_check_func_success
 
-/** Building method in the Lux_job interface */
+/** Build the OpenCL module for GRay2 */
 extern Lux_opencl *build(Lux_job *);
 
-/** Initialization method in the Lux_Job interface */
+/** Set the initial conditions */
 extern void icond(Lux_job *);
 
-/** Execution method in the Lux_Job interface */
+/** Evolve the states of photons to the next (super) step */
 extern double evolve(Lux_job *);
 
-/** Output function */
+/** Output data to a file */
 extern void dump(Lux_job *, size_t);
 
 #endif /* _GRAY_H */
