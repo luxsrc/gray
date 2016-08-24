@@ -31,11 +31,12 @@ dump(Lux_job *ego, size_t i)
 	struct setup *s = &EGO->setup;
 
 	const  size_t sz     = s->precision;
-	const  size_t n_vars = p->n_freq * 2 + 8;
+	const  size_t n_data = p->n_freq * 2 + 8;
+	const  size_t n_info = 1;
 	const  size_t n_rays = p->h_rays * p->w_rays;
 
-	void *data = ocl->mmap(ocl, EGO->data, sz * n_rays * n_vars);
-	void *info = ocl->mmap(ocl, EGO->info, sz * n_rays);
+	void *data = ocl->mmap(ocl, EGO->data, sz * n_rays * n_data);
+	void *info = ocl->mmap(ocl, EGO->info, sz * n_rays * n_info);
 
 	char  buf[64];
 	FILE *f;
@@ -44,11 +45,11 @@ dump(Lux_job *ego, size_t i)
 	f = fopen(buf, "wb");
 
 	fwrite(&sz,        sizeof(size_t), 1,      f);
-	fwrite(&n_vars,    sizeof(size_t), 1,      f);
+	fwrite(&n_data,    sizeof(size_t), 1,      f);
 	fwrite(&p->w_rays, sizeof(size_t), 1,      f);
 	fwrite(&p->h_rays, sizeof(size_t), 1,      f);
-	fwrite( data,      sz * n_vars,    n_rays, f);
-	fwrite( info,      sz,             n_rays, f);
+	fwrite( data,      sz * n_data,    n_rays, f);
+	fwrite( info,      sz * n_info,    n_rays, f);
 
 	fclose(f);
 

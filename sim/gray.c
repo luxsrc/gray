@@ -60,15 +60,16 @@ _init(Lux_job *ego)
 
 	const size_t sz     = s->precision;
 	const size_t n_rays = p->h_rays * p->w_rays;
-	const size_t n_vars = p->n_freq * 2 + 8;
+	const size_t n_data = p->n_freq * 2 + 8;
+	const size_t n_info = 1;
 
 	cl_mem_flags flags  = CL_MEM_READ_WRITE;
 
 	lux_debug("GRay2: initializing instance %p\n", ego);
 
 	CKR(EGO->ocl    = ocl    = build(ego),                       cleanup1);
-	CKR(EGO->data   = ocl->mk(ocl, sz * n_rays * n_vars, flags), cleanup2);
-	CKR(EGO->info   = ocl->mk(ocl, sz * n_rays,          flags), cleanup3);
+	CKR(EGO->data   = ocl->mk(ocl, sz * n_rays * n_data, flags), cleanup2);
+	CKR(EGO->info   = ocl->mk(ocl, sz * n_rays * n_info, flags), cleanup3);
 	CKR(EGO->evolve = ocl->mkkern(ocl, "evolve_drv"),            cleanup4);
 
 	return EXIT_SUCCESS;
