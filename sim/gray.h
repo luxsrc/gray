@@ -64,14 +64,14 @@ struct gray {
 #define EGO ((struct gray *)ego)
 #define CKR lux_check_func_success
 
-/** Configuration method in the Lux_Job interface */
-extern int  conf(Lux_job *, const char *);
+/** Building method in the Lux_job interface */
+extern Lux_opencl *build(Lux_job *);
 
 /** Initialization method in the Lux_Job interface */
-extern int  init(Lux_job *);
+extern void icond(Lux_job *);
 
 /** Execution method in the Lux_Job interface */
-extern int  exec(Lux_job *);
+extern double evolve(Lux_job *);
 
 /** Output function */
 extern void dump(Lux_job *, const char *);

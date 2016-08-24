@@ -20,44 +20,20 @@
 #include "gray.h"
 #include <stdio.h>
 
-int
-exec(Lux_job *ego)
+double
+evolve(Lux_job *ego)
 {
-	struct param *p   = &EGO->param;
-	struct setup *s   = &EGO->setup;
-	Lux_opencl   *ocl =  EGO->ocl;
+	Lux_opencl   *ocl     =  EGO->ocl;
+	struct param *p       = &EGO->param;
+	const  size_t shape[] = {p->h_rays,  p->w_rays};
 
-	const size_t n_rays  =  p->h_rays * p->w_rays;
-	const size_t shape[] = {p->h_rays,  p->w_rays};
-
-	char   buf[64];
 	double dt    = -1.0;
 	size_t n_sub = 1024;
-	size_t i;
 
-	lux_debug("GRay2: executing job %p\n", ego);
-
-	snprintf(buf, sizeof(buf), s->outfile, 0);
-	dump(ego, buf);
-
-	/** \todo check errors */
 	ocl->setM(ocl, EGO->evolve, 0, EGO->data);
 	ocl->setM(ocl, EGO->evolve, 1, EGO->info);
 	ocl->setR(ocl, EGO->evolve, 2, dt);
 	ocl->setW(ocl, EGO->evolve, 3, n_sub);
 
-	for(i = 0; i < 10; ++i) {
-		double ns;
-
-		lux_print("%zu: %4.1f -> %4.1f", i, i*dt, (i+1)*dt);
-
-		ns = ocl->exec(ocl, EGO->evolve, 2, shape);
-
-		snprintf(buf, sizeof(buf), s->outfile, i+1);
-		dump(ego, buf);
-
-		lux_print(": DONE (%.3gns/step/ray)\n", ns/n_sub/n_rays);
-	}
-
-	return EXIT_SUCCESS;
+	return ocl->exec(ocl, EGO->evolve, 2, shape);
 }

@@ -57,27 +57,16 @@
 #include "gray.h"
 #include <stdio.h>
 
-int
-init(Lux_job *ego)
+Lux_opencl *
+build(Lux_job *ego)
 {
-	struct icond *i = &EGO->icond;
+	struct LuxOopencl opts = OPENCL_NULL;
+
 	struct param *p = &EGO->param;
 	struct setup *s = &EGO->setup;
 
-	const size_t sz      =  s->precision;
-	const size_t n_vars  =  p->n_freq * 2 + 8;
-	const size_t n_rays  =  p->h_rays * p->w_rays;
-	const size_t shape[] = {p->h_rays,  p->w_rays};
-
 	char buf[1024];
 	const char *src[] = {buf, p->coordinates, s->scheme, s->driver, NULL};
-	struct LuxOopencl opts = OPENCL_NULL;
-
-	Lux_opencl        *ocl;
-	Lux_opencl_kernel *icond, *evolve;
-	cl_mem             data,   info;
-
-	lux_debug("GRay2: initializing job %p\n", ego);
 
 	snprintf(buf, sizeof(buf),
 	         "__constant real   a_spin = %g;\n"
@@ -88,10 +77,10 @@ init(Lux_job *ego)
 	         p->a_spin,
 	         p->w_rays,
 	         p->h_rays,
-	         n_rays,
-	         n_vars);
+	         p->h_rays * p->w_rays,
+	         p->n_freq * 2 + 8);
 
-	opts.base    = init;
+	opts.base    = build;
 	opts.iplf    = s->i_platform;
 	opts.idev    = s->i_device;
 	opts.devtype = s->device_type;
@@ -99,43 +88,5 @@ init(Lux_job *ego)
 	opts.flags   = s->kflags;
 	opts.src     = src;
 
-	/* Load the OpenCL module with opts */
-	CKR(ocl = lux_load("opencl", &opts), cleanup1);
-
-	/* Allocate diagnostic and states/data buffers */
-	CKR(data = ocl->mk(ocl, CL_MEM_READ_WRITE, sz * n_rays * n_vars), cleanup2);
-	CKR(info = ocl->mk(ocl, CL_MEM_READ_WRITE, sz * n_rays),          cleanup3);
-
-	/* Create the "init" kernel: use EGO->bsz_max as a tmp variable */
-	CKR(icond = ocl->mkkern(ocl, "icond_drv"), cleanup4);
-
-	/* Initialize the states buffer */
-	/** \todo check errors */
-	ocl->setM(ocl, icond, 0, data);
-	ocl->setM(ocl, icond, 1, info);
-	ocl->setR(ocl, icond, 2, i->w_img);
-	ocl->setR(ocl, icond, 3, i->h_img);
-	ocl->setR(ocl, icond, 4, i->r_obs);
-	ocl->setR(ocl, icond, 5, i->i_obs);
-	ocl->setR(ocl, icond, 6, i->j_obs);
-	ocl->exec(ocl, icond, 2, shape);
-	ocl->rmkern(ocl, icond);
-
-	/* Create the "evol" kernel: save EGO->bsz_max for ego->exec() */
-	CKR(evolve = ocl->mkkern(ocl, "evolve_drv"), cleanup4);
-
-	EGO->ocl    = ocl;
-	EGO->data   = data;
-	EGO->info   = info;
-	EGO->evolve = evolve;
-	return EXIT_SUCCESS;
-
- cleanup4:
-	ocl->rm(ocl, info);
- cleanup3:
-	ocl->rm(ocl, data);
- cleanup2:
-	lux_unload(ocl);
- cleanup1:
-	return EXIT_FAILURE;
+	return lux_load("opencl", &opts);
 }

@@ -18,8 +18,97 @@
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gray.h"
+
 #include <lux/mangle.h>
 #include <lux/zalloc.h>
+
+#include <stdio.h>
+
+/** \page newopts New Run-Time Options
+ **
+ ** Turn hard-wired constants into run-time options
+ **
+ ** GRay2 uses the lux framework and hence follows lux's approach to
+ ** support many run-time options.  To turn hard-wired constants into
+ ** run-time options, one needs to
+ **
+ **   -# Add an option table ".opts" file
+ **   -# Add the automatically generated structure to "sim/gray.h"
+ **   -# Add the automatically generated configure function to "sim/conf.c"
+ **/
+static int
+conf(Lux_job *ego, const char *restrict arg)
+{
+	lux_debug("GRay2: configuring job %p with argument \"%s\"\n", ego, arg);
+
+	return icond_config(&EGO->icond, arg) &&
+	       param_config(&EGO->param, arg) &&
+	       setup_config(&EGO->setup, arg);
+}
+
+static int
+init(Lux_job *ego)
+{
+	Lux_opencl *ocl;
+
+	struct param *p = &EGO->param;
+	struct setup *s = &EGO->setup;
+
+	const size_t sz     = s->precision;
+	const size_t n_rays = p->h_rays * p->w_rays;
+	const size_t n_vars = p->n_freq * 2 + 8;
+	cl_mem_flags flags  = CL_MEM_READ_WRITE;
+
+	lux_debug("GRay2: initializing job %p\n", ego);
+
+	CKR(EGO->ocl    = ocl = build(ego),                      cleanup1);
+	CKR(EGO->data   = ocl->mk(ocl, flags, sz*n_rays*n_vars), cleanup2);
+	CKR(EGO->info   = ocl->mk(ocl, flags, sz*n_rays),        cleanup3);
+	CKR(EGO->evolve = ocl->mkkern(ocl, "evolve_drv"),        cleanup4);
+
+	return EXIT_SUCCESS;
+
+ cleanup4:
+	ocl->rm(ocl, EGO->info);
+ cleanup3:
+	ocl->rm(ocl, EGO->data);
+ cleanup2:
+	lux_unload(EGO->ocl);
+ cleanup1:
+	return EXIT_FAILURE;
+}
+
+static int
+exec(Lux_job *ego)
+{
+	struct param *p = &EGO->param;
+	struct setup *s = &EGO->setup;
+
+	const size_t n_rays = p->h_rays * p->w_rays;
+
+	char buf[64];
+
+	double dt    = -1.0;
+	size_t n_sub = 1024;
+	size_t i;
+
+	lux_debug("GRay2: executing job %p\n", ego);
+
+	icond(ego);
+	snprintf(buf, sizeof(buf), s->outfile, 0);
+	dump(ego, buf);
+
+	for(i = 0; i < 10; ++i) {
+		double ns;
+		lux_print("%zu: %4.1f -> %4.1f", i, i*dt, (i+1)*dt);
+		ns = evolve(ego);
+		snprintf(buf, sizeof(buf), s->outfile, i+1);
+		dump(ego, buf);
+		lux_print(": DONE (%.3gns/step/ray)\n", ns/n_sub/n_rays);
+	}
+
+	return EXIT_SUCCESS;
+}
 
 void *
 LUX_MKMOD(const void *opts)

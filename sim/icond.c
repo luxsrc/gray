@@ -17,27 +17,32 @@
  * You should have received a copy of the GNU General Public License
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-/** \page newopts New Run-Time Options
- **
- ** Turn hard-wired constants into run-time options
- **
- ** GRay2 uses the lux framework and hence follows lux's approach to
- ** support many run-time options.  To turn hard-wired constants into
- ** run-time options, one needs to
- **
- **   -# Add an option table ".opts" file
- **   -# Add the automatically generated structure to "sim/gray.h"
- **   -# Add the automatically generated configure function to "sim/conf.c"
- **/
 #include "gray.h"
+#include <stdio.h>
 
-int
-conf(Lux_job *ego, const char *restrict arg)
+void
+icond(Lux_job *ego)
 {
-	lux_debug("GRay2: configuring job %p with argument \"%s\"\n", ego, arg);
+	Lux_opencl *ocl = EGO->ocl;
 
-	return icond_config(&EGO->icond, arg) &&
-	       param_config(&EGO->param, arg) &&
-	       setup_config(&EGO->setup, arg);
+	Lux_opencl_kernel *icond;
+
+	struct icond *i       = &EGO->icond;
+	struct param *p       = &EGO->param;
+	const  size_t shape[] = {p->h_rays,  p->w_rays};
+
+	lux_debug("GRay2: executing job %p\n", ego);
+
+	icond = ocl->mkkern(ocl, "icond_drv");
+
+	ocl->setM(ocl, icond, 0, EGO->data);
+	ocl->setM(ocl, icond, 1, EGO->info);
+	ocl->setR(ocl, icond, 2, i->w_img);
+	ocl->setR(ocl, icond, 3, i->h_img);
+	ocl->setR(ocl, icond, 4, i->r_obs);
+	ocl->setR(ocl, icond, 5, i->i_obs);
+	ocl->setR(ocl, icond, 6, i->j_obs);
+	ocl->exec(ocl, icond, 2, shape);
+
+	ocl->rmkern(ocl, icond);
 }
