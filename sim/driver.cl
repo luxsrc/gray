@@ -51,10 +51,10 @@ icond_drv(__global real *data,  /**< States of the rays                      */
 		s = icond(r_obs, i_obs, j_obs, alpha, beta);
 
 		/* Output to global array */
-		for(k = 0; k < 8; ++k)
+		for(k = 0; k < n_data; ++k)
 			DATA(h, k) = ((real *)&s)[k];
 
-		for(k = 0; k < 1; ++k)
+		for(k = 0; k < n_info; ++k)
 			INFO(h, k) = getuu(s.s0123, s.s4567);
 	}
 }
@@ -75,7 +75,7 @@ evolve_drv(__global real *data,  /**< States of the rays     */
 		int   k;
 
 		/* Input from global array */
-		for(k = 0; k < 8; ++k)
+		for(k = 0; k < n_data; ++k)
 			((real *)&s)[k] = DATA(h, k);
 
 		/* Substepping */
@@ -85,10 +85,10 @@ evolve_drv(__global real *data,  /**< States of the rays     */
 			s = integrate(s, ddt);
 
 		/* Output to global array */
-		for(k = 0; k < 8; ++k)
+		for(k = 0; k < n_data; ++k)
 			DATA(h, k) = ((real *)&s)[k];
 
-		for(k = 0; k < 1; ++k)
+		for(k = 0; k < n_info; ++k)
 			INFO(h, k) = getuu(s.s0123, s.s4567);
 	}
 }
