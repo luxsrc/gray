@@ -68,7 +68,12 @@ build(Lux_job *ego)
 	struct setup *s = &EGO->setup;
 
 	char buf[1024];
-	const char *src[] = {buf, p->coordinates, s->scheme, s->driver, NULL};
+	const char *src[] = {buf,
+	                     p->coordinates,
+	                     s->scheme,
+	                     s->morder,
+	                     "driver.cl",
+	                     NULL};
 
 	snprintf(buf, sizeof(buf),
 	         "__constant real   a_spin = %g;\n"
