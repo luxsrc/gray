@@ -19,6 +19,12 @@
  */
 #include "gray.h"
 
+static inline size_t
+max(size_t a, size_t b)
+{
+	return a > b ? a : b;
+}
+
 void
 icond(Lux_job *ego)
 {
@@ -26,6 +32,11 @@ icond(Lux_job *ego)
 
 	struct icond *i = &EGO->icond;
 	struct param *p = &EGO->param;
+	struct setup *s = &EGO->setup;
+
+	const  size_t sz     = s->precision;
+	const  size_t n_data = EGO->n_coor + p->n_freq * 2;
+	const  size_t n_info = EGO->n_info;
 
 	const size_t shape[] = {p->h_rays, p->w_rays};
 
@@ -42,6 +53,8 @@ icond(Lux_job *ego)
 	ocl->setR(ocl, icond, 4, i->r_obs);
 	ocl->setR(ocl, icond, 5, i->i_obs);
 	ocl->setR(ocl, icond, 6, i->j_obs);
+	ocl->set (ocl, icond, 7, sz * max(n_data, n_info), NULL);
+
 	ocl->exec(ocl, icond, 2, shape);
 
 	ocl->rmkern(ocl, icond);

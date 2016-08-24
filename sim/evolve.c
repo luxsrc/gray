@@ -19,12 +19,23 @@
  */
 #include "gray.h"
 
+static inline size_t
+max(size_t a, size_t b)
+{
+	return a > b ? a : b;
+}
+
 double
 evolve(Lux_job *ego)
 {
 	Lux_opencl *ocl = EGO->ocl;
 
 	struct param *p = &EGO->param;
+	struct setup *s = &EGO->setup;
+
+	const  size_t sz     = s->precision;
+	const  size_t n_data = EGO->n_coor + p->n_freq * 2;
+	const  size_t n_info = EGO->n_info;
 
 	const double dt      = -1.0;
 	const size_t n_sub   = 1024;
@@ -34,6 +45,7 @@ evolve(Lux_job *ego)
 	ocl->setM(ocl, EGO->evolve, 1, EGO->info);
 	ocl->setR(ocl, EGO->evolve, 2, dt);
 	ocl->setW(ocl, EGO->evolve, 3, n_sub);
+	ocl->set (ocl, EGO->evolve, 4, sz * max(n_data, n_info), NULL);
 
 	return ocl->exec(ocl, EGO->evolve, 2, shape);
 }

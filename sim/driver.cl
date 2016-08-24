@@ -35,7 +35,8 @@ icond_drv(__global real *data,  /**< States of the rays                      */
           const    real  h_img, /**< Height of the image in \f$GM/c^2\f$     */
           const    real  r_obs, /**< Distance of the image from black hole   */
           const    real  i_obs, /**< Inclination     of the image in degrees */
-          const    real  j_obs) /**< Azimuthal angle of the image in degrees */
+          const    real  j_obs, /**< Azimuthal angle of the image in degrees */
+          __local  real *scratch)
 {
 	const size_t j = get_global_id(0); /* for h, slowest changing index */
 	const size_t i = get_global_id(1); /* for w, fastest changing index */
@@ -64,7 +65,8 @@ __kernel void
 evolve_drv(__global real *data,  /**< States of the rays     */
            __global real *info,  /**< Diagnostic information */
            const    real  dt,    /**< Step size              */
-           const    whole n_sub) /**< Number of sub-steps    */
+           const    whole n_sub, /**< Number of sub-steps    */
+           __local  real *scratch)
 {
 	const size_t j = get_global_id(0); /* for h, slowest changing index */
 	const size_t i = get_global_id(1); /* for w, fastest changing index */
