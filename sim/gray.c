@@ -67,8 +67,8 @@ _init(Lux_job *ego)
 	lux_debug("GRay2: initializing instance %p\n", ego);
 
 	CKR(EGO->ocl    = ocl    = build(ego),                       cleanup1);
-	CKR(EGO->data   = ocl->mk(ocl, flags, sz * n_rays * n_vars), cleanup2);
-	CKR(EGO->info   = ocl->mk(ocl, flags, sz * n_rays),          cleanup3);
+	CKR(EGO->data   = ocl->mk(ocl, sz * n_rays * n_vars, flags), cleanup2);
+	CKR(EGO->info   = ocl->mk(ocl, sz * n_rays,          flags), cleanup3);
 	CKR(EGO->evolve = ocl->mkkern(ocl, "evolve_drv"),            cleanup4);
 
 	return EXIT_SUCCESS;
