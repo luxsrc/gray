@@ -26,4 +26,5 @@
  ** index for Array-of-Structures memory order.
  **/
 
-#define IDX(h, k) (h * n_vars + k)
+#define DATA(h, k) data[h * n_vars + k]
+#define INFO(h, k) info[h * 1      + k]
