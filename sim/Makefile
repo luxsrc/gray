@@ -1,5 +1,8 @@
 all: gray.la
 
+install: gray.la
+	lux-install *.cl gray.la +i sim
+
 %.h: %.opts
 	lux-optgen $<
 
