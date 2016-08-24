@@ -111,8 +111,8 @@ init(Lux_job *ego)
 
 	/* Initialize the states buffer */
 	/** \todo check errors */
-	ocl->setM(ocl, icond, 0, info);
-	ocl->setM(ocl, icond, 1, data);
+	ocl->setM(ocl, icond, 0, data);
+	ocl->setM(ocl, icond, 1, info);
 	ocl->setR(ocl, icond, 2, i->w_img);
 	ocl->setR(ocl, icond, 3, i->h_img);
 	ocl->setR(ocl, icond, 4, i->r_obs);

@@ -28,8 +28,8 @@
 
 /** OpenCL driver kernel for initializing states */
 __kernel void
-icond_drv(__global real *info,  /**< Buffer for storing diagnostic information */
-          __global real *data,  /**< Buffer for storing the states of the rays */
+icond_drv(__global real *data,  /**< Buffer for storing the states of the rays */
+          __global real *info,  /**< Buffer for storing diagnostic information */
           const    real  w_img, /**< Width  of the image in \f$GM/c^2\f$       */
           const    real  h_img, /**< Height of the image in \f$GM/c^2\f$       */
           const    real  r_obs, /**< Distance of the image from the black hole */
@@ -58,8 +58,8 @@ icond_drv(__global real *info,  /**< Buffer for storing diagnostic information *
 
 /** OpenCL driver kernel for integrating the geodesic equations */
 __kernel void
-evolve_drv(__global real *info,  /**< Buffer for storing diagnostic information */
-           __global real *data,  /**< Buffer for storing the states of the rays */
+evolve_drv(__global real *data,  /**< Buffer for storing the states of the rays */
+           __global real *info,  /**< Buffer for storing diagnostic information */
            const    real  dt,    /**< Step size                                 */
            const    whole n_sub) /**< Number of sub-steps                       */
 {

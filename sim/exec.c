@@ -41,8 +41,8 @@ exec(Lux_job *ego)
 	dump(ego, buf);
 
 	/** \todo check errors */
-	ocl->setM(ocl, EGO->evolve, 0, EGO->info);
-	ocl->setM(ocl, EGO->evolve, 1, EGO->data);
+	ocl->setM(ocl, EGO->evolve, 0, EGO->data);
+	ocl->setM(ocl, EGO->evolve, 1, EGO->info);
 	ocl->setR(ocl, EGO->evolve, 2, dt);
 	ocl->setW(ocl, EGO->evolve, 3, n_sub);
 
