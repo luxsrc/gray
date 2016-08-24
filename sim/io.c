@@ -23,7 +23,7 @@
 /** \todo implement load() */
 
 void
-dump(Lux_job *ego, const char *restrict name)
+dump(Lux_job *ego, size_t i)
 {
 	Lux_opencl *ocl = EGO->ocl;
 
@@ -37,13 +37,19 @@ dump(Lux_job *ego, const char *restrict name)
 	void *h = ocl->mmap(ocl, EGO->data, sz * n_rays * n_vars);
 	void *d = ocl->mmap(ocl, EGO->info, sz * n_rays);
 
-	FILE *f = fopen(name, "wb");
+	char buf[64];
+	FILE *f;
+
+	snprintf(buf, sizeof(buf), s->outfile, i);
+	f = fopen(buf, "wb");
+
 	fwrite(&sz,        sizeof(size_t), 1,      f);
 	fwrite(&n_vars,    sizeof(size_t), 1,      f);
 	fwrite(&p->w_rays, sizeof(size_t), 1,      f);
 	fwrite(&p->h_rays, sizeof(size_t), 1,      f);
 	fwrite( h,         sz * n_vars,    n_rays, f);
 	fwrite( d,         sz,             n_rays, f);
+
 	fclose(f);
 
 	ocl->munmap(ocl, EGO->info, d);

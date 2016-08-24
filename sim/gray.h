@@ -74,6 +74,6 @@ extern void icond(Lux_job *);
 extern double evolve(Lux_job *);
 
 /** Output function */
-extern void dump(Lux_job *, const char *);
+extern void dump(Lux_job *, size_t);
 
 #endif /* _GRAY_H */
