@@ -53,7 +53,7 @@ icond(Lux_job *ego)
 	ocl->setR(ocl, icond, 4, i->r_obs);
 	ocl->setR(ocl, icond, 5, i->i_obs);
 	ocl->setR(ocl, icond, 6, i->j_obs);
-	ocl->set (ocl, icond, 7, sz * max(n_data, n_info), NULL);
+	ocl->setS(ocl, icond, 7, sz * max(n_data, n_info));
 
 	ocl->exec(ocl, icond, 2, shape);
 

@@ -45,7 +45,7 @@ evolve(Lux_job *ego)
 	ocl->setM(ocl, EGO->evolve, 1, EGO->info);
 	ocl->setR(ocl, EGO->evolve, 2, dt);
 	ocl->setW(ocl, EGO->evolve, 3, n_sub);
-	ocl->set (ocl, EGO->evolve, 4, sz * max(n_data, n_info), NULL);
+	ocl->setS(ocl, EGO->evolve, 4, sz * max(n_data, n_info));
 
 	return ocl->exec(ocl, EGO->evolve, 2, shape);
 }
