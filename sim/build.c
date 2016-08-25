@@ -89,6 +89,7 @@ build(Lux_job *ego)
 
 	snprintf(buf, sizeof(buf),
 	         "#define a_spin K(%.18f)\n" /* DBL_EPSILON ~ 1e-16 */
+	         "#define n_freq %zu\n"
 	         "#define n_data %zu\n"
 	         "#define n_info %zu\n"
 	         "#define n_rays %zu\n"
@@ -97,6 +98,7 @@ build(Lux_job *ego)
 	         "#define n_chunk %zu\n"
 	         "typedef real%zu realE;\n",
 	         p->a_spin,
+	         p->n_freq,
 	         n_data,
 	         n_info,
 	         p->h_rays * p->w_rays,

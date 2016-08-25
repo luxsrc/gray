@@ -43,6 +43,10 @@
 struct state {
 	real4 q;
 	real4 u;
+#if n_freq > 0
+	real I  [n_freq];
+	real tau[n_freq];
+#endif
 };
 
 /**
@@ -280,13 +284,15 @@ rhs(struct state s) /**< State of the ray */
 		tmp = f * (-uD.s0 + lx * (uD.s1 - hDxu) + ly * (uD.s2 - hDyu) + lz * (uD.s3 - hDzu)); /* 10 (-3) FLOPs */
 	}
 
-	return (struct state){
-		u,
-		{
-			       uD.s0 -      tmp,
-			hDxu - uD.s1 + lx * tmp,
-			hDyu - uD.s2 + ly * tmp,
-			hDzu - uD.s3 + lz * tmp /* 10 (-3) FLOPs */
-		}
-	};
+	s.q = u;
+	s.u = (real4){       uD.s0 -      tmp,
+		      hDxu - uD.s1 + lx * tmp,
+		      hDyu - uD.s2 + ly * tmp,
+		      hDzu - uD.s3 + lz * tmp}; /* 10 (-3) FLOPs */
+
+	for(whole i; i < n_freq; ++i) {
+		/* Radiative transfer */
+	}
+
+	return s;
 }
