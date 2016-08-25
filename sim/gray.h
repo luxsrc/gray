@@ -36,14 +36,7 @@
 #include <lux/job.h>
 #include <lux/numeric.h>
 #include <lux/opencl.h>
-
-static inline const double *
-strtoda(const char *str, char **endptr)
-{
-	return NULL;
-	(void)str;
-	(void)endptr;
-}
+#include <lux/strutils.h>
 
 #include "icond.h"
 #include "param.h"
