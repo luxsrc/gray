@@ -79,17 +79,15 @@ evolve_drv(__global real *data,  /**< States of the rays     */
 
 	if(gi < w_rays && gj < h_rays) {
 		real8 d;
-		int   s;
+		int   s, h;
 
 		/* Input from global array */
 		for(s = 0; s < n_data; ++s)
 			((real *)&d)[s] = DATA(g, s);
 
 		/* Substepping */
-		real  ddt = dt / n_sub;
-		whole h;
 		for(h = 0; h < n_sub; ++h)
-			d = integrate(d, ddt);
+			d = integrate(d, dt / n_sub);
 
 		/* Output to global array */
 		for(s = 0; s < n_data; ++s)
