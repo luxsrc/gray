@@ -22,6 +22,7 @@
 #include <lux/mangle.h>
 #include <lux/zalloc.h>
 
+#include <math.h>
 #include <stdio.h>
 
 static int
@@ -48,19 +49,28 @@ _conf(Lux_job *ego, const char *restrict arg)
 
 	lux_debug("GRay2: configuring instance %p with \"%s\"\n", ego, arg);
 
-	nu = EGO->param.nu;
+	nu = EGO->param.nu; /* save the previous nu */
 
 	invalid = (icond_config(&EGO->icond, arg) &&
 	           param_config(&EGO->param, arg) &&
 	           setup_config(&EGO->setup, arg));
 
 	if(EGO->param.nu != nu) { /* nu was configured */
-		size_t n;
 		if(nu)
 			free(nu); /* avoid memory leackage by freeing the old nu */
+
 		nu = EGO->param.nu;
-		for(n = 0; nu[n] != 0.0; ++n);
-		EGO->n_freq = n;
+		if(isnan(nu[0])) {
+			lux_print("nu: []\n");
+			EGO->n_freq = 0;
+		} else {
+			size_t n;
+			lux_print("nu: [%f", nu[0]);
+			for(n = 1; !isnan(nu[n]); ++n)
+				lux_print(", %f", nu[n]);
+			lux_print("]\n");
+			EGO->n_freq = n;
+		}
 	}
 
 	return invalid;
