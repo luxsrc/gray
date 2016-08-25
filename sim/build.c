@@ -21,6 +21,12 @@
 
 #include <stdio.h>
 
+static inline size_t
+min(size_t a, size_t b)
+{
+	return a < b ? a : b;
+}
+
 Lux_opencl *
 build(Lux_job *ego)
 {
@@ -67,6 +73,11 @@ build(Lux_job *ego)
 	struct param *p = &EGO->param;
 	struct setup *s = &EGO->setup;
 
+	const size_t n_data  = EGO->n_coor + p->n_freq * 2;
+	const size_t n_info  = 1;
+	const size_t e_chunk = min(16, n_data & ~(n_data-1)); /* number of real elements in chunk */
+	const size_t n_chunk = n_data / e_chunk;              /* number of chunks */
+
 	char buf[1024];
 	const char *src[] = {buf,
 	                     "preamble.cl",
@@ -77,18 +88,29 @@ build(Lux_job *ego)
 	                     NULL};
 
 	snprintf(buf, sizeof(buf),
-	         "__constant real   a_spin = %g;\n"
-	         "__constant size_t n_data = %zu;\n"
-	         "__constant size_t n_info = %zu;\n"
-	         "__constant size_t n_rays = %zu;\n"
-	         "__constant size_t w_rays = %zu;\n"
-	         "__constant size_t h_rays = %zu;\n",
+	         "#define a_spin K(%.18f)\n" /* DBL_EPSILON ~ 1e-16 */
+	         "#define n_data %zu\n"
+	         "#define n_info %zu\n"
+	         "#define n_rays %zu\n"
+	         "#define w_rays %zu\n"
+	         "#define h_rays %zu\n"
+	         "#define n_chunk %zu\n"
+	         "typedef real%zu realE;\n",
 	         p->a_spin,
-	         p->n_freq * 2 + EGO->n_coor,
-	         (size_t)1,
+	         n_data,
+	         n_info,
 	         p->h_rays * p->w_rays,
 	         p->w_rays,
-	         p->h_rays);
+	         p->h_rays,
+	         n_chunk,
+	         e_chunk);
+
+	lux_print("n_data  = %zu\n"
+	          "n_info  = %zu\n"
+	          "e_chunk = %zu\n",
+	          n_data,
+	          n_info,
+	          e_chunk);
 
 	opts.base    = build; /* this function */
 	opts.iplf    = s->i_platform;

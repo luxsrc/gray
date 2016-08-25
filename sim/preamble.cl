@@ -28,8 +28,8 @@
  **/
 
 /** Helper macros to write equations for vector of length n_vars **/
-#define EACH(s) for(whole _s_ = 0; _s_ < n_data; ++_s_) E(s)
-#define E(s) ((real *)&(s))[_s_]
+#define EACH(s) for(whole _e_ = 0; _e_ < n_chunk; ++_e_) E(s)
+#define E(s) ((realE *)&(s))[_e_]
 
 /** Turn an expression into a local variable that can be passed to function **/
 #define X(x) ({ struct state _; EACH(_) = (x); _; })
