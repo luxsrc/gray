@@ -38,20 +38,9 @@ real8
 integrate(real8 s,  /**< State of the ray */
           real  dt) /**< Step size        */
 {
-	real8 S, k1, k2, k3, k4;
-
-	EACH(S) = E(s);
-	k1      = rhs(S);
-
-	EACH(S) = E(s) + K(0.5) * dt * E(k1);
-	k2      = rhs(S);
-
-	EACH(S) = E(s) + K(0.5) * dt * E(k2);
-	k3      = rhs(S);
-
-	EACH(S) = E(s) +          dt * E(k3);
-	k4      = rhs(S);
-
-	EACH(S) = E(s) + dt * (E(k1) + K(2.0) * (E(k2) + E(k3)) + E(k4)) / K(6.0);
-	return S;
+	real8 k1 = rhs(X(E(s)                      ));
+	real8 k2 = rhs(X(E(s) + K(0.5) * dt * E(k1)));
+	real8 k3 = rhs(X(E(s) + K(0.5) * dt * E(k2)));
+	real8 k4 = rhs(X(E(s) +          dt * E(k3)));
+	return X(E(s) + dt * (E(k1) + K(2.0) * (E(k2) + E(k3)) + E(k4)) / K(6.0));
 }

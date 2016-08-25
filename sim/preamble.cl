@@ -30,3 +30,6 @@
 /** Helper macros to write equations for vector of length n_vars **/
 #define EACH(s) for(whole _s_ = 0; _s_ < n_data; ++_s_) E(s)
 #define E(s) ((real *)&(s))[_s_]
+
+/** Turn an expression into a local variable that can be passed to function **/
+#define X(x) ({ real8 _; EACH(_) = (x); _; })
