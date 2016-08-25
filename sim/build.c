@@ -69,9 +69,10 @@ build(Lux_job *ego)
 
 	char buf[1024];
 	const char *src[] = {buf,
+	                     "preamble.cl",
 	                     p->coordinates,
-	                     s->scheme,
 	                     s->morder,
+	                     s->scheme,
 	                     "driver.cl",
 	                     NULL};
 
