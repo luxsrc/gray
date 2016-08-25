@@ -34,7 +34,7 @@ evolve(Lux_job *ego)
 	struct setup *s = &EGO->setup;
 
 	const  size_t sz     = s->precision;
-	const  size_t n_data = EGO->n_coor + p->n_freq * 2;
+	const  size_t n_data = EGO->n_coor + EGO->n_freq * 2;
 	const  size_t n_info = EGO->n_info;
 
 	const double dt      = -1.0;

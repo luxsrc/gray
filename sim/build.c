@@ -73,7 +73,7 @@ build(Lux_job *ego)
 	struct param *p = &EGO->param;
 	struct setup *s = &EGO->setup;
 
-	const size_t n_data  = EGO->n_coor + p->n_freq * 2;
+	const size_t n_data  = EGO->n_coor + EGO->n_freq * 2;
 	const size_t n_info  = 1;
 	const size_t e_chunk = min(16, n_data & ~(n_data-1)); /* number of real elements in chunk */
 	const size_t n_chunk = n_data / e_chunk;              /* number of chunks */
@@ -98,7 +98,7 @@ build(Lux_job *ego)
 	         "#define n_chunk %zu\n"
 	         "typedef real%zu realE;\n",
 	         p->a_spin,
-	         p->n_freq,
+	         EGO->n_freq,
 	         n_data,
 	         n_info,
 	         p->h_rays * p->w_rays,

@@ -2,6 +2,7 @@
 
 # Spacetime geometry
 double	a_spin:a	= 1	= strtod(val, &rem);	/**< dimensionless black hole spin */
+double	M_bh:m	= 4.3e6	= strtod(val, &rem);	/**< central black hole mass in unit of solar mass; does not enter geometry because everything scales; nevertheless it is needed in radiative transfer */
 
 # Coordinate system
 const char *	coordinates:coor	= "KS"	= val;	/**< coordinate system */
@@ -9,4 +10,9 @@ const char *	coordinates:coor	= "KS"	= val;	/**< coordinate system */
 # Numerical setup
 size_t	w_rays:W	= 512	= strtoul(val, &rem, 0);	/**< number of rays along the width  of the image */
 size_t	h_rays:H	= 512	= strtoul(val, &rem, 0);	/**< number of rays along the height of the image */
-size_t	n_freq:F	= 0	= strtoul(val, &rem, 0);	/**< number of frequencies channel; 0 means turning off radiative transfer */
+
+# Plasma parameter
+double	n_electron:ne	= 1e6	= strtod(val, &rem);	/**< dimensionless black hole spin */
+double	R_high:Rh	= 1	= strtod(val, &rem);	/**< dimensionless black hole spin */
+double	R_low:Rl	= 1	= strtod(val, &rem);	/**< dimensionless black hole spin */
+const double *	nu	= NULL	= strtoda(val, &rem);	/**< frequency channels; NULL means turning off radiative transfer; /todo free() an old pointer if needed */

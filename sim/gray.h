@@ -37,6 +37,14 @@
 #include <lux/numeric.h>
 #include <lux/opencl.h>
 
+static inline const double *
+strtoda(const char *str, char **endptr)
+{
+	return NULL;
+	(void)str;
+	(void)endptr;
+}
+
 #include "icond.h"
 #include "param.h"
 #include "setup.h"
@@ -57,6 +65,7 @@ struct gray {
 	struct setup setup;
 
 	size_t n_coor;
+	size_t n_freq;
 	size_t n_info;
 
 	Lux_opencl *ocl;
