@@ -43,11 +43,27 @@ _conf(Lux_job *ego, const char *restrict arg)
 	 **    function to the return values of `_conf()` in
 	 **    "sim/gray.c".
 	 **/
+	int invalid;
+	double *nu;
+
 	lux_debug("GRay2: configuring instance %p with \"%s\"\n", ego, arg);
 
-	return icond_config(&EGO->icond, arg) &&
-	       param_config(&EGO->param, arg) &&
-	       setup_config(&EGO->setup, arg);
+	nu = EGO->param.nu;
+
+	invalid = (icond_config(&EGO->icond, arg) &&
+	           param_config(&EGO->param, arg) &&
+	           setup_config(&EGO->setup, arg));
+
+	if(EGO->param.nu != nu) { /* nu was configured */
+		size_t n;
+		if(nu)
+			free(nu); /* avoid memory leackage by freeing the old nu */
+		nu = EGO->param.nu;
+		for(n = 0; nu[n] != 0.0; ++n);
+		EGO->n_freq = n;
+	}
+
+	return invalid;
 }
 
 static int
