@@ -26,5 +26,5 @@
  ** index for Structure-of-Arrays memory order.
  **/
 
-#define DATA(h, k) data[k * n_rays + h]
-#define INFO(h, k) info[k * n_rays + h]
+#define DATA(g, s) data[s * n_rays + g]
+#define INFO(g, s) info[s * n_rays + g]

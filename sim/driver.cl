@@ -25,6 +25,11 @@
  ** run-time configurable algorithms.  In this file we implement
  ** generic driver kernels icond_drv() and evolve_drv() that uses
  ** IDX(h, k) to access global memory.
+ **
+ ** We use the index convention `h`, `i`, `j`, `k` for time and the
+ ** three spactial coordinates, respectively.  We use `s` to index the
+ ** record/field.  These indices may be prefixed by `g` for global
+ ** indices, `l` for local indices, etc.
  **/
 
 /** OpenCL driver kernel for initializing states */
@@ -38,25 +43,25 @@ icond_drv(__global real *data,  /**< States of the rays                      */
           const    real  j_obs, /**< Azimuthal angle of the image in degrees */
           __local  real *scratch)
 {
-	const size_t j = get_global_id(0); /* for h, slowest changing index */
-	const size_t i = get_global_id(1); /* for w, fastest changing index */
-	const size_t h = i + j * w_rays;
+	const size_t gj = get_global_id(0); /* for h, slowest changing index */
+	const size_t gi = get_global_id(1); /* for w, fastest changing index */
+	const size_t g  = gi + gj * w_rays;
 
-	if(i < w_rays && j < h_rays) {
-		real8 s;
-		int   k;
+	if(gi < w_rays && gj < h_rays) {
+		real8 d;
+		int   s;
 
 		/* Compute initial conditions from parameters */
-		real alpha = ((i + 0.5) / w_rays - 0.5) * w_img;
-		real beta  = ((j + 0.5) / h_rays - 0.5) * h_img;
-		s = icond(r_obs, i_obs, j_obs, alpha, beta);
+		real alpha = ((gi + 0.5) / w_rays - 0.5) * w_img;
+		real beta  = ((gj + 0.5) / h_rays - 0.5) * h_img;
+		d = icond(r_obs, i_obs, j_obs, alpha, beta);
 
 		/* Output to global array */
-		for(k = 0; k < n_data; ++k)
-			DATA(h, k) = ((real *)&s)[k];
+		for(s = 0; s < n_data; ++s)
+			DATA(g, s) = ((real *)&d)[s];
 
-		for(k = 0; k < n_info; ++k)
-			INFO(h, k) = getuu(s.s0123, s.s4567);
+		for(s = 0; s < n_info; ++s)
+			INFO(g, s) = getuu(d.s0123, d.s4567);
 	}
 }
 
@@ -68,29 +73,29 @@ evolve_drv(__global real *data,  /**< States of the rays     */
            const    whole n_sub, /**< Number of sub-steps    */
            __local  real *scratch)
 {
-	const size_t j = get_global_id(0); /* for h, slowest changing index */
-	const size_t i = get_global_id(1); /* for w, fastest changing index */
-	const size_t h = i + j * w_rays;
+	const size_t gj = get_global_id(0); /* for h, slowest changing index */
+	const size_t gi = get_global_id(1); /* for w, fastest changing index */
+	const size_t g  = gi + gj * w_rays;
 
-	if(i < w_rays && j < h_rays) {
-		real8 s;
-		int   k;
+	if(gi < w_rays && gj < h_rays) {
+		real8 d;
+		int   s;
 
 		/* Input from global array */
-		for(k = 0; k < n_data; ++k)
-			((real *)&s)[k] = DATA(h, k);
+		for(s = 0; s < n_data; ++s)
+			((real *)&d)[s] = DATA(g, s);
 
 		/* Substepping */
 		real  ddt = dt / n_sub;
-		whole i;
-		for(i = 0; i < n_sub; ++i)
-			s = integrate(s, ddt);
+		whole h;
+		for(h = 0; h < n_sub; ++h)
+			d = integrate(d, ddt);
 
 		/* Output to global array */
-		for(k = 0; k < n_data; ++k)
-			DATA(h, k) = ((real *)&s)[k];
+		for(s = 0; s < n_data; ++s)
+			DATA(g, s) = ((real *)&d)[s];
 
-		for(k = 0; k < n_info; ++k)
-			INFO(h, k) = getuu(s.s0123, s.s4567);
+		for(s = 0; s < n_info; ++s)
+			INFO(g, s) = getuu(d.s0123, d.s4567);
 	}
 }
