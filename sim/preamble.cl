@@ -32,4 +32,4 @@
 #define E(s) ((real *)&(s))[_s_]
 
 /** Turn an expression into a local variable that can be passed to function **/
-#define X(x) ({ real8 _; EACH(_) = (x); _; })
+#define X(x) ({ struct state _; EACH(_) = (x); _; })

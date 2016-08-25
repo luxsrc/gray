@@ -48,8 +48,8 @@ icond_drv(__global real *data,  /**< States of the rays                      */
 	const size_t g  = gi + gj * w_rays;
 
 	if(gi < w_rays && gj < h_rays) {
-		real8 d;
-		int   s;
+		struct state d;
+		int s;
 
 		/* Compute initial conditions from parameters */
 		real alpha = ((gi + 0.5) / w_rays - 0.5) * w_img;
@@ -61,7 +61,7 @@ icond_drv(__global real *data,  /**< States of the rays                      */
 			DATA(g, s) = ((real *)&d)[s];
 
 		for(s = 0; s < n_info; ++s)
-			INFO(g, s) = getuu(d.s0123, d.s4567);
+			INFO(g, s) = getuu(d.q, d.u);
 	}
 }
 
@@ -78,8 +78,8 @@ evolve_drv(__global real *data,  /**< States of the rays     */
 	const size_t g  = gi + gj * w_rays;
 
 	if(gi < w_rays && gj < h_rays) {
-		real8 d;
-		int   s, h;
+		struct state d;
+		int s, h;
 
 		/* Input from global array */
 		for(s = 0; s < n_data; ++s)
@@ -94,6 +94,6 @@ evolve_drv(__global real *data,  /**< States of the rays     */
 			DATA(g, s) = ((real *)&d)[s];
 
 		for(s = 0; s < n_info; ++s)
-			INFO(g, s) = getuu(d.s0123, d.s4567);
+			INFO(g, s) = getuu(d.q, d.u);
 	}
 }

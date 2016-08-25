@@ -34,13 +34,13 @@
  **
  ** \return The new state
  **/
-real8
-integrate(real8 s,  /**< State of the ray */
-          real  dt) /**< Step size        */
+struct state
+integrate(struct state s,  /**< State of the ray */
+          real         dt) /**< Step size        */
 {
-	real8 k1 = rhs(X(E(s)                      ));
-	real8 k2 = rhs(X(E(s) + K(0.5) * dt * E(k1)));
-	real8 k3 = rhs(X(E(s) + K(0.5) * dt * E(k2)));
-	real8 k4 = rhs(X(E(s) +          dt * E(k3)));
+	struct state k1 = rhs(X(E(s)                      ));
+	struct state k2 = rhs(X(E(s) + K(0.5) * dt * E(k1)));
+	struct state k3 = rhs(X(E(s) + K(0.5) * dt * E(k2)));
+	struct state k4 = rhs(X(E(s) +          dt * E(k3)));
 	return X(E(s) + dt * (E(k1) + K(2.0) * (E(k2) + E(k3)) + E(k4)) / K(6.0));
 }

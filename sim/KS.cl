@@ -40,6 +40,11 @@
  ** z^2 = r^2 + a^2 (1 - z^2 / r^2)\f$.
  **/
 
+struct state {
+	real4 q;
+	real4 u;
+};
+
 /**
  ** Sqaure of vector u at the spacetime event q in Kerr-Schild coordiantes
  **
@@ -94,7 +99,7 @@ getuu(real4 q, /**< Spacetime event "location" */
  **
  ** \return The initial conditions of a ray
  **/
-real8
+struct state
 icond(real r_obs, /**< Distance of the observer from the black hole */
       real i_obs, /**< Inclination angle of the observer in degrees */
       real j_obs, /**< Azimuthal   angle of the observer in degrees */
@@ -138,7 +143,7 @@ icond(real r_obs, /**< Distance of the observer from the black hole */
 
 	u.s123 /= -(B + sqrt(B * B - K(4.0) * A * C)) / (K(2.0) * A);
 
-	return (real8){q, u};
+	return (struct state){q, u};
 }
 
 /**
@@ -170,11 +175,11 @@ icond(real r_obs, /**< Distance of the observer from the black hole */
  **
  ** \return The right hand sides of the geodesic equations
  **/
-real8
-rhs(real8 s) /**< State of the ray */
+struct state
+rhs(struct state s) /**< State of the ray */
 {
-	real4 q = s.s0123;
-	real4 u = s.s4567;
+	real4 q = s.q;
+	real4 u = s.u;
 
 	real  f,  dx_f,  dy_f,  dz_f;
 	real  lx, dx_lx, dy_lx, dz_lx;
@@ -275,9 +280,13 @@ rhs(real8 s) /**< State of the ray */
 		tmp = f * (-uD.s0 + lx * (uD.s1 - hDxu) + ly * (uD.s2 - hDyu) + lz * (uD.s3 - hDzu)); /* 10 (-3) FLOPs */
 	}
 
-	return (real8){u,
-		              uD.s0 -      tmp,
-		       hDxu - uD.s1 + lx * tmp,
-		       hDyu - uD.s2 + ly * tmp,
-		       hDzu - uD.s3 + lz * tmp}; /* 10 (-3) FLOPs */
+	return (struct state){
+		u,
+		{
+			       uD.s0 -      tmp,
+			hDxu - uD.s1 + lx * tmp,
+			hDyu - uD.s2 + ly * tmp,
+			hDzu - uD.s3 + lz * tmp /* 10 (-3) FLOPs */
+		}
+	};
 }
