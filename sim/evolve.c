@@ -26,7 +26,7 @@ max(size_t a, size_t b)
 }
 
 double
-evolve(Lux_job *ego)
+evolve(Lux_job *ego, double dt, size_t n_sub)
 {
 	Lux_opencl *ocl = EGO->ocl;
 
@@ -37,8 +37,6 @@ evolve(Lux_job *ego)
 	const  size_t n_data = EGO->n_coor + EGO->n_freq * 2;
 	const  size_t n_info = EGO->n_info;
 
-	const double dt      = -1.0;
-	const size_t n_sub   = 1024;
 	const size_t shape[] = {p->h_rays, p->w_rays};
 
 	ocl->setM(ocl, EGO->evolve, 0, EGO->data);

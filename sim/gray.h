@@ -77,7 +77,7 @@ extern Lux_opencl *build(Lux_job *);
 extern void icond(Lux_job *);
 
 /** Evolve the states of photons to the next (super) step */
-extern double evolve(Lux_job *);
+extern double evolve(Lux_job *, double, size_t);
 
 /** Output data to a file */
 extern void dump(Lux_job *, size_t);
