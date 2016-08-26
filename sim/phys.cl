@@ -29,10 +29,7 @@
 
 struct state {
 	struct ray r;
-#if n_freq > 0
-	real I  [n_freq];
-	real tau[n_freq];
-#endif
+	struct rad t;
 };
 
 struct state
@@ -43,26 +40,13 @@ icond(real r_obs, /**< distance of the image from the black hole */
       real beta)  /**< the other  local Cartesian coordinate  */
 {
 	return (struct state){
-		ray_icond(r_obs, i_obs, j_obs, alpha, beta)
-#if n_freq > 0
-		/** \todo Initialize radiative transfer. */
-#endif
+		ray_icond(r_obs, i_obs, j_obs, alpha, beta),
+		rad_icond()
 	};
 }
 
 struct state
 rhs(struct state s) /**< state of the ray */
 {
-#if n_freq > 0
-	for(whole i; i < n_freq; ++i) {
-		/* Radiative transfer */
-	}
-#endif
-
-	return (struct state){
-		ray_rhs(s.r)
-#if n_freq > 0
-		/** \todo Add radiative transfer equations. */
-#endif
-	};
+	return (struct state){ray_rhs(s.r), rad_rhs(s.r, s.t)};
 }
