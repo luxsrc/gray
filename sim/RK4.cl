@@ -35,8 +35,8 @@
  ** \return The new state
  **/
 struct state
-integrate(struct state s,  /**< State of the ray */
-          real         dt) /**< Step size        */
+integrate(struct state s,  /**< state of the ray */
+          real         dt) /**< step size        */
 {
 	struct state k1 = rhs(X(E(s)                      ));
 	struct state k2 = rhs(X(E(s) + K(0.5) * dt * E(k1)));

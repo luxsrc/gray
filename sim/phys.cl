@@ -36,11 +36,11 @@ struct state {
 };
 
 struct state
-icond(real r_obs, /**< Distance of the observer from the black hole */
-      real i_obs, /**< Inclination angle of the observer in degrees */
-      real j_obs, /**< Azimuthal   angle of the observer in degrees */
-      real alpha, /**< One of the local Cartesian coordinates       */
-      real beta)  /**< The other  local Cartesian coordinate        */
+icond(real r_obs, /**< distance of the observer from the black hole */
+      real i_obs, /**< inclination angle of the observer in degrees */
+      real j_obs, /**< azimuthal   angle of the observer in degrees */
+      real alpha, /**< one of the local Cartesian coordinate        */
+      real beta)  /**< the other  local Cartesian coordinate        */
 {
 	return (struct state){
 		ray_icond(r_obs, i_obs, j_obs, alpha, beta)
@@ -51,7 +51,7 @@ icond(real r_obs, /**< Distance of the observer from the black hole */
 }
 
 struct state
-rhs(struct state s) /**< State of the ray */
+rhs(struct state s) /**< state of the ray */
 {
 #if n_freq > 0
 	for(whole i; i < n_freq; ++i) {

@@ -55,7 +55,7 @@ struct ray {
  ** \return The square of u at q
  **/
 real
-getuu(struct ray s) /**< State of the ray */
+getuu(struct ray s) /**< state of the ray */
 {
 	real4 q = s.q;
 	real4 u = s.u;
@@ -102,11 +102,11 @@ getuu(struct ray s) /**< State of the ray */
  ** \return The initial conditions of a ray
  **/
 struct ray
-ray_icond(real r_obs, /**< Distance of the observer from the black hole */
-          real i_obs, /**< Inclination angle of the observer in degrees */
-          real j_obs, /**< Azimuthal   angle of the observer in degrees */
-          real alpha, /**< One of the local Cartesian coordinates       */
-          real beta)  /**< The other  local Cartesian coordinate        */
+ray_icond(real r_obs, /**< distance of the observer from the black hole */
+          real i_obs, /**< inclination angle of the observer in degrees */
+          real j_obs, /**< azimuthal   angle of the observer in degrees */
+          real alpha, /**< one of the local Cartesian coordinate        */
+          real beta)  /**< the other  local Cartesian coordinate        */
 {
 	real  deg2rad = K(3.14159265358979323846264338327950288) / K(180.0);
 	real  ci, si  = sincos(deg2rad * i_obs, &ci);
@@ -178,7 +178,7 @@ ray_icond(real r_obs, /**< Distance of the observer from the black hole */
  ** \return The right hand sides of the geodesic equations
  **/
 struct ray
-ray_rhs(struct ray s) /**< State of the ray */
+ray_rhs(struct ray s) /**< state of the ray */
 {
 	real4 q = s.q;
 	real4 u = s.u;
