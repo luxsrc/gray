@@ -118,27 +118,30 @@ _exec(Lux_job *ego)
 
 	const  size_t n_rays  = p->h_rays * p->w_rays;
 
-	       size_t i       = 0;
-	       double t       = s->t_init;
-	const  double t_final = s->t_final;
-	const  double dt      = s->dt_dump;
+	       size_t i       = 0; /** \todo may not be zero if restart */
 	const  size_t n_sub   = 1024;
+	const  size_t n_dump  = s->n_dump;
+
+	const  double t_init  = s->t_init;
+	const  double dt_dump = s->dt_dump;
 
 	lux_debug("GRay2: executing instance %p\n", ego);
 
-	icond(ego, t);
+	lux_print("%zu:  initialize ", i, t_init);
+	icond(ego, t_init);
 	dump (ego, i);
+	lux_print(": DONE\n");
 
-	while(fabs(t) < fabs(t_final)) {
-		double ns;
-		double target = t + dt;
+	while(i < n_dump) {
+		double ns, t, target;
+
+		t      = t_init +    i  * dt_dump;
+		target = t_init + (++i) * dt_dump;
 
 		lux_print("%zu: %4.1f -> %4.1f", i, t, target);
 		ns = evolve(ego, t, target, n_sub);
-		dump(ego, ++i);
-
+		dump(ego, i);
 		lux_print(": DONE (%.3gns/step/ray)\n", ns/n_sub/n_rays);
-		t = target;
 	}
 
 	return EXIT_SUCCESS;
