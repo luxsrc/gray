@@ -12,7 +12,8 @@ size_t	w_rays:W	= 512	= strtoul(val, &rem, 0);	/**< number of rays along the wid
 size_t	h_rays:H	= 512	= strtoul(val, &rem, 0);	/**< number of rays along the height of the image */
 
 # Plasma parameter
-double	n_electron:ne	= 1e6	= strtod(val, &rem);	/**< dimensionless black hole spin */
-double	R_high:Rh	= 1	= strtod(val, &rem);	/**< dimensionless black hole spin */
-double	R_low:Rl	= 1	= strtod(val, &rem);	/**< dimensionless black hole spin */
+double	n_electron:ne	= 1e6	= strtod(val, &rem);	/**< electron number density normalization */
+double	beta_crit:bc	= 1	= strtod(val, &rem);	/**< critical plasma beta = Pgas/Pmag */
+double	R_high:Rh	= 1	= strtod(val, &rem);	/**< Tp/Te at high-beta,  weakly magnetized regions (disk) */
+double	R_low:Rl	= 1	= strtod(val, &rem);	/**< Tp/Te at low-beta, strongly magnetized regions (jet)  */
 double *	nu	= NULL	= strtoda(val, &rem);	/**< frequency channels; NULL means turning off radiative transfer */
