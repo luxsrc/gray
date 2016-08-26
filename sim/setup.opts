@@ -1,9 +1,9 @@
 # Job setup/configuration
-unsigned	i_platform:ip	= 0	= strtoul(val, &rem, 0);	/**< index of platform to use */
-unsigned	i_device:id	= 0	= strtoul(val, &rem, 0);	/**< index of device   to use */
-cl_device_type	device_type:type	= CL_DEVICE_TYPE_CPU	= strtotype(val);	/**< type  of device   to use */
-size_t	precision:p	= sizeof(float)	= strtoprec(val);	/**< size of real type */
-const char *	scheme:scm	= "RK4"	= val;	/**< integration scheme */
-const char *	morder:mo:ml	= "AoS"	= val;	/**< memory order/layout */
-const char *	kflags:kf	= "-w"	= val;	/**< kernl compilation flags */
-const char *	outfile:out	= "%04d.raw"	= val;	/**< output file name format */
+unsigned	i_platform:ip	= 0	= strtoul(val, &rem, 0);	/**< Index of platform to use */
+unsigned	i_device:id	= 0	= strtoul(val, &rem, 0);	/**< Index of device   to use */
+cl_device_type	device_type:type	= CL_DEVICE_TYPE_CPU	= strtotype(val);	/**< Type  of device   to use */
+size_t	precision:p	= sizeof(float)	= strtoprec(val);	/**< Size of real type */
+const char *	scheme:scm	= "RK4"	= val;	/**< Integration scheme */
+const char *	morder:mo:ml	= "AoS"	= val;	/**< Memory order/layout */
+const char *	kflags:kf	= "-w"	= val;	/**< Kernl compilation flags */
+const char *	outfile:out	= "%04d.raw"	= val;	/**< Output file name format */

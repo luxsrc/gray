@@ -1,19 +1,19 @@
 # Runtime parameters needed in kernels
 
 # Spacetime geometry
-double	a_spin:a	= 1	= strtod(val, &rem);	/**< dimensionless black hole spin */
-double	M_bh:m	= 4.3e6	= strtod(val, &rem);	/**< central black hole mass in unit of solar mass; does not enter geometry because everything scales; nevertheless it is needed in radiative transfer */
+double	a_spin:a	= 1	= strtod(val, &rem);	/**< Dimensionless black hole spin */
+double	M_bh:m	= 4.3e6	= strtod(val, &rem);	/**< Central black hole mass in unit of solar mass; does not enter geometry because everything scales; nevertheless it is needed in radiative transfer */
 
 # Coordinate system
-const char *	coordinates:coor	= "KS"	= val;	/**< coordinate system */
+const char *	coordinates:coor	= "KS"	= val;	/**< Coordinate system */
 
 # Numerical setup
-size_t	w_rays:W	= 512	= strtoul(val, &rem, 0);	/**< number of rays along the width  of the image */
-size_t	h_rays:H	= 512	= strtoul(val, &rem, 0);	/**< number of rays along the height of the image */
+size_t	w_rays:W	= 512	= strtoul(val, &rem, 0);	/**< Number of rays along the width  of the image */
+size_t	h_rays:H	= 512	= strtoul(val, &rem, 0);	/**< Number of rays along the height of the image */
 
 # Plasma parameter
-double	n_electron:ne	= 1e6	= strtod(val, &rem);	/**< electron number density normalization */
-double	beta_crit:bc	= 1	= strtod(val, &rem);	/**< critical plasma beta = Pgas/Pmag */
+double	n_electron:ne	= 1e6	= strtod(val, &rem);	/**< Electron number density normalization */
+double	beta_crit:bc	= 1	= strtod(val, &rem);	/**< Critical plasma beta = Pgas/Pmag */
 double	R_high:Rh	= 1	= strtod(val, &rem);	/**< Tp/Te at high-beta,  weakly magnetized regions (disk) */
 double	R_low:Rl	= 1	= strtod(val, &rem);	/**< Tp/Te at low-beta, strongly magnetized regions (jet)  */
-double *	nu	= NULL	= strtoda(val, &rem);	/**< frequency channels; NULL means turning off radiative transfer */
+double *	nu	= NULL	= strtoda(val, &rem);	/**< Frequency channels; NULL means turning off radiative transfer */
