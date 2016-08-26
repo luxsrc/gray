@@ -40,13 +40,9 @@
  ** z^2 = r^2 + a^2 (1 - z^2 / r^2)\f$.
  **/
 
-struct state {
+struct ray {
 	real4 q;
 	real4 u;
-#if n_freq > 0
-	real I  [n_freq];
-	real tau[n_freq];
-#endif
 };
 
 /**
@@ -59,9 +55,11 @@ struct state {
  ** \return The square of u at q
  **/
 real
-getuu(real4 q, /**< Spacetime event "location" */
-      real4 u) /**< The vector being squared   */
+getuu(struct ray s) /**< State of the ray */
 {
+	real4 q = s.q;
+	real4 u = s.u;
+
 	real  aa = a_spin * a_spin;
 	real  zz = q.s3 * q.s3;
 	real  kk = K(0.5) * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
@@ -103,12 +101,12 @@ getuu(real4 q, /**< Spacetime event "location" */
  **
  ** \return The initial conditions of a ray
  **/
-struct state
-icond(real r_obs, /**< Distance of the observer from the black hole */
-      real i_obs, /**< Inclination angle of the observer in degrees */
-      real j_obs, /**< Azimuthal   angle of the observer in degrees */
-      real alpha, /**< One of the local Cartesian coordinates       */
-      real beta)  /**< The other  local Cartesian coordinate        */
+struct ray
+ray_icond(real r_obs, /**< Distance of the observer from the black hole */
+          real i_obs, /**< Inclination angle of the observer in degrees */
+          real j_obs, /**< Azimuthal   angle of the observer in degrees */
+          real alpha, /**< One of the local Cartesian coordinates       */
+          real beta)  /**< The other  local Cartesian coordinate        */
 {
 	real  deg2rad = K(3.14159265358979323846264338327950288) / K(180.0);
 	real  ci, si  = sincos(deg2rad * i_obs, &ci);
@@ -147,7 +145,7 @@ icond(real r_obs, /**< Distance of the observer from the black hole */
 
 	u.s123 /= -(B + sqrt(B * B - K(4.0) * A * C)) / (K(2.0) * A);
 
-	return (struct state){q, u};
+	return (struct ray){q, u};
 }
 
 /**
@@ -179,8 +177,8 @@ icond(real r_obs, /**< Distance of the observer from the black hole */
  **
  ** \return The right hand sides of the geodesic equations
  **/
-struct state
-rhs(struct state s) /**< State of the ray */
+struct ray
+ray_rhs(struct ray s) /**< State of the ray */
 {
 	real4 q = s.q;
 	real4 u = s.u;
@@ -284,15 +282,14 @@ rhs(struct state s) /**< State of the ray */
 		tmp = f * (-uD.s0 + lx * (uD.s1 - hDxu) + ly * (uD.s2 - hDyu) + lz * (uD.s3 - hDzu)); /* 10 (-3) FLOPs */
 	}
 
-	s.q = u;
-	s.u = (real4){       uD.s0 -      tmp,
-		      hDxu - uD.s1 + lx * tmp,
-		      hDyu - uD.s2 + ly * tmp,
-		      hDzu - uD.s3 + lz * tmp}; /* 10 (-3) FLOPs */
+	{
+		real4 a = {
+			       uD.s0 -      tmp,
+			hDxu - uD.s1 + lx * tmp,
+			hDyu - uD.s2 + ly * tmp,
+			hDzu - uD.s3 + lz * tmp
+		}; /* 10 (-3) FLOPs */
 
-	for(whole i; i < n_freq; ++i) {
-		/* Radiative transfer */
-	}
-
-	return s;
+		return (struct ray){u, a};
+	};
 }

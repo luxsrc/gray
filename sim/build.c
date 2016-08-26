@@ -83,6 +83,7 @@ build(Lux_job *ego)
 	                     "preamble.cl",
 	                     p->coordinates,
 	                     s->morder,
+	                     "phys.cl",
 	                     s->scheme,
 	                     "driver.cl",
 	                     NULL};
