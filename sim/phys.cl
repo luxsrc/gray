@@ -45,7 +45,7 @@ icond(real r_obs, /**< Distance of the observer from the black hole */
 	return (struct state){
 		ray_icond(r_obs, i_obs, j_obs, alpha, beta)
 #if n_freq > 0
-		/** \todo initialize radiative transfer */
+		/** \todo Initialize radiative transfer. */
 #endif
 	};
 }
@@ -62,7 +62,7 @@ rhs(struct state s) /**< State of the ray */
 	return (struct state){
 		ray_rhs(s.r)
 #if n_freq > 0
-		/** \todo initialize radiative transfer */
+		/** \todo Add radiative transfer equations. */
 #endif
 	};
 }

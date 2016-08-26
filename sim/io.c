@@ -20,7 +20,7 @@
 #include "gray.h"
 #include <stdio.h>
 
-/** \todo implement load() */
+/** \todo Implement load() */
 
 void
 dump(Lux_job *ego, size_t i)

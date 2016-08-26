@@ -152,9 +152,9 @@ LUX_MKMOD(const void *opts)
 		icond_init(&EGO->icond);
 		param_init(&EGO->param);
 		setup_init(&EGO->setup);
-		EGO->n_coor = 8; /* \todo adjust using setup.coordinates */
+		EGO->n_coor = 8; /** \todo Adjust n_coor using setup.coordinates. */
 		EGO->n_freq = 0;
-		EGO->n_info = 1; /* \todo adjust using setup.coordinates */
+		EGO->n_info = 1; /** \todo Adjust n_info using setup.coordinates. */
 	}
 	return ego;
 }
