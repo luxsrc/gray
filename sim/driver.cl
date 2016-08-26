@@ -34,13 +34,13 @@
 
 /** OpenCL driver kernel for initializing states */
 __kernel void
-icond_drv(__global real *data,  /**< states of the rays                      */
-          __global real *info,  /**< diagnostic information                  */
-          const    real  w_img, /**< width  of the image in \f$GM/c^2\f$     */
-          const    real  h_img, /**< height of the image in \f$GM/c^2\f$     */
-          const    real  r_obs, /**< distance of the image from black hole   */
-          const    real  i_obs, /**< inclination     of the image in degrees */
-          const    real  j_obs, /**< azimuthal angle of the image in degrees */
+icond_drv(__global real *data,  /**< states of the rays     */
+          __global real *info,  /**< diagnostic information */
+          const    real  w_img, /**< Width  of the image in \f$GM/c^2\f$ */
+          const    real  h_img, /**< Height of the image in \f$GM/c^2\f$ */
+          const    real  r_obs, /**< Distance of the image from the black hole */
+          const    real  i_obs, /**< Inclination angle of the image in degrees */
+          const    real  j_obs, /**< Azimuthal   angle of the image in degrees */
           __local  real *scratch)
 {
 	const size_t gj = get_global_id(0); /* for h, slowest changing index */

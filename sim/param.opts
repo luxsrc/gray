@@ -13,7 +13,7 @@ size_t	h_rays:H	= 512	= strtoul(val, &rem, 0);	/**< Number of rays along the hei
 
 # Plasma parameter
 double	n_electron:ne	= 1e6	= strtod(val, &rem);	/**< Electron number density normalization */
-double	beta_crit:bc	= 1	= strtod(val, &rem);	/**< Critical plasma beta = Pgas/Pmag */
-double	R_high:Rh	= 1	= strtod(val, &rem);	/**< Tp/Te at high-beta,  weakly magnetized regions (disk) */
-double	R_low:Rl	= 1	= strtod(val, &rem);	/**< Tp/Te at low-beta, strongly magnetized regions (jet)  */
+double	beta_crit:bc	= 1	= strtod(val, &rem);	/**< Critical plasma \f$\beta_\mathrm{crit} = P_\mathrm{gas}/P_\mathrm{mag}\f$ */
+double	R_high:Rh	= 1	= strtod(val, &rem);	/**< The ratio \f$R_\mathrm{high} = T_p/T_e\f$ at high-beta,  weakly magnetized (disk) regions */
+double	R_low:Rl	= 1	= strtod(val, &rem);	/**< The ratio \f$R_\mathrm{low}  = T_p/T_e\f$ at low-beta, strongly magnetized (jet)  regions */
 double *	nu	= NULL	= strtoda(val, &rem);	/**< Frequency channels; NULL means turning off radiative transfer */
