@@ -15,4 +15,4 @@ size_t	h_rays:H	= 512	= strtoul(val, &rem, 0);	/**< number of rays along the hei
 double	n_electron:ne	= 1e6	= strtod(val, &rem);	/**< dimensionless black hole spin */
 double	R_high:Rh	= 1	= strtod(val, &rem);	/**< dimensionless black hole spin */
 double	R_low:Rl	= 1	= strtod(val, &rem);	/**< dimensionless black hole spin */
-double *	nu	= NULL	= strtoda(val, &rem);	/**< frequency channels; NULL means turning off radiative transfer; \todo free() an old pointer if needed. */
+double *	nu	= NULL	= strtoda(val, &rem);	/**< frequency channels; NULL means turning off radiative transfer */
