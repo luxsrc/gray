@@ -40,7 +40,7 @@
  ** z^2 = r^2 + a^2 (1 - z^2 / r^2)\f$.
  **/
 
-struct ray {
+struct gr {
 	real4 q;
 	real4 u;
 };
@@ -55,10 +55,10 @@ struct ray {
  ** \return The square of u at q
  **/
 real
-getuu(struct ray s) /**< state of the ray */
+getuu(struct gr g) /**< state of the ray */
 {
-	real4 q = s.q;
-	real4 u = s.u;
+	real4 q = g.q;
+	real4 u = g.u;
 
 	real  aa = a_spin * a_spin;
 	real  zz = q.s3 * q.s3;
@@ -101,12 +101,12 @@ getuu(struct ray s) /**< state of the ray */
  **
  ** \return The initial conditions of a ray
  **/
-struct ray
-ray_icond(real r_obs, /**< distance of the image from the black hole */
-          real i_obs, /**< inclination angle of the image in degrees */
-          real j_obs, /**< azimuthal   angle of the image in degrees */
-          real alpha, /**< one of the local Cartesian coordinates */
-          real beta)  /**< the other  local Cartesian coordinate  */
+struct gr
+gr_icond(real r_obs, /**< distance of the image from the black hole */
+         real i_obs, /**< inclination angle of the image in degrees */
+         real j_obs, /**< azimuthal   angle of the image in degrees */
+         real alpha, /**< one of the local Cartesian coordinates */
+         real beta)  /**< the other  local Cartesian coordinate  */
 {
 	real  deg2rad = K(3.14159265358979323846264338327950288) / K(180.0);
 	real  ci, si  = sincos(deg2rad * i_obs, &ci);
@@ -145,7 +145,7 @@ ray_icond(real r_obs, /**< distance of the image from the black hole */
 
 	u.s123 /= -(B + sqrt(B * B - K(4.0) * A * C)) / (K(2.0) * A);
 
-	return (struct ray){q, u};
+	return (struct gr){q, u};
 }
 
 /**
@@ -177,11 +177,11 @@ ray_icond(real r_obs, /**< distance of the image from the black hole */
  **
  ** \return The right hand sides of the geodesic equations
  **/
-struct ray
-ray_rhs(struct ray s) /**< state of the ray */
+struct gr
+gr_rhs(struct gr g) /**< state of the ray */
 {
-	real4 q = s.q;
-	real4 u = s.u;
+	real4 q = g.q;
+	real4 u = g.u;
 
 	real  f,  dx_f,  dy_f,  dz_f;
 	real  lx, dx_lx, dy_lx, dz_lx;
@@ -290,6 +290,6 @@ ray_rhs(struct ray s) /**< state of the ray */
 			hDzu - uD.s3 + lz * tmp
 		}; /* 10 (-3) FLOPs */
 
-		return (struct ray){u, a};
+		return (struct gr){u, a};
 	};
 }

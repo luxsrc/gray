@@ -28,8 +28,8 @@
  **/
 
 struct state {
-	struct ray r;
-	struct rad t;
+	struct gr g;
+	struct rt r;
 };
 
 struct state
@@ -40,13 +40,13 @@ icond(real r_obs, /**< distance of the image from the black hole */
       real beta)  /**< the other  local Cartesian coordinate  */
 {
 	return (struct state){
-		ray_icond(r_obs, i_obs, j_obs, alpha, beta),
-		rad_icond()
+		gr_icond(r_obs, i_obs, j_obs, alpha, beta),
+		rt_icond()
 	};
 }
 
 struct state
 rhs(struct state s) /**< state of the ray */
 {
-	return (struct state){ray_rhs(s.r), rad_rhs(s.r, s.t)};
+	return (struct state){gr_rhs(s.g), rt_rhs(s.r, s.g)};
 }

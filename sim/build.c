@@ -82,7 +82,7 @@ build(Lux_job *ego)
 	const char *src[] = {buf,
 	                     "preamble.cl",
 	                     p->coordinates,
-	                     "rad.cl",
+	                     "rt.cl",
 	                     s->morder,
 	                     "phys.cl",
 	                     s->scheme,

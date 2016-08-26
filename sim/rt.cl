@@ -25,36 +25,24 @@
  ** extinction (absorption) coefficients.
  **/
 
-struct rad {
+struct rt {
 	real I  [n_freq];
 	real tau[n_freq];
 };
 
-/**
- ** Initial conditions of radiation properties
- **
- ** \return The initial conditions of radiation properties
- **/
-struct rad
-rad_icond(void)
+struct rt
+rt_icond(void)
 {
-	return (struct rad){{0}};
+	return (struct rt){{0}};
 }
 
-/**
- ** Right hand sides of the radiative transfer equation
- **
- ** \return The right hand sides of the radiative transfer equation
- **/
-struct rad
-rad_rhs(struct ray s,
-        struct rad t)
+struct rt
+rt_rhs(struct rt r,
+       struct gr g)
 {
-	struct rad out = {{0}};
-
 	for(whole i; i < n_freq; ++i) {
 		/* Radiative transfer */
 	}
 
-	return out;
+	return r;
 }

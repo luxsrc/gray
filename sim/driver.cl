@@ -61,7 +61,7 @@ icond_drv(__global real *data,  /**< states of the rays     */
 			DATA(g, s) = ((real *)&d)[s];
 
 		for(s = 0; s < n_info; ++s)
-			INFO(g, s) = getuu(d.r);
+			INFO(g, s) = getuu(d.g);
 	}
 }
 
@@ -94,6 +94,6 @@ evolve_drv(__global real *data,  /**< states of the rays     */
 			DATA(g, s) = ((real *)&d)[s];
 
 		for(s = 0; s < n_info; ++s)
-			INFO(g, s) = getuu(d.r);
+			INFO(g, s) = getuu(d.g);
 	}
 }
