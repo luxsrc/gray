@@ -26,7 +26,7 @@ max(size_t a, size_t b)
 }
 
 double
-evolve(Lux_job *ego, double dt, size_t n_sub)
+evolve(Lux_job *ego, double t, double target, size_t n_sub)
 {
 	Lux_opencl *ocl = EGO->ocl;
 
@@ -41,7 +41,7 @@ evolve(Lux_job *ego, double dt, size_t n_sub)
 
 	ocl->setM(ocl, EGO->evolve, 0, EGO->data);
 	ocl->setM(ocl, EGO->evolve, 1, EGO->info);
-	ocl->setR(ocl, EGO->evolve, 2, dt);
+	ocl->setR(ocl, EGO->evolve, 2, target - t);
 	ocl->setW(ocl, EGO->evolve, 3, n_sub);
 	ocl->setS(ocl, EGO->evolve, 4, sz * max(n_data, n_info));
 

@@ -9,5 +9,6 @@ const char *	morder:mo:ml	= "AoS"	= val;	/**< Memory order/layout */
 const char *	kflags:kf	= "-w"	= val;	/**< Kernl compilation flags */
 
 const char *	outfile:out	= "%04d.raw"	= val;	/**< Dump file name format */
-double	dt_dump:dt	= -1	= strtod(val, &rem);	/**< Time interval for creating dumps */
+double	t_init:ti	= 0	= strtod(val, &rem);	/**< Initial time */
 double	t_final:tf	= -10	= strtod(val, &rem);	/**< Final time before exit */
+double	dt_dump:dt	= -1	= strtod(val, &rem);	/**< Time interval for creating dumps */

@@ -118,30 +118,27 @@ _exec(Lux_job *ego)
 
 	const  size_t n_rays  = p->h_rays * p->w_rays;
 
-	const  double dt      = s->dt_dump;
+	       size_t i       = 0;
+	       double t       = s->t_init;
 	const  double t_final = s->t_final;
+	const  double dt      = s->dt_dump;
 	const  size_t n_sub   = 1024;
-
-	size_t i = 0;
-	double t = i * dt;
 
 	lux_debug("GRay2: executing instance %p\n", ego);
 
-	icond(ego);
-	dump(ego, 0);
+	icond(ego, t);
+	dump (ego, i);
 
 	while(fabs(t) < fabs(t_final)) {
 		double ns;
+		double target = t + dt;
 
-		double t_old = t;
-		t = (++i) * dt;
-
-		lux_print("%zu: %4.1f -> %4.1f", i, t_old, t);
-
-		ns = evolve(ego, dt, n_sub);
-		dump(ego, i);
+		lux_print("%zu: %4.1f -> %4.1f", i, t, target);
+		ns = evolve(ego, t, target, n_sub);
+		dump(ego, ++i);
 
 		lux_print(": DONE (%.3gns/step/ray)\n", ns/n_sub/n_rays);
+		t = target;
 	}
 
 	return EXIT_SUCCESS;

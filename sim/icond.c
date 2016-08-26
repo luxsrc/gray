@@ -26,7 +26,7 @@ max(size_t a, size_t b)
 }
 
 void
-icond(Lux_job *ego)
+icond(Lux_job *ego, double t_init)
 {
 	Lux_opencl *ocl = EGO->ocl;
 
