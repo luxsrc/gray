@@ -19,32 +19,22 @@
  */
 
 /** \file
- ** Radiative transfer
+ ** Flow models
  **
- ** Radiative transfer related functions such as the emission and
- ** extinction (absorption) coefficients.
+ ** Flow models of the accretion flows, which may be interpolation of
+ ** GRMHD simulations or analytical models.
  **/
 
-struct rt {
-	real I  [n_freq];
-	real tau[n_freq];
+struct flow {
+	real ne;
+	real te;
+	real b;
+	real bkcos;
+	real shift;
 };
 
-struct rt
-rt_icond(void)
+struct flow
+getflow(struct gr g)
 {
-	return (struct rt){{0}};
-}
-
-struct rt
-rt_rhs(struct rt r,
-       struct gr g)
-{
-	struct flow f = getflow(g);
-
-	for(whole i; i < n_freq; ++i) {
-		/* Radiative transfer */
-	}
-
-	return r;
+	return (struct flow){0};
 }
