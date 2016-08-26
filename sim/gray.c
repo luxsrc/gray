@@ -118,7 +118,7 @@ _exec(Lux_job *ego)
 
 	const  size_t n_rays  = p->h_rays * p->w_rays;
 
-	       size_t i       = 0; /** \todo may not be zero if restart */
+	       size_t i       = s->i_init;
 	const  size_t n_sub   = 1024;
 	const  size_t n_dump  = s->n_dump;
 
