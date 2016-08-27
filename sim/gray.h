@@ -74,10 +74,10 @@ struct gray {
 extern Lux_opencl *build(Lux_job *);
 
 /** Set the initial conditions */
-extern void icond(Lux_job *, double);
+extern void icond(Lux_job *, real);
 
 /** Evolve the states of photons to the next (super) step */
-extern double evolve(Lux_job *, double, double, size_t);
+extern real evolve(Lux_job *, real, real, size_t);
 
 /** Output data to a file */
 extern void dump(Lux_job *, size_t);

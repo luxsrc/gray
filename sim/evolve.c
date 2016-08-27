@@ -25,8 +25,8 @@ max(size_t a, size_t b)
 	return a > b ? a : b;
 }
 
-double
-evolve(Lux_job *ego, double t, double target, size_t n_sub)
+real
+evolve(Lux_job *ego, real t, real target, size_t n_sub)
 {
 	Lux_opencl        *ocl    = EGO->ocl;
 	Lux_opencl_kernel *evolve = EGO->evolve;

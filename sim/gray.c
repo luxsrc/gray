@@ -45,7 +45,7 @@ _conf(Lux_job *ego, const char *restrict arg)
 	 **    "sim/gray.c".
 	 **/
 	int invalid;
-	double *nu;
+	real *nu;
 
 	lux_debug("GRay2: configuring instance %p with \"%s\"\n", ego, arg);
 
@@ -122,8 +122,8 @@ _exec(Lux_job *ego)
 	const  size_t n_sub   = 1024;
 	const  size_t n_dump  = s->n_dump;
 
-	const  double t_init  = s->t_init;
-	const  double dt_dump = s->dt_dump;
+	const  real t_init  = s->t_init;
+	const  real dt_dump = s->dt_dump;
 
 	lux_debug("GRay2: executing instance %p\n", ego);
 
@@ -133,7 +133,7 @@ _exec(Lux_job *ego)
 	lux_print(": DONE\n");
 
 	while(i < n_dump) {
-		double ns, t, target;
+		real ns, t, target;
 
 		t      = t_init +    i  * dt_dump;
 		target = t_init + (++i) * dt_dump;

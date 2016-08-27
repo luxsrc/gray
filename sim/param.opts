@@ -1,8 +1,8 @@
 # Runtime parameters needed in kernels
 
 # Spacetime geometry
-double	a_spin:a	= 1	= strtod(val, &rem);	/**< Dimensionless black hole spin */
-double	M_bh:m	= 4.3e6	= strtod(val, &rem);	/**< Central black hole mass in unit of solar mass; does not enter geometry because everything scales; nevertheless it is needed in radiative transfer */
+real	a_spin:a	= 1	= strtod(val, &rem);	/**< Dimensionless black hole spin */
+real	M_bh:m	= 4.3e6	= strtod(val, &rem);	/**< Central black hole mass in unit of solar mass; does not enter geometry because everything scales; nevertheless it is needed in radiative transfer */
 
 # Coordinate system
 const char *	coordinates:coor	= "KS"	= val;	/**< Coordinate system */
@@ -12,8 +12,8 @@ size_t	w_rays:W	= 512	= strtoul(val, &rem, 0);	/**< Number of rays along the wid
 size_t	h_rays:H	= 512	= strtoul(val, &rem, 0);	/**< Number of rays along the height of the image */
 
 # Plasma parameter
-double	n_electron:ne	= 1e6	= strtod(val, &rem);	/**< Electron number density normalization */
-double	beta_crit:bc	= 1	= strtod(val, &rem);	/**< Critical plasma \f$\beta_\mathrm{crit} = P_\mathrm{gas}/P_\mathrm{mag}\f$ */
-double	R_high:Rh	= 1	= strtod(val, &rem);	/**< The ratio \f$R_\mathrm{high} = T_p/T_e\f$ at high-beta,  weakly magnetized (disk) regions */
-double	R_low:Rl	= 1	= strtod(val, &rem);	/**< The ratio \f$R_\mathrm{low}  = T_p/T_e\f$ at low-beta, strongly magnetized (jet)  regions */
-double *	nu	= NULL	= strtoda(val, &rem);	/**< Frequency channels; NULL means turning off radiative transfer */
+real	n_electron:ne	= 1e6	= strtod(val, &rem);	/**< Electron number density normalization */
+real	beta_crit:bc	= 1	= strtod(val, &rem);	/**< Critical plasma \f$\beta_\mathrm{crit} = P_\mathrm{gas}/P_\mathrm{mag}\f$ */
+real	R_high:Rh	= 1	= strtod(val, &rem);	/**< The ratio \f$R_\mathrm{high} = T_p/T_e\f$ at high-beta,  weakly magnetized (disk) regions */
+real	R_low:Rl	= 1	= strtod(val, &rem);	/**< The ratio \f$R_\mathrm{low}  = T_p/T_e\f$ at low-beta, strongly magnetized (jet)  regions */
+real *	nu	= NULL	= strtoda(val, &rem);	/**< Frequency channels; NULL means turning off radiative transfer */
