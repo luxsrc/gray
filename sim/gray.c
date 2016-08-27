@@ -127,7 +127,7 @@ _exec(Lux_job *ego)
 
 	lux_debug("GRay2: executing instance %p\n", ego);
 
-	lux_print("%zu:  initialize ", i, t_init);
+	lux_print("%zu:  initialize at %4.1f", i, t_init);
 	icond(ego, t_init);
 	dump (ego, i);
 	lux_print(": DONE\n");

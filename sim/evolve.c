@@ -28,7 +28,8 @@ max(size_t a, size_t b)
 double
 evolve(Lux_job *ego, double t, double target, size_t n_sub)
 {
-	Lux_opencl *ocl = EGO->ocl;
+	Lux_opencl        *ocl    = EGO->ocl;
+	Lux_opencl_kernel *evolve = EGO->evolve;
 
 	struct param *p = &EGO->param;
 	struct setup *s = &EGO->setup;
@@ -37,13 +38,14 @@ evolve(Lux_job *ego, double t, double target, size_t n_sub)
 	const  size_t n_data = EGO->n_coor + EGO->n_freq * 2;
 	const  size_t n_info = EGO->n_info;
 
-	const size_t shape[] = {p->h_rays, p->w_rays};
+	const  size_t shape[] = {p->h_rays, p->w_rays};
 
-	ocl->setM(ocl, EGO->evolve, 0, EGO->data);
-	ocl->setM(ocl, EGO->evolve, 1, EGO->info);
-	ocl->setR(ocl, EGO->evolve, 2, target - t);
-	ocl->setW(ocl, EGO->evolve, 3, n_sub);
-	ocl->setS(ocl, EGO->evolve, 4, sz * max(n_data, n_info));
-
-	return ocl->exec(ocl, EGO->evolve, 2, shape);
+	return ocl->exec(ocl,
+	                 evolve->with(evolve,
+	                              EGO->data,
+	                              EGO->info,
+	                              target - t,
+	                              n_sub,
+	                              sz * max(n_data, n_info)),
+	                 2, shape);
 }

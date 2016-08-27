@@ -18,6 +18,7 @@
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gray.h"
+#include <stdio.h>
 
 static inline size_t
 max(size_t a, size_t b)
@@ -46,16 +47,17 @@ icond(Lux_job *ego, double t_init)
 
 	icond = ocl->mkkern(ocl, "icond_drv");
 
-	ocl->setM(ocl, icond, 0, EGO->data);
-	ocl->setM(ocl, icond, 1, EGO->info);
-	ocl->setR(ocl, icond, 2, i->w_img);
-	ocl->setR(ocl, icond, 3, i->h_img);
-	ocl->setR(ocl, icond, 4, i->r_obs);
-	ocl->setR(ocl, icond, 5, i->i_obs);
-	ocl->setR(ocl, icond, 6, i->j_obs);
-	ocl->setS(ocl, icond, 7, sz * max(n_data, n_info));
-
-	ocl->exec(ocl, icond, 2, shape);
+	(void)ocl->exec(ocl,
+	                icond->with(icond,
+	                            EGO->data,
+	                            EGO->info,
+	                            i->w_img,
+	                            i->h_img,
+	                            i->r_obs,
+	                            i->i_obs,
+	                            i->j_obs,
+	                            sz * max(n_data, n_info)),
+	                2, shape);
 
 	ocl->rmkern(ocl, icond);
 }
