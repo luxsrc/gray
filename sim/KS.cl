@@ -46,14 +46,12 @@ struct gr {
 };
 
 real
-getr(real4 q)
+getrr(real4 q)
 {
 	real aa = a_spin * a_spin;
 	real zz = q.s3 * q.s3;
 	real kk = K(0.5) * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
-	real dd = sqrt(kk * kk + aa * zz);
-	real rr = dd + kk;
-	return sqrt(rr);
+	return sqrt(kk * kk + aa * zz) + kk;
 }
 
 real4
@@ -62,8 +60,7 @@ down(real4 q, real4 u)
 	real  aa = a_spin * a_spin;
 	real  zz = q.s3 * q.s3;
 	real  kk = K(0.5) * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
-	real  dd = sqrt(kk * kk + aa * zz);
-	real  rr = dd + kk;
+	real  rr = sqrt(kk * kk + aa * zz) + kk;
 	real  r  = sqrt(rr);
 
 	real  f  = K(2.0) * rr * r / (rr * rr + aa * zz);
@@ -137,8 +134,7 @@ gr_icond(real r_obs, /**< distance of the image from the black hole */
 	real  aa = a_spin * a_spin;
 	real  zz = q.s3 * q.s3;
 	real  kk = K(0.5) * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
-	real  dd = sqrt(kk * kk + aa * zz);
-	real  rr = dd + kk;
+	real  rr = sqrt(kk * kk + aa * zz) + kk;
 	real  r  = sqrt(rr);
 
 	real  f  = K(2.0) * rr * r / (rr * rr + aa * zz);
@@ -305,5 +301,5 @@ gr_rhs(struct gr g) /**< state of the ray */
 		}; /* 10 (-3) FLOPs */
 
 		return (struct gr){u, a};
-	};
+	}
 }
