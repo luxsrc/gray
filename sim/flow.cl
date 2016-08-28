@@ -36,5 +36,27 @@ struct flow {
 struct flow
 getflow(struct gr g)
 {
-	return (struct flow){0};
+	real4 q = g.q;
+	real4 u = g.u;
+
+	real  aa = a_spin * a_spin;
+	real  zz = q.s3 * q.s3;
+	real  kk = K(0.5) * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
+	real  dd = sqrt(kk * kk + aa * zz);
+	real  rr = dd + kk;
+	real  r  = sqrt(rr);
+
+	struct flow f;
+
+	if(r > 2.0)
+		f.ne = 1.0e9 / r;
+	else
+		f.ne = 0.0;
+
+	f.te = 1e12;
+	f.b  = 1e3;
+	f.bkcos = 1.0;
+	f.shift = 1.0;
+
+	return f;
 }
