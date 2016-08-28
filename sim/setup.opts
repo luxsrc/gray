@@ -12,4 +12,5 @@ const char *	outfile:out	= "%04d.raw"	= val;	/**< Dump file name format */
 real	t_init:t0	= 0	= strtod(val, &rem);	/**< Initial time */
 real	dt_dump:dt	= -32	= strtod(val, &rem);	/**< Time interval between dumps */
 size_t	i_init:i0	= 0	= strtoul(val, &rem, 0);	/**< Initial dump id */
+size_t	n_sub:n	= 1024	= strtoul(val, &rem, 0);	/**< Number of substeps per dump */
 size_t	n_dump:N	= 64	= strtoul(val, &rem, 0);	/**< Number of dumps (in addition to the initial condition) */
