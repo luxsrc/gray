@@ -38,31 +38,6 @@ struct state
 integrate(struct state s,  /**< state of the ray */
           real         dt) /**< step size        */
 {
-	real4 q = s.g.q;
-	real4 u = s.g.u;
-
-	real  aa = a_spin * a_spin;
-	real  zz = q.s3 * q.s3;
-	real  kk = K(0.5) * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
-	real  dd = sqrt(kk * kk + aa * zz);
-	real  rr = dd + kk;
-	real  r  = sqrt(rr);
-
-	if(r < 1.0 + sqrt(1.0 - aa)) /* stop inside horizon */
-		return s;
-
-	if(q.s1 * u.s1 + q.s2 * u.s2 + q.s3 * u.s3 < 0 && r > K(1e3)) /* outside domain */
-		return s;
-
-	if(n_freq) {
-		bool done = 1;
-		for(whole i = 0; i < n_freq; ++i)
-			if(s.r.tau[i] < K(6.90775527898))
-				done = 0;
-		if(done) /* stop if optically thick */
-			return s;
-	}
-
 	struct state k1 = rhs(X(E(s)                      ));
 	struct state k2 = rhs(X(E(s) + K(0.5) * dt * E(k1)));
 	struct state k3 = rhs(X(E(s) + K(0.5) * dt * E(k2)));

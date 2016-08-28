@@ -45,6 +45,17 @@ struct gr {
 	real4 u;
 };
 
+real
+getr(real4 q)
+{
+	real aa = a_spin * a_spin;
+	real zz = q.s3 * q.s3;
+	real kk = K(0.5) * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
+	real dd = sqrt(kk * kk + aa * zz);
+	real rr = dd + kk;
+	return sqrt(rr);
+}
+
 real4
 down(real4 q, real4 u)
 {
