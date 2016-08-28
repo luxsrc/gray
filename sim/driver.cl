@@ -76,20 +76,24 @@ evolve_drv(__global real *data,  /**< states of the rays     */
 	const size_t gj = get_global_id(0); /* for h, slowest changing index */
 	const size_t gi = get_global_id(1); /* for w, fastest changing index */
 	const size_t g  = gi + gj * w_rays;
+	const int    n  = (INT_MAX / n_sub) * n_sub;
 
 	if(gi < w_rays && gj < h_rays) {
 		struct state d;
-		int s, h;
+		int s, h, dh;
 
 		/* Input from global array */
 		for(s = 0; s < n_data; ++s)
 			((real *)&d)[s] = DATA(g, s);
 
 		/* Substepping */
-		for(h = 0; h < n_sub; ++h) {
-			real ddt = getdt(d.g, dt / n_sub);
-			if(ddt != 0.0)
-				d = integrate(d, ddt);
+		for(h = 0; h < n; h += dh) {
+			dh = getdt(d.g, dt/n_sub) / dt * n;
+			if(!dh)
+				break;
+			if(dh > n - h)
+				dh = n - h;
+			d = integrate(d, dh * dt / n);
 		}
 
 		/* Output to global array */
