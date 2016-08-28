@@ -41,7 +41,10 @@
 #define T_MAX  (1e+2)
 #define T_GRID (60)
 
-#define LOG(x) log(x) /* \todo Select the right precision */
+#define LOG(x)    log(x)    /* \todo Select the right precision for log()  */
+#define SQRT(x)   sqrt(x)   /* \todo Select the right precision for sqrt() */
+#define POW(x, y) pow(x, y) /* \todo Select the right precision for pow()  */
+#define EXP(x)    exp(x)    /* \todo Select the right precision for exp()  */
 
 static __constant real log_K2it_tab[] = {
 	-10.747001122, -9.5813378172, -8.5317093904, -7.5850496322,
@@ -86,6 +89,56 @@ B_Planck(real nu, real te)
 	             f1 / (EXP(f2) - 1) :
 	             (f1 / f2) / (1 + f2 / 2 + f2 * f2 / 6));
 } /* 10+ FLOP */
+
+static inline real
+Gaunt(real x, real y)
+{
+	const real sqrt_x = SQRT(x);
+	const real sqrt_y = SQRT(y);
+
+	if(x > 1)
+		return y > 1 ?
+			(real)SQRT(3.0 / M_PI) / sqrt_y :
+			(real)(SQRT(3.0) / M_PI) *
+			((real)LOG(4.0 / 1.78107241799) - LOG(y + (real)EPSILON));
+	else if(x * y > 1)
+		return (real)SQRT(12.0) / (sqrt_x * sqrt_y);
+	else if(y > sqrt_x)
+		return 1;
+	else {
+		/* The "small-angle classical region" formulae in
+		   Rybicki & Lightman (1979) and Novikov & Thorne
+		   (1973) are inconsistent; it seems that both
+		   versions contain typos.  TODO: double-check the
+		   following formula */
+		const real g = (real)(SQRT(3.0) / M_PI) *
+			((real)LOG(4.0 / POW(1.78107241799, 2.5)) + LOG(sqrt_x / (y + (real)EPSILON)));
+		return g > (real)EPSILON ? g : (real)EPSILON;
+	}
+} /* 3+ FLOP */
+
+static inline real
+L_j_ff(real m_BH, real nu, real te, real ne)
+{
+	/* "Standard" formula for thermal bremsstrahlung, Rybicki &
+	   Lightman equation (5.14b) divided by 4 pi.
+	   Because the physical length scale L has to be part of the
+	   radiative transfer, we multiple it with the emissivity
+	   j_ff. */
+
+	/* Assume Z == 1 and ni == ne */
+
+	real x = CONST_me * CONST_c * CONST_c / CONST_Ry;  /* ~ 4e4 */
+	real y = CONST_h / (CONST_me * CONST_c * CONST_c); /* ~ 3e-21 */
+	real f = SQRT(CONST_G * CONST_mSun / (CONST_c * CONST_c) * 6.8e-38 /
+	              (4 * M_PI * SQRT(CONST_me * CONST_c * CONST_c / CONST_kB)));
+
+	x *= te;      /* ~ 1e+04 */
+	y *= nu / te; /* ~ 1e-10 */
+	f *= ne;      /* ~ 1e-15 */
+
+	return (m_BH * f * Gaunt(x, y)) * (f / (SQRT(te) * EXP(y) + (real)EPSILON));
+} /* 12 FLOP + FLOP(Gaunt) == 15+ FLOP */
 
 
 
