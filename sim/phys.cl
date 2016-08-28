@@ -48,5 +48,5 @@ icond(real r_obs, /**< distance of the image from the black hole */
 struct state
 rhs(struct state s) /**< state of the ray */
 {
-	return (struct state){gr_rhs(s.g), rt_rhs(getflow(s.g.q))};
+	return (struct state){gr_rhs(s.g), rt_rhs(getflow(s.g))};
 }

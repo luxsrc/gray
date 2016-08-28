@@ -45,21 +45,9 @@ struct gr {
 	real4 u;
 };
 
-/**
- ** Sqaure of vector u at the spacetime event q in Kerr-Schild coordiantes
- **
- ** Compute \f$u\cdot u \equiv g_{\alpha\beta} u^\alpha u^\beta\f$,
- ** where \f$g_{\alpha\beta}\f$ is the Cartesian form of the
- ** Kerr-Schild metric.
- **
- ** \return The square of u at q
- **/
-real
-getuu(struct gr g) /**< state of the ray */
+real4
+down(real4 q, real4 u)
 {
-	real4 q = g.q;
-	real4 u = g.u;
-
 	real  aa = a_spin * a_spin;
 	real  zz = q.s3 * q.s3;
 	real  kk = K(0.5) * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
@@ -77,10 +65,25 @@ getuu(struct gr g) /**< state of the ray */
 	real4 gy = {     f*ly,     f*ly*lx, 1 + f*ly*ly,     f*ly*lz};
 	real4 gz = {     f*lz,     f*lz*lx,     f*lz*ly, 1 + f*lz*lz};
 
-	return (dot(gt, u) * u.s0 +
-	        dot(gx, u) * u.s1 +
-	        dot(gy, u) * u.s2 +
-	        dot(gz, u) * u.s3);
+	return (real4){dot(gt, u),
+	               dot(gx, u),
+	               dot(gy, u),
+	               dot(gz, u)};
+}
+
+/**
+ ** Sqaure of vector u at the spacetime event q in Kerr-Schild coordiantes
+ **
+ ** Compute \f$u\cdot u \equiv g_{\alpha\beta} u^\alpha u^\beta\f$,
+ ** where \f$g_{\alpha\beta}\f$ is the Cartesian form of the
+ ** Kerr-Schild metric.
+ **
+ ** \return The square of u at q
+ **/
+real
+getuu(struct gr g) /**< state of the ray */
+{
+	return dot(down(g.q, g.u), g.u);
 }
 
 /**
