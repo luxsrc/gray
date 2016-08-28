@@ -111,7 +111,7 @@ build(Lux_job *ego)
 	         "#define n_chunk %zu\n"
 	         "typedef real%zu realE;\n"
 	         "static __constant real nus[n_freq] = {%s};\n"
-	         "static __constant real m_BH = %.18e;\n",
+	         "static __constant real M_bh = %.18e;\n",
 	         p->a_spin,
 	         EGO->n_freq,
 	         n_data,
