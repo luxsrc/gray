@@ -77,8 +77,11 @@ build(Lux_job *ego)
 	const size_t n_info  = 1;
 	const size_t e_chunk = min(16, n_data & ~(n_data-1)); /* number of real elements in chunk */
 	const size_t n_chunk = n_data / e_chunk;              /* number of chunks */
+	size_t i;
 
-	char buf[1024];
+	char lst[10240], *tail;
+	char buf[10240];
+
 	const char *src[] = {buf,
 	                     "preamble.cl",
 	                     p->coordinates,
@@ -90,6 +93,13 @@ build(Lux_job *ego)
 	                     "driver.cl",
 	                     NULL};
 
+	for(i = 0, tail = lst; i < EGO->n_freq; ++i) {
+		sprintf(tail, "%.18e,", EGO->param.nu[i]);
+		tail = lst + strlen(lst);
+	}
+	if(EGO->n_freq)
+		tail[-1] = '\0';
+
 	snprintf(buf, sizeof(buf),
 	         "#define a_spin K(%.18f)\n" /* DBL_EPSILON ~ 1e-16 */
 	         "#define n_freq %zu\n"
@@ -99,7 +109,9 @@ build(Lux_job *ego)
 	         "#define w_rays %zu\n"
 	         "#define h_rays %zu\n"
 	         "#define n_chunk %zu\n"
-	         "typedef real%zu realE;\n",
+	         "typedef real%zu realE;\n"
+	         "static __constant real nus[n_freq] = {%s};\n"
+	         "static __constant real m_BH = %.18e;\n",
 	         p->a_spin,
 	         EGO->n_freq,
 	         n_data,
@@ -108,7 +120,9 @@ build(Lux_job *ego)
 	         p->w_rays,
 	         p->h_rays,
 	         n_chunk,
-	         e_chunk);
+	         e_chunk,
+	         lst,
+	         p->M_bh);
 
 	lux_print("n_data  = %zu\n"
 	          "n_info  = %zu\n"
