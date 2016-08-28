@@ -182,10 +182,9 @@ rt_icond(void)
 }
 
 struct rt
-rt_rhs(struct rt r,
-       struct gr g)
+rt_rhs(struct flow f)
 {
-	struct flow f = getflow(g);
+	struct rt r;
 
 	for(whole i = 0; i < n_freq; ++i) {
 		const real nu     = nus[i] * f.shift;
