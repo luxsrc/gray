@@ -87,24 +87,9 @@ evolve_drv(__global real *data,  /**< states of the rays     */
 
 		/* Substepping */
 		for(h = 0; h < n_sub; ++h) {
-			real r = getr(d.g.q);
-
-			if(r < 1.0 + sqrt(1.0 - a_spin * a_spin)) /* stop inside horizon */
-				break;
-
-			if(dot(d.g.q.s123, d.g.q.s123) < 0 && r > K(1e3)) /* outside domain */
-				break;
-
-			if(n_freq) {
-				bool done = 1;
-				for(whole i = 0; i < n_freq; ++i)
-					if(d.r.tau[i] < K(6.90775527898))
-						done = 0;
-				if(done) /* stop if optically thick */
-					break;
-			}
-
-			d = integrate(d, dt / n_sub);
+			real ddt = getdt(d.g, dt / n_sub);
+			if(ddt != 0.0)
+				d = integrate(d, ddt);
 		}
 
 		/* Output to global array */

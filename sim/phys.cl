@@ -45,6 +45,20 @@ icond(real r_obs, /**< distance of the image from the black hole */
 	};
 }
 
+real
+getdt(struct gr g, real dt)
+{
+	real r = getr(g.q);
+
+	if(r < 1.0 + sqrt(1.0 - a_spin * a_spin)) /* stop inside horizon */
+		return 0;
+
+	if(dot(g.q.s123, g.q.s123) < 0 && r > K(1e3)) /* stop outside domain */
+		return 0;
+
+	return dt;
+}
+
 struct state
 rhs(struct state s) /**< state of the ray */
 {
