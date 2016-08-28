@@ -43,6 +43,7 @@
 
 #define LOG(x)    log(x)    /* \todo Select the right precision for log()  */
 #define SQRT(x)   sqrt(x)   /* \todo Select the right precision for sqrt() */
+#define CBRT(x)   cbrt(x)   /* \todo Select the right precision for cbrt() */
 #define POW(x, y) pow(x, y) /* \todo Select the right precision for pow()  */
 #define EXP(x)    exp(x)    /* \todo Select the right precision for exp()  */
 
@@ -139,6 +140,33 @@ L_j_ff(real m_BH, real nu, real te, real ne)
 
 	return (m_BH * f * Gaunt(x, y)) * (f / (SQRT(te) * EXP(y) + (real)EPSILON));
 } /* 12 FLOP + FLOP(Gaunt) == 15+ FLOP */
+
+static inline real
+L_j_syn(real m_BH, real nu, real te, real ne, real B,  real cos_theta)
+{
+	/* An approximate expression for thermal magnetobremsstrahlung
+	   emission, see Leung, Gammie, & Noble (2011) equation (72).
+	   Because the physical length scale L has to be part of the
+	   radiative transfer, we multiple it with the emissivity j_ff. */
+
+	if(te        <= (real)T_MIN ||
+	   cos_theta <=          -1 ||
+	   cos_theta >=           1) return 0;
+
+	const real nus = te * te * B * SQRT(1 - cos_theta * cos_theta) *
+		         (real)(CONST_e / (9 * M_PI * CONST_me * CONST_c)); /* ~ 1e5 */
+	const real x   = nu / (nus + (real)EPSILON); /* 1e6 -- 1e18 */
+
+	const real f      = (CONST_G * CONST_mSun / (CONST_c * CONST_c)) *
+		            (M_SQRT2 * M_PI * CONST_e * CONST_e / (3 * CONST_c));
+	const real cbrtx  = CBRT(x);                                     /* 1e2 -- 1e6 */
+	const real xx     = SQRT(x) + (real)1.88774862536 * SQRT(cbrtx); /* 1e3 -- 1e9 */
+	const real log_K2 = (te > (real)T_MAX) ?
+		            LOG(2 * te * te - (real)0.5) :
+		            log_K2it(te);
+
+	return (m_BH * xx * EXP(-cbrtx)) * (xx * EXP(-log_K2)) * (f * ne * nus);
+} /* 25 FLOP + min(4 FLOP, FLOP(log_K2it)) == 29+ FLOP */
 
 
 
