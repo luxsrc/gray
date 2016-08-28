@@ -72,6 +72,21 @@ log_K2it(real te)
 	return (1 - d) * log_K2it_tab[i] + d * log_K2it_tab[i+1];
 } /* 7 FLOP */
 
+static inline real
+B_Planck(real nu, real te)
+{
+	real f1 = 2 * CONST_h * CONST_c;          /* ~ 4e-16 */
+	real f2 = CONST_h / (CONST_me * CONST_c); /* ~ 2e-10 */
+
+	nu /= (real)CONST_c;             /* 1e-02 -- 1e+12 */
+	f1 *= nu * nu;                   /* 4e-20 -- 4e+08 */
+	f2 *= nu / (te + (real)EPSILON); /* 1e-12 -- 1e+02 */
+
+	return nu * (f2 > (real)1e-5 ?
+	             f1 / (EXP(f2) - 1) :
+	             (f1 / f2) / (1 + f2 / 2 + f2 * f2 / 6));
+} /* 10+ FLOP */
+
 
 
 struct rt {
