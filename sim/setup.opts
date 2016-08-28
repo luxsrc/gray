@@ -1,7 +1,7 @@
 # Job setup/configuration
 unsigned	i_platform:ip	= 0	= strtoul(val, &rem, 0);	/**< Index of platform to use */
 unsigned	i_device:id	= 0	= strtoul(val, &rem, 0);	/**< Index of device   to use */
-cl_device_type	device_type:type	= CL_DEVICE_TYPE_CPU	= strtotype(val);	/**< Type  of device   to use */
+cl_device_type	device_type:type	= CL_DEVICE_TYPE_ALL	= strtotype(val);	/**< Type  of device   to use */
 
 size_t	precision:p	= sizeof(float)	= strtoprec(val);	/**< Size of real type */
 const char *	scheme:scm	= "RK4"	= val;	/**< Integration scheme */
@@ -10,6 +10,6 @@ const char *	kflags:kf	= "-w"	= val;	/**< Kernl compilation flags */
 
 const char *	outfile:out	= "%04d.raw"	= val;	/**< Dump file name format */
 real	t_init:t0	= 0	= strtod(val, &rem);	/**< Initial time */
-real	dt_dump:dt	= -1	= strtod(val, &rem);	/**< Time interval between dumps */
+real	dt_dump:dt	= -32	= strtod(val, &rem);	/**< Time interval between dumps */
 size_t	i_init:i0	= 0	= strtoul(val, &rem, 0);	/**< Initial dump id */
-size_t	n_dump:N	= 10	= strtoul(val, &rem, 0);	/**< Number of dumps (in addition to the initial condition) */
+size_t	n_dump:N	= 64	= strtoul(val, &rem, 0);	/**< Number of dumps (in addition to the initial condition) */
