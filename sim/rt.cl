@@ -47,6 +47,9 @@
 #define POW(x, y) pow(x, y) /* \todo Select the right precision for pow()  */
 #define EXP(x)    exp(x)    /* \todo Select the right precision for exp()  */
 
+static __constant real nus[n_freq] = {0}; /* \todo Initialize nus[] using run time parameters */
+static __constant real m_BH = 0;          /* \todo Initialize m_BH  using run time parameters */
+
 static __constant real log_K2it_tab[] = {
 	-10.747001122, -9.5813378172, -8.5317093904, -7.5850496322,
 	-6.7296803564, -5.9551606678, -5.2521532618, -4.6123059955,
@@ -119,7 +122,7 @@ Gaunt(real x, real y)
 } /* 3+ FLOP */
 
 static inline real
-L_j_ff(real m_BH, real nu, real te, real ne)
+L_j_ff(real nu, real te, real ne)
 {
 	/* "Standard" formula for thermal bremsstrahlung, Rybicki &
 	   Lightman equation (5.14b) divided by 4 pi.
@@ -142,7 +145,7 @@ L_j_ff(real m_BH, real nu, real te, real ne)
 } /* 12 FLOP + FLOP(Gaunt) == 15+ FLOP */
 
 static inline real
-L_j_syn(real m_BH, real nu, real te, real ne, real B,  real cos_theta)
+L_j_syn(real nu, real te, real ne, real B,  real cos_theta)
 {
 	/* An approximate expression for thermal magnetobremsstrahlung
 	   emission, see Leung, Gammie, & Noble (2011) equation (72).
@@ -188,7 +191,12 @@ rt_rhs(struct rt r,
 	struct flow f = getflow(g);
 
 	for(whole i; i < n_freq; ++i) {
-		/* Radiative transfer */
+		const real nu     = nus[i] * f.shift;
+		const real B_nu   = B_Planck(nu, f.te);
+		const real L_j_nu = L_j_syn(nu, f.te, f.ne, f.b, f.bkcos) + L_j_ff(nu, f.te, f.ne);
+
+		r.I  [i] = -L_j_nu * EXP(-r.tau[i]) / (f.shift * f.shift + (real)EPSILON);
+		r.tau[i] = -L_j_nu * f.shift        / (B_nu              + (real)EPSILON);
 	}
 
 	return r;
