@@ -125,8 +125,8 @@ gr_icond(real r_obs, /**< distance of the image from the black hole */
 
 	real  R0 = r_obs * si - beta  * ci; /* cylindrical radius */
 	real  z  = r_obs * ci + beta  * si;
-	real  y  = R0    * sj - alpha * cj;
-	real  x  = R0    * cj + alpha * sj;
+	real  y  = R0    * sj + alpha * cj;
+	real  x  = R0    * cj - alpha * sj;
 
 	real4 q  = (real4){0, x, y, z};
 	real4 u  = (real4){1, si * cj, si * sj, ci};
