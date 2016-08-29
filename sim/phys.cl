@@ -66,5 +66,7 @@ getdt(struct gr g, real dt)
 struct state
 rhs(struct state s) /**< state of the ray */
 {
-	return (struct state){gr_rhs(s.g), rt_rhs(getflow(s.g))};
+	real4 q = s.g.q;
+	real4 k = down(q, s.g.u);
+	return (struct state){gr_rhs(s.g), rt_rhs(getflow(q, k))};
 }

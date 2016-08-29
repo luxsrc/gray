@@ -34,15 +34,14 @@ struct flow {
 };
 
 struct flow
-getflow(struct gr g)
+getflow(real4 q, real4 k)
 {
 	struct flow f;
 
-	real4 k = down(g.q, g.u);
 	real4 u = {1, 0, 0, 0};
 	real4 b = {1, 0, 0, 1};
 
-	f.ne = 1.0e9 / sqrt(getrr(g.q));
+	f.ne = 1.0e9 / sqrt(getrr(q));
 	f.te = 1e12;
 	f.b  = 1e3;
 
