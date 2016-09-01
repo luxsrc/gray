@@ -128,6 +128,22 @@ getsphKSu(real4 q, real4 u)
 	               dot(J3, u)};
 }
 
+real4
+getBLu(real4 q, real4 u)
+{
+	real  aa = a_spin * a_spin;
+	real  zz = q.s3 * q.s3;
+	real  kk = K(0.5) * (q.s1 * q.s1 + q.s2 * q.s2 + zz - aa);
+	real  rr = sqrt(kk * kk + aa * zz) + kk;
+	real  r  = sqrt(rr);
+	real  D  = rr - K(2.0) * r + aa;
+
+	return (real4){u.s0 - u.s3 * K(2.0) * r / D,
+	               u.s1,
+	               u.s2,
+	               u.s3 - u.s0 * a_spin     / D};
+}
+
 /**
  ** Sqaure of vector u at the spacetime event q in Kerr-Schild coordiantes
  **
