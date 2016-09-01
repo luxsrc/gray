@@ -65,12 +65,13 @@ getsphKS(real4 q)
 }
 
 real4
-getBL(real4 q) /* require sphKS input */
+getBL(real4 q)
 {
+	q = getsphKS(q);
+
 	real h  = sqrt(K(1.0) - a_spin * a_spin);
 	real rp = 1.0 + h;
 	real rm = 1.0 - h;
-
 	real r0 = K(6.0); /* radius for matching the time coordinate */
 	real r  = q.s1;
 
