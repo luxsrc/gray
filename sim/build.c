@@ -70,6 +70,7 @@ build(Lux_job *ego)
 	 **/
 	struct LuxOopencl opts = OPENCL_NULL;
 
+	struct icond *i = &EGO->icond;
 	struct param *p = &EGO->param;
 	struct setup *s = &EGO->setup;
 
@@ -77,7 +78,7 @@ build(Lux_job *ego)
 	const size_t n_info  = 1;
 	const size_t e_chunk = min(16, n_data & ~(n_data-1)); /* number of real elements in chunk */
 	const size_t n_chunk = n_data / e_chunk;              /* number of chunks */
-	size_t i;
+	size_t j;
 
 	char lst[10240], *tail;
 	char buf[10240];
@@ -93,8 +94,8 @@ build(Lux_job *ego)
 	                     "driver.cl",
 	                     NULL};
 
-	for(i = 0, tail = lst; i < EGO->n_freq; ++i) {
-		sprintf(tail, "%.18e,", EGO->param.nu[i]);
+	for(j = 0, tail = lst; j < EGO->n_freq; ++j) {
+		sprintf(tail, "%.18e,", EGO->param.nu[j]);
 		tail = lst + strlen(lst);
 	}
 	if(EGO->n_freq)
@@ -102,6 +103,7 @@ build(Lux_job *ego)
 
 	snprintf(buf, sizeof(buf),
 	         "#define a_spin K(%.18f)\n" /* DBL_EPSILON ~ 1e-16 */
+	         "#define r_match K(%.18f)\n"
 	         "#define n_freq %zu\n"
 	         "#define n_data %zu\n"
 	         "#define n_info %zu\n"
@@ -113,6 +115,7 @@ build(Lux_job *ego)
 	         "static __constant real nus[n_freq] = {%s};\n"
 	         "static __constant real M_bh = %.18e;\n",
 	         p->a_spin,
+	         i->r_obs,
 	         EGO->n_freq,
 	         n_data,
 	         n_info,
