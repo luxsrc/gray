@@ -55,13 +55,31 @@ getrr(real4 q)
 }
 
 real4
-sphKS(real4 q)
+getsphKS(real4 q)
 {
 	real r     = sqrt(getrr(q));
 	real theta = acos(q.s3 / r);
 	real phi   = atan2(q.s2 * r + q.s1 * a_spin,
 	                   q.s1 * r - q.s2 * a_spin);
 	return (real4){q.s0, r, theta, phi};
+}
+
+real4
+getBL(real4 q) /* require sphKS input */
+{
+	real h  = sqrt(K(1.0) - a_spin * a_spin);
+	real rp = 1.0 + h;
+	real rm = 1.0 - h;
+
+	real r0 = K(6.0); /* radius for matching the time coordinate */
+	real r  = q.s1;
+
+	return (real4){
+		q.s0 + (rm * log((r-rm)/(r0-rm)) - rp * log((r-rp)/(r0-rp))) / h,
+		q.s1,
+		q.s2,
+		q.s3 + K(0.5) * a_spin * log((r-rm)/(r-rp)) / h /* use r = inf for matching the phi coordinate */
+	};
 }
 
 real4
