@@ -27,7 +27,7 @@
  ** of GRay2.
  **/
 
-#define EPSILON 1e-32
+#define EPSILON 1e-28
 
 /** Helper macros to write equations for vector of length n_vars **/
 #define EACH(s) for(whole _e_ = 0; _e_ < n_chunk; ++_e_) E(s)

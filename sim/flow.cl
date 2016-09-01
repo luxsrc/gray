@@ -19,10 +19,10 @@
  */
 
 /** \file
- ** Flow models
+ ** A template for flow models
  **
- ** Flow models of the accretion flows, which may be interpolation of
- ** GRMHD simulations or analytical models.
+ ** A template for an accretion flows model, which may be
+ ** interpolation of GRMHD simulations or analytical models.
  **/
 
 struct flow {
@@ -34,16 +34,21 @@ struct flow {
 };
 
 struct flow
-getflow(real4 q, real4 k)
+getflow(real4 q, /* "up"   position 4-vector q^mu */
+        real4 k) /* "down" momentum 4-vector k_mu */
 {
 	struct flow f;
 
 	real4 u = {1, 0, 0, 0};
-	real4 b = {1, 0, 0, 1};
+	real4 b = {0, 0, 0, 0}; /* magnetic field four-vector defined as
+	                           b^mu = (1/2)
+                                           epsilon^{mu,nu,kappa,lambda}
+                                           u_nu F_{lambda,kappa},
+                                   see Gammie et al. (2003) */
 
 	f.ne = 1.0e9 / sqrt(getrr(q));
 	f.te = 1e12;
-	f.b  = 1e3;
+	f.b  = 0;
 
 	f.shift = -dot(k, u);
 	f.bkcos =  dot(k, b) / (f.shift * f.b + (real)EPSILON);
