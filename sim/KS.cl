@@ -55,6 +55,16 @@ getrr(real4 q)
 }
 
 real4
+sphKS(real4 q)
+{
+	real r     = sqrt(getrr(q));
+	real theta = acos(q.s3 / r);
+	real phi   = atan2(q.s2 * r + q.s1 * a_spin,
+	                   q.s1 * r - q.s2 * a_spin);
+	return (real4){q.s0, r, theta, phi};
+}
+
+real4
 down(real4 q, real4 u)
 {
 	real  aa = a_spin * a_spin;
