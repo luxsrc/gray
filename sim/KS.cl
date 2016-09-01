@@ -107,6 +107,27 @@ down(real4 q, real4 u)
 	               dot(gz, u)};
 }
 
+real4
+getsphKSu(real4 q, real4 u)
+{
+	real  aa = a_spin * a_spin;
+	real  RR = q.s1 * q.s1 + q.s2 * q.s2;
+	real  zz = q.s3 * q.s3;
+	real  kk = K(0.5) * (RR + zz - aa);
+	real  dd = sqrt(kk * kk + aa * zz);
+	real  rr = dd + kk;
+	real  r  = sqrt(rr);
+
+	real4 J1 = ((real4){0, rr, rr, rr + aa} * q) / (K(2.0) * r * dd);
+	real4 J2 = ((q.s3 / r) * J1 - (real4){0, 0, 0, 1}) / sqrt(rr - zz);
+	real4 J3 = (-a_spin / (rr + aa)) * J1 + (real4){0, -q.s2, q.s1, 0} / RR;
+
+	return (real4){u.s0,
+	               dot(J1, u),
+	               dot(J2, u),
+	               dot(J3, u)};
+}
+
 /**
  ** Sqaure of vector u at the spacetime event q in Kerr-Schild coordiantes
  **
