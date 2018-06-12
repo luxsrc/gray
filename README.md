@@ -5,6 +5,26 @@ integrate millions of photons in curved spacetime according to
 Einstein's general theory of relativity.
 
 
+Prerequisites
+-------------
+
+GRay uses nVidia's CUDA technology and runs *only* on nVidia's GPUs.
+Therefore, in order to use GRay, you must have:
+
+  - An nVidia GPU
+  - [CUDA toolkit](https://developer.nvidia.com/cuda-downloads)
+
+In order to use GRay's interactive visualizer, you will need to have:
+
+  - OpenGL and GLUT libraries, which are built-in for Mac OS X
+  - [GLFW](http://www.glfw.org/) library
+
+GRay also supports using [LeapMotion](https://lmdesign.wpengine.com/)
+or [PrimeSense](https://en.wikipedia.org/wiki/PrimeSense) as
+interactive input devices.  You will need to have their SDK to use
+them.
+
+
 Compile the Code
 ----------------
 
