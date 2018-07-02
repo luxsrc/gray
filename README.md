@@ -5,6 +5,16 @@ integrate millions of photons in curved spacetime according to
 Einstein's general theory of relativity.
 
 
+Results
+-------
+
+Synthetic black hole images and movies computed by GRay has been used
+in scientific talks, news articles, and TV programs.  Here is an
+example of it:
+
+[![Chan et al. 2015b Model B](https://img.youtube.com/vi/P7vGRKZXu-E/0.jpg)](https://www.youtube.com/watch?v=P7vGRKZXu-E)
+
+
 Prerequisites
 -------------
 
