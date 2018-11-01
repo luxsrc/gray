@@ -75,8 +75,8 @@ def load_rays(name):
         # For each ray...
         for i in range(n[0]):
             c = np.fromfile(f, np.uint64,  1) # number of points in a ray
-            d = np.fromfile(f, np.float32, c * n[1])
-            r.append(d.reshape(c, n[1]))
+            d = np.fromfile(f, np.float32, c[0] * n[1])
+            r.append(d.reshape(c[0], n[1]))
 
     # Done
     return r
