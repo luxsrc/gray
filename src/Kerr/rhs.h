@@ -101,7 +101,9 @@ static inline __device__ real Gaunt(real x, real y)
 } // 3+ FLOP
 
 // "Standard" formula for thermal bremsstrahlung, Rybicki & Lightman
-// equation (5.14b) divided by 4 pi
+// equation (5.14b) divided by 4 pi.
+// Because the physical length scale L has to be part of the radiative
+// transfer, we multiple it with the emissivity j_ff.
 static inline __device__ real L_j_ff(real nu, real te, real ne)
 {
   // Assume Z == 1 and ni == ne
@@ -119,7 +121,9 @@ static inline __device__ real L_j_ff(real nu, real te, real ne)
 } // 12 FLOP + FLOP(Gaunt) == 15+ FLOP
 
 // An approximate expression for thermal magnetobremsstrahlung
-// emission, see Leung, Gammie, & Noble (2011) equation (72)
+// emission, see Leung, Gammie, & Noble (2011) equation (72).
+// Because the physical length scale L has to be part of the radiative
+// transfer, we multiple it with the emissivity j_ff.
 static inline __device__ real L_j_synchr(real nu, real te, real ne,
                                          real B,  real cos_theta)
 {
