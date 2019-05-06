@@ -73,7 +73,7 @@ CFLAGS   += $(addprefix --compiler-options ,\
 	      -Wextra -Wno-unused-function -Wno-deprecated)
 
 help:
-	@echo 'The follow problems are avilable:'
+	@echo 'The follow problems are available:'
 	@echo
 	@c=0; for F in src/[[:upper:]]*/; do \
 	   f=$${F##src/};                    \
