@@ -93,6 +93,7 @@ bool Para::config(Const &c, const char *arg)
   else if((val = match("i",     arg))) c.i_obs     =   atof(val);
   else if((val = match("j",     arg))) c.j_obs     =   atof(val);
   else if((val = match("a",     arg))) c.a_spin    =   atof(val);
+  else if((val = match("Mbh",   arg))) c.m_BH      =   atof(val);
   else if((val = match("ne",    arg))) c.ne_rho    =   atof(val);
   else if((val = match("beta",  arg))) c.threshold = 1/atof(val);
   else if((val = match("td",    arg))) c.Ti_Te_d   = 1/atof(val);
