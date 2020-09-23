@@ -62,6 +62,7 @@ struct gray {
 	Lux_opencl *ocl;
 	cl_mem data;
 	cl_mem info;
+	cl_mem spacetime;
 	Lux_opencl_kernel *evolve;
 };
 
@@ -79,5 +80,6 @@ extern double evolve(Lux_job *);
 
 /** Output data to a file */
 extern void dump(Lux_job *, size_t);
+extern void load_spacetime(Lux_job *, const char *);
 
 #endif /* _GRAY_H */

@@ -97,6 +97,7 @@ _exec(Lux_job *ego)
 
 	lux_debug("GRay2: executing instance %p\n", ego);
 
+	load_spacetime(ego, "..."); /* load spacetime */
 	icond(ego);
 	dump(ego, 0);
 
