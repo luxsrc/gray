@@ -22,6 +22,7 @@
 #include <lux/mangle.h>
 #include <lux/zalloc.h>
 
+#include <hdf5.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -100,7 +101,9 @@ _exec(Lux_job *ego)
 
 	lux_print("GRay2: Reading spacetime from file %s\n", p->dyst_file);
 
+	/* We perform basic checks here */
 	lux_check_failure_code(access(p->dyst_file, F_OK), cleanup1);
+	lux_check_failure_code(H5Fopen(p->dyst_file, H5F_ACC_RDONLY, H5P_DEFAULT), cleanup2);
 
 	/* load_spacetime(ego, &EGO->param.dyst_file); /\* load spacetime *\/ */
 	icond(ego);
@@ -118,6 +121,9 @@ _exec(Lux_job *ego)
 
 cleanup1:
 	lux_print("ERROR: File %s could not be read\n", p->dyst_file);
+	return EXIT_FAILURE;
+cleanup2:
+	lux_print("ERROR: File %s is not a valid HDF5 file\n", p->dyst_file);
 	return EXIT_FAILURE;
 }
 
