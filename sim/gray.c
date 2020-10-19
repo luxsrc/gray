@@ -92,7 +92,7 @@ _exec(Lux_job *ego)
 	struct param *p = &EGO->param;
 
 	const  size_t n_rays = p->h_rays * p->w_rays;
-	const  double dt     = -1.0;
+	const  double dt     = 1.0;
 	const  size_t n_sub  = 1024;
 
 	size_t i;
@@ -105,7 +105,10 @@ _exec(Lux_job *ego)
 	lux_check_failure_code(access(p->dyst_file, F_OK), cleanup1);
 	lux_check_failure_code(H5Fopen(p->dyst_file, H5F_ACC_RDONLY, H5P_DEFAULT), cleanup2);
 
-	/* load_spacetime(ego, &EGO->param.dyst_file); /\* load spacetime *\/ */
+	/* For the moment, we only read one snapshot at t = tmin */
+	/* Load spacetime */
+	lux_check_failure_code(load_spacetime(ego, p->tmin), cleanup3);
+
 	icond(ego);
 	dump(ego, 0);
 
@@ -124,6 +127,8 @@ cleanup1:
 	return EXIT_FAILURE;
 cleanup2:
 	lux_print("ERROR: File %s is not a valid HDF5 file\n", p->dyst_file);
+	return EXIT_FAILURE;
+cleanup3:
 	return EXIT_FAILURE;
 }
 

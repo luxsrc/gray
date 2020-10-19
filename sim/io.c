@@ -19,6 +19,7 @@
  */
 #include "gray.h"
 #include <stdio.h>
+#include <hdf5.h>
 
 /** \todo implement load() */
 
@@ -57,9 +58,47 @@ dump(Lux_job *ego, size_t i)
 	ocl->munmap(ocl, EGO->data, data);
 }
 
-void
-load_spacetime(Lux_job *ego, const char *name)
+size_t
+load_spacetime(Lux_job *ego, double time_double)
 {
+
+	struct param *p = &EGO->param;
+
+	const char *file_name = p->dyst_file;
+	const char *time_format = p->time_format;
+
+	/* OpenCL Image properties */
+	cl_image_format imgfmt;
+	cl_image_desc imgdesc;
+	cl_int err;
+
+	/* HDF5 identifiers */
+	hid_t file_id;
+	hid_t group_id;
+
+	/* The group name is a char, not a double */
+	char time[64];
+
+	snprintf(time, sizeof(time), time_format, time_double);
+
+	file_id = H5Fopen(file_name, H5F_ACC_RDONLY, H5P_DEFAULT);
+	if (file_id == -1) {
+		lux_print("ERROR: File %s is not a valid HDF5 file\n", file_name);
+		return file_id;
+	}
+	/* Open group corresponding to time */
+	group_id = H5Gopen(file_id, time, H5P_DEFAULT);
+	if (group_id == -1) {
+		lux_print("ERROR: Time %s not found\n", time);
+		lux_print("Time has to be in the format specified by the option time_fmt ");
+		lux_print("(currently, time_fmt = %s)\n", time_format);
+		return group_id;
+	}
+
+	lux_debug("Reading time %s\n", time);
+
+	return 0;
+
 	/* FILE  *file; */
 
 	/* size_t dim, size[DIM_MAX], count[DIM_MAX]; */

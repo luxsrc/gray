@@ -92,6 +92,6 @@ extern double evolve(Lux_job *);
 
 /** Output data to a file */
 extern void dump(Lux_job *, size_t);
-extern void load_spacetime(Lux_job *, const char *);
+extern size_t load_spacetime(Lux_job *, double);
 
 #endif /* _GRAY_H */
