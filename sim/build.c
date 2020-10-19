@@ -76,13 +76,11 @@ build(Lux_job *ego)
 	                     NULL};
 
 	snprintf(buf, sizeof(buf),
-	         "__constant real   a_spin = %g;\n"
 	         "__constant size_t n_data = %zu;\n"
 	         "__constant size_t n_info = %zu;\n"
 	         "__constant size_t n_rays = %zu;\n"
 	         "__constant size_t w_rays = %zu;\n"
 	         "__constant size_t h_rays = %zu;\n",
-	         p->a_spin,
 	         p->n_freq * 2 + EGO->n_coor,
 	         (size_t)1,
 	         p->h_rays * p->w_rays,

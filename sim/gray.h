@@ -62,8 +62,20 @@ struct gray {
 	Lux_opencl *ocl;
 	cl_mem data;
 	cl_mem info;
-	cl_mem spacetime;
+
 	Lux_opencl_kernel *evolve;
+
+	/* Grid details */
+	/* Bounding_box is a vector with 8 numbers:
+	 * {xmin, ymin, zmin, 0, xmax, ymax, zmax} */
+
+	/* We need this quantity to convert from normalized OpenCL coordiantes
+	   to physical coordiantes and vice versa. */
+	cl_float8 bounding_box;
+
+	/* We need 40 images to contain all the 40 spacetime variables */
+	/* In this implementation, spacetime contains the connection. */
+	cl_mem spacetime[40];
 };
 
 #define EGO ((struct gray *)ego)

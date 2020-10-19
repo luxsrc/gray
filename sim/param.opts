@@ -1,10 +1,10 @@
 # Runtime parameters needed in kernels
 
 # Spacetime geometry
-double	a_spin:a	= 1	= strtod(val, &rem);	/**< dimensionless black hole spin */
 
 # Coordinate system
-const char *	coordinates:coor	= "KS"	= val;	/**< coordinate system */
+const char *	coordinates:coor	= "dyst"	= val;	/**< coordinate system */
+const char *	dyst_file:data   	= "data.h5"	= val;	/**< file with all the information for dynamical spacetime */
 
 # Numerical setup
 size_t	w_rays:W	= 512	= strtoul(val, &rem, 0);	/**< number of rays along the width  of the image */

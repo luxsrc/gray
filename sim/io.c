@@ -20,8 +20,6 @@
 #include "gray.h"
 #include <stdio.h>
 
-#define DIM_MAX 4
-
 /** \todo implement load() */
 
 void
@@ -62,37 +60,36 @@ dump(Lux_job *ego, size_t i)
 void
 load_spacetime(Lux_job *ego, const char *name)
 {
-	FILE  *file;
+	/* FILE  *file; */
 
-	size_t dim, size[DIM_MAX], count[DIM_MAX];
-	void  *host;
+	/* size_t dim, size[DIM_MAX], count[DIM_MAX]; */
+	/* void  *host; */
 
-	cl_image_format imgfmt;
-	cl_image_desc   imgdesc;
-	cl_int err;
+	/* cl_image_format imgfmt; */
+	/* cl_image_desc   imgdesc; */
+	/* cl_int err; */
 
-	/* Load spacetime data to host memory */
-	file = fopen(name, "rb");
-	fread(&dim,  sizeof(size_t), 1,   file);
-	fread(size,  sizeof(size_t), dim, file);
-	fread(count, sizeof(size_t), dim, file);
-	host = malloc(...);
-	fread(host, size, count, file);
-	fclose(file);
+	/* /\* Load spacetime data to host memory *\/ */
+	/* file = fopen(name, "rb"); */
+	/* fread(&dim,  sizeof(size_t), 1,   file); */
+	/* fread(size,  sizeof(size_t), dim, file); */
+	/* fread(count, sizeof(size_t), dim, file); */
+	/* host = malloc(...); */
+	/* fread(host, size, count, file); */
+	/* fclose(file); */
 
-	/* Create "image" on device and copy spacetime data to it */
-	imgfmt.image_channel_order     = CL_RGBA; /* use four channels */
-	imgfmt.image_channel_data_type = CL_FLAT; /* each channel is a float */
-	imgdesc.image_type = CL_MEM_OBJECT_IMAGE3D;
-	...
+	/* /\* Create "image" on device and copy spacetime data to it *\/ */
+	/* imgfmt.image_channel_order     = CL_RGBA; /\* use four channels *\/ */
+	/* imgfmt.image_channel_data_type = CL_FLAT; /\* each channel is a float *\/ */
+	/* imgdesc.image_type = CL_MEM_OBJECT_IMAGE3D; */
 
-	ego->spacetime = clCreateImage
-		(ego->ocl->super,
-		 CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
-		 &image_format,
-		 &image_desc,
-		 host,
-		 &err);
+	/* ego->spacetime = clCreateImage */
+	/* 	(ego->ocl->super, */
+	/* 	 CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY, */
+	/* 	 &image_format, */
+	/* 	 &image_desc, */
+	/* 	 host, */
+	/* 	 &err); */
 
-	free(host);
+	/* free(host); */
 }

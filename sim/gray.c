@@ -23,6 +23,7 @@
 #include <lux/zalloc.h>
 
 #include <stdio.h>
+#include <unistd.h>
 
 static int
 _conf(Lux_job *ego, const char *restrict arg)
@@ -97,7 +98,11 @@ _exec(Lux_job *ego)
 
 	lux_debug("GRay2: executing instance %p\n", ego);
 
-	load_spacetime(ego, "..."); /* load spacetime */
+	lux_print("GRay2: Reading spacetime from file %s\n", p->dyst_file);
+
+	lux_check_failure_code(access(p->dyst_file, F_OK), cleanup1);
+
+	/* load_spacetime(ego, &EGO->param.dyst_file); /\* load spacetime *\/ */
 	icond(ego);
 	dump(ego, 0);
 
@@ -110,6 +115,10 @@ _exec(Lux_job *ego)
 	}
 
 	return EXIT_SUCCESS;
+
+cleanup1:
+	lux_print("ERROR: File %s could not be read\n", p->dyst_file);
+	return EXIT_FAILURE;
 }
 
 void *
