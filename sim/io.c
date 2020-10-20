@@ -125,6 +125,12 @@ read_variable_from_h5_file_and_return_num_points(const hid_t group_id,
 		return status;
 	}
 
+	status = H5Sclose(dataspace_id);
+	if (status != 0) {
+		printf("Error in closing dataspace: %s", var_name);
+		return status;
+	}
+
 	return total_num_bytes / sz;
 }
 
@@ -148,6 +154,7 @@ load_spacetime(Lux_job *ego, double time_double)
 	/* HDF5 identifiers */
 	hid_t file_id;
 	hid_t group_id;
+	herr_t status;
 
 	clock_t start, end;
 	double cpu_time_used;
@@ -271,6 +278,12 @@ load_spacetime(Lux_job *ego, double time_double)
 
 	for (size_t i = 0; i < 40; i++)
 		free(Gamma[i]);
+
+	status = H5Fclose(file_id);
+	if (status != 0) {
+		printf("Error in closing HDF5 file");
+		return status;
+	}
 
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
