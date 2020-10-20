@@ -20,6 +20,7 @@
 #include "gray.h"
 #include <stdio.h>
 #include <hdf5.h>
+#include <time.h>
 
 /** \todo implement load() */
 
@@ -148,6 +149,11 @@ load_spacetime(Lux_job *ego, double time_double)
 	hid_t file_id;
 	hid_t group_id;
 
+	clock_t start, end;
+	double cpu_time_used;
+
+	start = clock();
+
 	/* The group name is a char, not a double */
 	char time[64];
 
@@ -265,6 +271,11 @@ load_spacetime(Lux_job *ego, double time_double)
 
 	for (size_t i = 0; i < 40; i++)
 		free(Gamma[i]);
+
+	end = clock();
+	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+	lux_print("Reading file and creating images took %.5f s\n", cpu_time_used);
 
 	return 0;
 }

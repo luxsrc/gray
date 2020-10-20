@@ -25,6 +25,7 @@
 #include <hdf5.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <time.h>
 
 static int
 _conf(Lux_job *ego, const char *restrict arg)
@@ -112,12 +113,18 @@ _exec(Lux_job *ego)
 	icond(ego);
 	dump(ego, 0);
 
-	for(i = 0; i < 10; ++i) {
-		double ns;
+	for(i = 0; i < 1000; ++i) {
+		double s;
+		clock_t start, end;
+		double cpu_time_used;
 		lux_print("%zu: %4.1f -> %4.1f", i, i*dt, (i+1)*dt);
-		ns = evolve(ego);
+		s = evolve(ego) * 1e-9;	/* seconds */
+		start = clock();
 		dump(ego, i+1);
-		lux_print(": DONE (%.3gns/step/ray)\n", ns/n_sub/n_rays);
+		end = clock();
+		cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+		lux_print(": DONE (%.4e s", s);
+		lux_print(", dumping: %.4e)\n", cpu_time_used);
 	}
 
 	return EXIT_SUCCESS;

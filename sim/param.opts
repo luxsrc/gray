@@ -1,7 +1,6 @@
 # Runtime parameters needed in kernels
 
 double	tmin:tmin	= 0	= strtod(val, &rem);	/**< Starting time of the integration */
-
 const char *  time_format:time_fmt	= "%.16e"	= val;	/**< Format of the name of groups in the HDF5 file */
 
 # Coordinate system
