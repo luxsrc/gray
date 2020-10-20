@@ -96,9 +96,12 @@ real4 physical_coords_to_normalized_coords(real4 xyz, real8 bounding_box){
 
 inline real interpolate(real4 xyz, real8 bounding_box, __read_only image3d_t var){
 
+  sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_CLAMP | CLK_FILTER_LINEAR;
+
   return read_imagef(var,
-                     CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_CLAMP | CLK_FILTER_LINEAR,
+                     sampler,
                      physical_coords_to_normalized_coords(xyz, bounding_box)).x;
+
 }
 
 real8
