@@ -93,7 +93,7 @@ _exec(Lux_job *ego)
 	struct param *p = &EGO->param;
 
 	const  size_t n_rays = p->h_rays * p->w_rays;
-	const  double dt     = 1.0;
+	const  double dt     = -1.0;
 	const  size_t n_sub  = 1024;
 
 	size_t i;
@@ -104,27 +104,82 @@ _exec(Lux_job *ego)
 
 	/* We perform basic checks here */
 	lux_check_failure_code(access(p->dyst_file, F_OK), cleanup1);
-	lux_check_failure_code(H5Fopen(p->dyst_file, H5F_ACC_RDONLY, H5P_DEFAULT), cleanup2);
+	hid_t file_id = H5Fopen(p->dyst_file, H5F_ACC_RDONLY, H5P_DEFAULT);
+	if (file_id == -1) goto cleanup2;
 
-	/* For the moment, we only read one snapshot at t = tmin */
-	/* Load spacetime */
-	lux_check_failure_code(load_spacetime(ego, p->tmin), cleanup3);
+	/* We list all the available times in the file */
+	lux_check_failure_code(populate_ego_available_times(ego), cleanup3);
+
+
+	/* We load the coordinates */
+	lux_check_failure_code(load_spatial_bounding_box(ego), cleanup3);
+
+	/* Here we read the snapshot at t = tmin */
+	lux_check_failure_code(load_next_snapshot(ego, 0), cleanup3);
 
 	icond(ego);
 	dump(ego, 0);
 
-	for(i = 0; i < 1000; ++i) {
+	char *rem;
+	size_t spacetime_frozen = 0;
+	size_t time_snapshot_index;
+
+	double current_time = strtod(EGO->available_times[0], &rem);
+	double t2;
+
+	/* We check whether we have more than one times. */
+	if (EGO->max_available_time == current_time){
+		lux_print("Found only one time in data, freezing spacetime\n");
+		spacetime_frozen = 1;
+		/* We are going to set t2 = current_time and the kernel will know
+		 * what to do. */
+		t2 = current_time;
+		/* We have to fill t2 with something. */
+		copy_snapshot_to_t2(ego);
+	}else{
+		lux_print("Max time in data: %f\n", EGO->max_available_time);
+		spacetime_frozen = 0;
+		time_snapshot_index = 1;
+		lux_check_failure_code(load_next_snapshot(ego, time_snapshot_index), cleanup3);
+		t2 = strtod(EGO->available_times[time_snapshot_index], &rem);
+	}
+
+	EGO->bounding_box.s0 = current_time;
+	EGO->bounding_box.s4 = t2;
+
+	for(i = 0; i < 1; ++i) {
 		double s;
 		clock_t start, end;
 		double cpu_time_used;
-		lux_print("%zu: %4.1f -> %4.1f", i, i*dt, (i+1)*dt);
+		lux_print("%4.1f -> %4.1f", current_time, current_time + dt);
 		s = evolve(ego) * 1e-9;	/* seconds */
 		start = clock();
 		dump(ego, i+1);
 		end = clock();
 		cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 		lux_print(": DONE (%.4e s", s);
-		lux_print(", dumping: %.4e)\n", cpu_time_used);
+		lux_print(", dumping: %.4e s)\n", cpu_time_used);
+		current_time += dt;
+
+		/* If we have a dynamic spacetime, we have to load the next snapshot */
+		if (spacetime_frozen != 1){
+			/* Here we shift to the new snapshot */
+			/* We have to change EGO->spacetime_t1 and the bounding_box */
+			if (current_time <= EGO->max_available_time){
+				lux_print("Reached max available time");
+				return EXIT_SUCCESS;
+			}
+			if (current_time <= t2){
+				for (size_t j=0; j < 40; ++j)
+					EGO->spacetime_t1[j] = EGO->spacetime_t2[j];
+				EGO->bounding_box.s0 = t2;
+				/* Now we read the new snapshot */
+				time_snapshot_index++;
+				lux_check_failure_code(load_next_snapshot(ego, time_snapshot_index), cleanup3);
+				t2 = strtod(EGO->available_times[time_snapshot_index], &rem);
+				EGO->bounding_box.s4 = t2;
+			}
+		}
 	}
 
 	return EXIT_SUCCESS;

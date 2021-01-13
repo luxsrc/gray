@@ -37,7 +37,7 @@ evolve(Lux_job *ego)
 	const  size_t n_data = EGO->n_coor + p->n_freq * 2;
 	const  size_t n_info = EGO->n_info;
 
-	const double dt      = 1.0;
+	const double dt      = -1.0;
 	const size_t n_sub   = 1024;
 	const size_t shape[] = {p->h_rays, p->w_rays};
 
@@ -55,9 +55,14 @@ evolve(Lux_job *ego)
   arg_num++;
   ocl->set(ocl, EGO->evolve, arg_num, sizeof(cl_float8), &(EGO->bounding_box));
   arg_num++;
-  /* We have 40 Gammas */
+  ocl->set(ocl, EGO->evolve, arg_num, sizeof(cl_int4), &(EGO->num_points));
+  arg_num++;
+  /* We have 40 Gammas at t1 */
   for (size_t old_arg_num = arg_num; arg_num < old_arg_num + 40; arg_num++)
-	  ocl->setM(ocl, EGO->evolve, arg_num, EGO->spacetime[arg_num-old_arg_num]);
+	  ocl->setM(ocl, EGO->evolve, arg_num, EGO->spacetime_t1[arg_num-old_arg_num]);
+  /* And here the 40 Gammas at t2 */
+  for (size_t old_arg_num = arg_num; arg_num < old_arg_num + 40; arg_num++)
+	  ocl->setM(ocl, EGO->evolve, arg_num, EGO->spacetime_t2[arg_num-old_arg_num]);
 
   return ocl->exec(ocl, EGO->evolve, 2, shape);
 }

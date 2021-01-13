@@ -19,6 +19,7 @@
  */
 #include "gray.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <hdf5.h>
 #include <time.h>
 
@@ -135,13 +136,148 @@ read_variable_from_h5_file_and_return_num_points(const hid_t group_id,
 }
 
 size_t
-load_spacetime(Lux_job *ego, double time_double)
-{
+populate_ego_available_times(Lux_job *ego) {
+
+    /* HDF5 identifiers */
+	hid_t file_id;
+	hid_t group_id;
+	herr_t status;
+
+	hsize_t nobj;
+
+	struct param *p = &EGO->param;
+	const char *file_name = p->dyst_file;
+
+	file_id = H5Fopen(file_name, H5F_ACC_RDONLY, H5P_DEFAULT);
+	if (file_id == -1) {
+		lux_print("ERROR: File %s is not a valid HDF5 file\n", file_name);
+		return file_id;
+	}
+
+	/* Open group corresponding to root */
+	group_id = H5Gopen(file_id, "/", H5P_DEFAULT);
+	if (group_id == -1) {
+		lux_print("ERROR: Could not open root of HDF5 file\n");
+		return group_id;
+	}
+
+    /* Get all the members of the groups, one at a time */
+	status = H5Gget_num_objs(group_id, &nobj);
+	if (status != 0) {
+		lux_print("ERROR: Could not obtain number of groups in HDF5 file\n");
+		return status;
+	}
+
+	lux_debug("Available times: \n");
+
+	char time_name[MAX_TIME_NAME_LENGTH];
+
+	for (size_t i = 0; i < nobj; i++) {
+		H5Gget_objname_by_idx(group_id, i, time_name, MAX_TIME_NAME_LENGTH);
+		/* We esclude the "grid" group, which contains the coordinates */
+		if (time_name[0] != 'g'){
+			char *time_name_in_ego = EGO->available_times[i];
+			snprintf(time_name_in_ego, sizeof(time_name), "%s", time_name);
+			lux_debug("%s\n", time_name_in_ego);
+		}
+	}
+
+	char *rem;
+	/* Here it is -2 because we have a 'grid' group around */
+	EGO->max_available_time = strtod(EGO->available_times[nobj - 2], &rem);
+
+	return 0;
+}
+
+size_t
+load_spatial_bounding_box(Lux_job *ego){
+	/* Here we fill the spatial part of the bounding box */
 
 	struct param *p = &EGO->param;
 
 	const char *file_name = p->dyst_file;
-	const char *time_format = p->time_format;
+
+	/* Dimension names, useful for loops */
+	const char dimension_names[4][2] = {"t", "x", "y", "z"};
+
+	/* HDF5 identifiers */
+	hid_t file_id;
+	hid_t group_id;
+	herr_t status;
+
+	/* Array of pointers for the coordinates */
+	/* There are only 3: x, y, z */
+	void *coordinates[3];
+
+	file_id = H5Fopen(file_name, H5F_ACC_RDONLY, H5P_DEFAULT);
+	if (file_id == -1) {
+		lux_print("ERROR: File %s is not a valid HDF5 file\n", file_name);
+		return file_id;
+	}
+
+	group_id = H5Gopen(file_id, "grid", H5P_DEFAULT);
+	if (group_id == -1) {
+		lux_print("ERROR: grid group not found!\n");
+		return group_id;
+	}
+
+	/* First, we read the coordinates */
+    /* dimension_names[i + 1] because we ignore the time, which is the zeroth */
+	for (size_t i = 0; i < 3; i++){
+        EGO->num_points.s[i] = read_variable_from_h5_file_and_return_num_points(
+			group_id, dimension_names[i + 1], &coordinates[i]);
+		/* This is an error, something didn't work as expected */
+		/* We have already printed what */
+		if (EGO->num_points.s[i] <= 0)
+			return EGO->num_points.s[i];
+	}
+
+	lux_debug("Read coordiantes\n");
+
+    /* Fill spatial bounding box */
+	for (int i = 1; i < 4; i++){
+		/* xmin */
+		EGO->bounding_box.s[i] = ((cl_float *)coordinates[i - 1])[0];
+		/* xmax */
+		EGO->bounding_box.s[i + 4] = ((cl_float *)coordinates[i - 1])[EGO->num_points.s[i - 1] - 1];
+	}
+
+	for (size_t i = 0; i < 3; i++)
+		free(coordinates[i]);
+
+	return 0;
+}
+
+size_t
+copy_snapshot_to_t2(Lux_job *ego)
+{
+	/* In case we are working frozen spacetime, we have to fill the _t2 slot
+	 * with something. This function copies over the snapshot in _t1 to _t2.
+	 * For a frozen spacetime, _t2 is never used anyways. */
+	size_t index = 0;
+	for (size_t i = 0; i < 4; i++)
+		for (size_t j = 0; j < 4; j++)
+			for (size_t k = j; k < 4; k++) {
+					EGO->spacetime_t2[index] = EGO->spacetime_t1[index];
+					index++;
+			}
+
+}
+
+
+size_t
+load_next_snapshot(Lux_job *ego, size_t time_snapshot_index)
+{
+
+	/* This function always writes in spacetime_t2, except when
+	 * time_snapshot_index is 0 ! */
+
+	/* TODO: Add support to compressed HDF5 files */
+	/* https://support.hdfgroup.org/ftp/HDF5/examples/examples-by-api/hdf5-examples/1_10/C/H5D/h5ex_d_shuffle.cgo */
+
+	struct param *p = &EGO->param;
+
+	const char *file_name = p->dyst_file;
 
 	/* Dimension names, useful for loops */
 	const char dimension_names[4][2] = {"t", "x", "y", "z"};
@@ -159,17 +295,9 @@ load_spacetime(Lux_job *ego, double time_double)
 	clock_t start, end;
 	double cpu_time_used;
 
+	char *time = EGO->available_times[time_snapshot_index];
+
 	start = clock();
-
-	/* The group name is a char, not a double */
-	char time[64];
-
-	snprintf(time, sizeof(time), time_format, time_double);
-
-	/* Array of pointers for the coordinates */
-	/* There are only 3: x, y, z */
-	void *coordinates[3];
-	size_t num_points_in_dimensions[3];
 
 	file_id = H5Fopen(file_name, H5F_ACC_RDONLY, H5P_DEFAULT);
 	if (file_id == -1) {
@@ -180,41 +308,18 @@ load_spacetime(Lux_job *ego, double time_double)
 	group_id = H5Gopen(file_id, time, H5P_DEFAULT);
 	if (group_id == -1) {
 		lux_print("ERROR: Time %s not found\n", time);
-		lux_print("Time has to be in the format specified by the option time_fmt ");
-		lux_print("(currently, time_fmt = %s)\n", time_format);
 		return group_id;
 	}
 
 	lux_debug("Reading time %s\n", time);
 
-	/* First, we read the coordinates */
-    /* dimension_names[i + 1] because we ignore the time, which is the zeroth */
-	for (size_t i = 0; i < 3; i++){
-        num_points_in_dimensions[i] = read_variable_from_h5_file_and_return_num_points(
-			group_id, dimension_names[i + 1], &coordinates[i]);
-		/* This is an error, something didn't work as expected */
-		/* We have already printed what */
-		if (num_points_in_dimensions[i] <= 0)
-			return num_points_in_dimensions[i];
-	}
-
-	lux_debug("Read coordiantes\n");
-
-    /* Fill bounding box */
-	for (int i = 0; i < 3; i++){
-		/* xmin */
-		EGO->bounding_box.s[i] = ((cl_float *)coordinates[i])[0];
-		/* xmax */
-		EGO->bounding_box.s[i + 4] = ((cl_float *)coordinates[i])[num_points_in_dimensions[i] - 1];
-	}
-
 	/* Now, we read the Gammas */
 	void *Gamma[40];
-	size_t expected_num_points = num_points_in_dimensions[0] *
-		num_points_in_dimensions[1] *
-		num_points_in_dimensions[2];
 	size_t num_points;
 	size_t index = 0;
+	const size_t expected_num_points = EGO->num_points.s[0] *
+		                               EGO->num_points.s[1] *
+		                               EGO->num_points.s[2];
 
 	for (size_t i = 0; i < 4; i++)
 		for (size_t j = 0; j < 4; j++)
@@ -229,8 +334,8 @@ load_spacetime(Lux_job *ego, double time_double)
 
 				/* This is an error, something didn't work as expected */
 				/* We have already printed what */
-				if (num_points_in_dimensions[i] <= 0)
-					return num_points_in_dimensions[i];
+				if (num_points <= 0)
+					return num_points;
 
 				if (num_points != expected_num_points) {
 					lux_print("Number of points in Gammas incosistent with coordinates\n");
@@ -246,23 +351,32 @@ load_spacetime(Lux_job *ego, double time_double)
 
 	imgfmt.image_channel_order = CL_R;         /* use one channel */
 	imgfmt.image_channel_data_type = CL_FLOAT; /* each channel is a float */
-	imgdesc.image_width = num_points_in_dimensions[0];  /* x */
-	imgdesc.image_height = num_points_in_dimensions[1]; /* y */
-	imgdesc.image_depth = num_points_in_dimensions[2];  /* z */
+	imgdesc.image_type = CL_MEM_OBJECT_IMAGE3D;
+	imgdesc.image_width = EGO->num_points.s[0];  /* x */
+	imgdesc.image_height = EGO->num_points.s[1]; /* y */
+	imgdesc.image_depth = EGO->num_points.s[2];  /* z */
 	imgdesc.image_row_pitch = 0;
 	imgdesc.image_slice_pitch = 0;
 	imgdesc.num_mip_levels = 0;
 	imgdesc.num_samples = 0;
-	imgdesc.mem_object = NULL;
-	imgdesc.image_type = CL_MEM_OBJECT_IMAGE3D;
+	imgdesc.buffer = NULL;
+
 
 	index = 0;
 	for (size_t i = 0; i < 4; i++)
 		for (size_t j = 0; j < 4; j++)
 			for (size_t k = j; k < 4; k++) {
-				EGO->spacetime[index] = clCreateImage(
-					EGO->ocl->ctx, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, &imgfmt,
-					&imgdesc, Gamma[index], &err);
+				/* We fill _t1 only the first time, when snapshot_index = 0,
+				 * in all the other cases we fill _t2, and then we shift the pointers.*/
+				if (time_snapshot_index == 0){
+					EGO->spacetime_t1[index] = clCreateImage(
+						EGO->ocl->ctx, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, &imgfmt,
+						&imgdesc, Gamma[index], &err);
+				}else{
+					EGO->spacetime_t2[index] = clCreateImage(
+						EGO->ocl->ctx, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, &imgfmt,
+						&imgdesc, Gamma[index], &err);
+				}
 				/* https://streamhpc.com/blog/2013-04-28/opencl-error-codes/ */
 				if (err != CL_SUCCESS) {
 					lux_print("Error in creating images\n");
@@ -272,9 +386,6 @@ load_spacetime(Lux_job *ego, double time_double)
 			}
 
 	lux_debug("Images created\n");
-
-	for (size_t i = 0; i < 3; i++)
-		free(coordinates[i]);
 
 	for (size_t i = 0; i < 40; i++)
 		free(Gamma[i]);
@@ -288,7 +399,9 @@ load_spacetime(Lux_job *ego, double time_double)
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 
-	lux_print("Reading file and creating images took %.5f s\n", cpu_time_used);
+	lux_print("Reading file and creating images for time %s took %.5f s\n",
+			  time,
+			  cpu_time_used);
 
 	return 0;
 }

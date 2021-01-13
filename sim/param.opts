@@ -1,9 +1,6 @@
 # Runtime parameters needed in kernels
 
-double	tmin:tmin	= 0	= strtod(val, &rem);	/**< Starting time of the integration */
-
 # HDF5 details
-const char *	time_format:time_fmt	= "%.16"	= val;	/**< Format of the name of groups in the HDF5 file */
 const char *	dyst_file:data	= "data.h5"	= val;	/**< file with all the information for dynamical spacetime */
 
 # Coordinate system

@@ -31,6 +31,9 @@
 #ifndef _GRAY_H_
 #define _GRAY_H_
 
+#define MAX_AVAILABLE_TIMES 1024
+#define MAX_TIME_NAME_LENGTH 64
+
 #include <lux.h>
 #include <lux/check.h>
 #include <lux/job.h>
@@ -67,15 +70,28 @@ struct gray {
 
 	/* Grid details */
 	/* Bounding_box is a vector with 8 numbers:
-	 * {xmin, ymin, zmin, 0, xmax, ymax, zmax} */
+	 * {tmin, xmin, ymin, zmin, tmax, xmax, ymax, zmax} */
+	/* tmin and tmax are between the two lodaded timesteps */
 
-	/* We need this quantity to convert from normalized OpenCL coordiantes
-	   to physical coordiantes and vice versa. */
+	/* We need these quantities to convert from unnormalized OpenCL coordiantes
+	   to physical coordiantes and viceversa. */
 	cl_float8 bounding_box;
+	/* Points along the various coordinates */
+	cl_int4 num_points;			/* The .w coordinate is not used */
+
 
 	/* We need 40 images to contain all the 40 spacetime variables */
 	/* In this implementation, spacetime contains the connection. */
-	cl_mem spacetime[40];
+
+	/* We always have two timesteps loaded */
+	cl_mem spacetime_t1[40];
+	cl_mem spacetime_t2[40];
+
+	char available_times[MAX_AVAILABLE_TIMES][MAX_TIME_NAME_LENGTH];
+
+	cl_float max_available_time;
+
+
 };
 
 #define EGO ((struct gray *)ego)
@@ -92,6 +108,9 @@ extern double evolve(Lux_job *);
 
 /** Output data to a file */
 extern void dump(Lux_job *, size_t);
-extern size_t load_spacetime(Lux_job *, double);
+extern size_t populate_ego_available_times(Lux_job *);
+extern size_t load_next_snapshot(Lux_job *, size_t);
+extern size_t copy_snapshot_to_t2(Lux_job *);
+extern size_t load_spatial_bounding_box(Lux_job *);
 
 #endif /* _GRAY_H */
