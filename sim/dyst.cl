@@ -76,39 +76,156 @@ icond(real r_obs, /**< Distance of the observer from the black hole */
   return (real8){q, u};
 }
 
-real4 physical_coords_to_unnormalized_coords(real4 xyz, real8 bounding_box, int4 num_points){
-
-  const real x = xyz.s1;
-  const real y = xyz.s2;
-  const real z = xyz.s3;
-  const real xmin = bounding_box.s1;
-  const real xmax = bounding_box.s5;
-  const real ymin = bounding_box.s2;
-  const real ymax = bounding_box.s6;
-  const real zmin = bounding_box.s3;
-  const real zmax = bounding_box.s7;
-
-  /* The 0.5 is very important because OpenCL uses a pixel offset of 0.5 */
-
-  /* read_imagef ignores the 4th coordinate, so here we have to put xyz in
-   * the first three slots */
-  return (real4){K(0.5) + (x - xmin)/(xmax - xmin) * num_points.x,
-                 K(0.5) + (y - ymin)/(ymax - ymin) * num_points.y,
-                 K(0.5) + (z - zmin)/(zmax - zmin) * num_points.z,
-                  0};
+inline real frac(real x){
+  return x - floor(x);
 }
 
-inline real space_interpolate(real4 xyz, real8 bounding_box, int4 num_points, __read_only image3d_t var){
+inline int address_mode(int x, int size){
+  /* We implement CLK_ADDRESS_CLAMP_TO_EDGE */
+  return clamp(x, 0, size - 1);
+}
 
-  sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_LINEAR;
+real4 physical_coords_to_unnormalized_coords(real4 xyz,
+                                             real8 bounding_box,
+                                             __read_only image3d_t x_grid,
+                                             __read_only image3d_t y_grid,
+                                             __read_only image3d_t z_grid,
+                                             int4 num_points){
+
+  /* We have to implement multi linear interpolation for the coordinates.
+   * This cannot be done with the OpenCL primitives because the points are
+   * not evenly spaced. */
+
+  /* Xmin = {0, xmin, ymin, zmin} */
+  const real4 Xmin = {K(0.0), bounding_box.s1, bounding_box.s2, bounding_box.s3};
+  const real4 Xmax = {K(0.0), bounding_box.s5, bounding_box.s6, bounding_box.s7};
+
+  /* The fisheye transformation is hard-coded here */
+  /* We work with n = 3 (n is the exponent in the sinh) */
+  const real4 B = cbrt(asinh(Xmin));
+  /* num_points_real is defined like this because openCL doesn't allow to cast vectors
+   * to vectors of a different type, so we instead define a new variables where we cast
+   * the individual variables. */
+  const real4 num_points_real = {num_points.s0, num_points.s1, num_points.s2, num_points.s3};
+  const real4 A = (cbrt(asinh(Xmax)) - B)/(num_points_real - 1);
+
+  const int4 unnormalized = convert_int4(floor(cbrt(xyz)/A - B));
+  const int u = unnormalized.s1;
+  const int v = unnormalized.s2;
+  const int w = unnormalized.s3;
+
+  /* This is taken directly from the OpenCL 1.2 specification */
+
+  const real i0 = address_mode((int)floor(u - 0.5), num_points.x);
+  const real j0 = address_mode((int)floor(v - 0.5), num_points.y);
+  const real k0 = address_mode((int)floor(w - 0.5), num_points.z);
+  const real i1 = address_mode((int)floor(u - 0.5) + 1, num_points.x);
+  const real j1 = address_mode((int)floor(v - 0.5) + 1, num_points.y);
+  const real k1 = address_mode((int)floor(w - 0.5) + 1, num_points.z);
+  const real a  = frac(u - 0.5);
+  const real b  = frac(v - 0.5);
+  const real c  = frac(w - 0.5);
+
+  const real4 i0j0k0 = {i0, j0, k0, 0};
+  const real4 i1j0k0 = {i1, j0, k0, 0};
+  const real4 i1j1k0 = {i1, j1, k0, 0};
+  const real4 i1j1k1 = {i1, j1, k1, 0};
+  const real4 i0j1k0 = {i0, j1, k0, 0};
+  const real4 i0j1k1 = {i0, j1, k1, 0};
+  const real4 i0j0k1 = {i0, j0, k1, 0};
+  const real4 i1j0k1 = {i0, j0, k1, 0};
+
+  sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
+
+  const real x_i0j0k0 = read_imagef(x_grid, sampler, i0j0k0).x;
+  const real x_i1j0k0 = read_imagef(x_grid, sampler, i1j0k0).x;
+  const real x_i1j1k0 = read_imagef(x_grid, sampler, i1j1k0).x;
+  const real x_i1j1k1 = read_imagef(x_grid, sampler, i1j1k1).x;
+  const real x_i0j1k0 = read_imagef(x_grid, sampler, i0j1k0).x;
+  const real x_i0j1k1 = read_imagef(x_grid, sampler, i0j1k1).x;
+  const real x_i0j0k1 = read_imagef(x_grid, sampler, i0j0k1).x;
+  const real x_i1j0k1 = read_imagef(x_grid, sampler, i1j0k1).x;
+
+  const real y_i0j0k0 = read_imagef(y_grid, sampler, i0j0k0).x;
+  const real y_i1j0k0 = read_imagef(y_grid, sampler, i1j0k0).x;
+  const real y_i1j1k0 = read_imagef(y_grid, sampler, i1j1k0).x;
+  const real y_i1j1k1 = read_imagef(y_grid, sampler, i1j1k1).x;
+  const real y_i0j1k0 = read_imagef(y_grid, sampler, i0j1k0).x;
+  const real y_i0j1k1 = read_imagef(y_grid, sampler, i0j1k1).x;
+  const real y_i0j0k1 = read_imagef(y_grid, sampler, i0j0k1).x;
+  const real y_i1j0k1 = read_imagef(y_grid, sampler, i1j0k1).x;
+
+  const real z_i0j0k0 = read_imagef(z_grid, sampler, i0j0k0).x;
+  const real z_i1j0k0 = read_imagef(z_grid, sampler, i1j0k0).x;
+  const real z_i1j1k0 = read_imagef(z_grid, sampler, i1j1k0).x;
+  const real z_i1j1k1 = read_imagef(z_grid, sampler, i1j1k1).x;
+  const real z_i0j1k0 = read_imagef(z_grid, sampler, i0j1k0).x;
+  const real z_i0j1k1 = read_imagef(z_grid, sampler, i0j1k1).x;
+  const real z_i0j0k1 = read_imagef(z_grid, sampler, i0j0k1).x;
+  const real z_i1j0k1 = read_imagef(z_grid, sampler, i1j0k1).x;
+
+  const real4 Ti0j0k0 = {x_i0j0k0, y_i0j0k0, z_i0j0k0, 0};
+  const real4 Ti1j0k0 = {x_i1j0k0, y_i1j0k0, z_i1j0k0, 0};
+  const real4 Ti1j1k0 = {x_i1j1k0, y_i1j1k0, z_i1j1k0, 0};
+  const real4 Ti1j1k1 = {x_i1j1k1, y_i1j1k1, z_i1j1k1, 0};
+  const real4 Ti0j1k0 = {x_i0j1k0, y_i0j1k0, z_i0j1k0, 0};
+  const real4 Ti0j1k1 = {x_i0j1k1, y_i0j1k1, z_i0j1k1, 0};
+  const real4 Ti0j0k1 = {x_i0j0k1, y_i0j0k1, z_i0j0k1, 0};
+  const real4 Ti1j0k1 = {x_i1j0k1, y_i1j0k1, z_i1j0k1, 0};
+
+  return (K(1.0) - a) * (K(1.0) - b) * (K(1.0) - c) * Ti0j0k0 + a * (K(1.0) - b) * (K(1.0) - c) * Ti1j0k0 \
+    + (K(1.0) - a) * b * (K(1.0) - c) * Ti0j1k0 +  a * b * (K(1.0) - c) * Ti1j1k0 \
+    + (K(1.0) - a) * (K(1.0) - b) * c * Ti0j0k1 + a * (K(1.0) - b) * c * Ti1j0k1 \
+    + (K(1.0) - a) * b * c * Ti0j1k1 +  a * b * c * Ti1j1k1;
+
+  /* This is a linear transformation, so with no fisheye coordinates */
+
+  /* const real x = xyz.s1; */
+  /* const real y = xyz.s2; */
+  /* const real z = xyz.s3; */
+  /* const real xmin = bounding_box.s1; */
+  /* const real xmax = bounding_box.s5; */
+  /* const real ymin = bounding_box.s2; */
+  /* const real ymax = bounding_box.s6; */
+  /* const real zmin = bounding_box.s3; */
+  /* const real zmax = bounding_box.s7; */
+
+
+  /* /\* The 0.5 is very important because OpenCL uses a pixel offset of 0.5 *\/ */
+
+  /* /\* read_imagef ignores the 4th coordinate, so here we have to put xyz in */
+  /*  * the first three slots *\/ */
+  /* return (real4){K(0.5) + (x - xmin)/(xmax - xmin) * num_points.x, */
+  /*                K(0.5) + (y - ymin)/(ymax - ymin) * num_points.y, */
+  /*                K(0.5) + (z - zmin)/(zmax - zmin) * num_points.z, */
+  /*                 0}; */
+}
+
+inline real space_interpolate(real4 xyz,
+                              real8 bounding_box,
+                              __read_only image3d_t x_grid,
+                              __read_only image3d_t y_grid,
+                              __read_only image3d_t z_grid,
+                              int4 num_points,
+                              __read_only image3d_t var){
+
+  sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
 
   return read_imagef(var,
                      sampler,
-                     physical_coords_to_unnormalized_coords(xyz, bounding_box, num_points)).x;
+                     physical_coords_to_unnormalized_coords(xyz,
+                                                            bounding_box,
+                                                            x_grid,
+                                                            y_grid,
+                                                            z_grid,
+                                                            num_points)).x;
 }
 
 inline real interpolate(real4 q,
                         real8 bounding_box,
+                        __read_only image3d_t x_grid,
+                        __read_only image3d_t y_grid,
+                        __read_only image3d_t z_grid,
                         int4 num_points,
                         __read_only image3d_t var_t1,
                         __read_only image3d_t var_t2){
@@ -117,12 +234,12 @@ inline real interpolate(real4 q,
   real t2 = bounding_box.s4;
 
   if (t1 == t2)
-    return space_interpolate(q, bounding_box, num_points, var_t1);
+    return space_interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, var_t1);
 
   /* y(t) = y_1 + (t - t_1) / (t2 - t1) * (y_2 - y_1) */
 
-  real y1 = space_interpolate(q, bounding_box, num_points, var_t1);
-  real y2 = space_interpolate(q, bounding_box, num_points, var_t2);
+  real y1 = space_interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, var_t1);
+  real y2 = space_interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, var_t2);
 
   return y1 + (q.s0 - t1) / (t2 - t1) * (y2 - y1);
 }
@@ -130,6 +247,9 @@ inline real interpolate(real4 q,
 real8
 rhs(real8 s,
     const    real8 bounding_box, /**< Max spacetime coordinates of the grid */
+    __read_only image3d_t x_grid,
+    __read_only image3d_t y_grid,
+    __read_only image3d_t z_grid,
         const    int4 num_points, /**< Number of points on the grid    */
 		   __read_only image3d_t Gamma_ttt_t1,
 		   __read_only image3d_t Gamma_ttx_t1,
@@ -218,67 +338,67 @@ rhs(real8 s,
   real16 GammaUPt, GammaUPx, GammaUPy, GammaUPz;
 
   /* We compute the commented ones in one shot */
-  GammaUPt.s0 = interpolate(q, bounding_box, num_points, Gamma_ttt_t1, Gamma_ttt_t2);
-  GammaUPt.s1 = interpolate(q, bounding_box, num_points, Gamma_ttx_t1, Gamma_ttx_t2);
-  GammaUPt.s2 = interpolate(q, bounding_box, num_points, Gamma_tty_t1, Gamma_tty_t2);
-  GammaUPt.s3 = interpolate(q, bounding_box, num_points, Gamma_ttz_t1, Gamma_ttz_t2);
+  GammaUPt.s0 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_ttt_t1, Gamma_ttt_t2);
+  GammaUPt.s1 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_ttx_t1, Gamma_ttx_t2);
+  GammaUPt.s2 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_tty_t1, Gamma_tty_t2);
+  GammaUPt.s3 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_ttz_t1, Gamma_ttz_t2);
   /* GammaUPt.s4 = GammaUPt.s1; */
-  GammaUPt.s5 = interpolate(q, bounding_box, num_points, Gamma_txx_t1, Gamma_txx_t2);
-  GammaUPt.s6 = interpolate(q, bounding_box, num_points, Gamma_txy_t1, Gamma_txy_t2);
-  GammaUPt.s7 = interpolate(q, bounding_box, num_points, Gamma_txz_t1, Gamma_txz_t2);
+  GammaUPt.s5 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_txx_t1, Gamma_txx_t2);
+  GammaUPt.s6 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_txy_t1, Gamma_txy_t2);
+  GammaUPt.s7 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_txz_t1, Gamma_txz_t2);
   /* GammaUPt.s8 = GammaUPt.s2; */
   /* GammaUPt.s9 = GammaUPt.s6; */
-  GammaUPt.sa = interpolate(q, bounding_box, num_points, Gamma_tyy_t1, Gamma_tyy_t2);
-  GammaUPt.sb = interpolate(q, bounding_box, num_points, Gamma_tyz_t1, Gamma_tyz_t2);
+  GammaUPt.sa = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_tyy_t1, Gamma_tyy_t2);
+  GammaUPt.sb = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_tyz_t1, Gamma_tyz_t2);
   /* GammaUPt.sc = GammaUPt.s3; */
   /* GammaUPt.sd = GammaUPt.s7; */
   /* GammaUPt.se = GammaUPt.sb; */
-  GammaUPt.sf = interpolate(q, bounding_box, num_points, Gamma_tzz_t1, Gamma_tzz_t2);
+  GammaUPt.sf = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_tzz_t1, Gamma_tzz_t2);
 
   GammaUPt.s489 = GammaUPt.s126;
   GammaUPt.scde = GammaUPt.s37b;
 
 
-  GammaUPx.s0 = interpolate(q, bounding_box, num_points, Gamma_xtt_t1, Gamma_xtt_t2);
-  GammaUPx.s1 = interpolate(q, bounding_box, num_points, Gamma_xtx_t1, Gamma_xtx_t2);
-  GammaUPx.s2 = interpolate(q, bounding_box, num_points, Gamma_xty_t1, Gamma_xty_t2);
-  GammaUPx.s3 = interpolate(q, bounding_box, num_points, Gamma_xtz_t1, Gamma_xtz_t2);
-  GammaUPx.s5 = interpolate(q, bounding_box, num_points, Gamma_xxx_t1, Gamma_xxx_t2);
-  GammaUPx.s6 = interpolate(q, bounding_box, num_points, Gamma_xxy_t1, Gamma_xxy_t2);
-  GammaUPx.s7 = interpolate(q, bounding_box, num_points, Gamma_xxz_t1, Gamma_xxz_t2);
-  GammaUPx.sa = interpolate(q, bounding_box, num_points, Gamma_xyy_t1, Gamma_xyy_t2);
-  GammaUPx.sb = interpolate(q, bounding_box, num_points, Gamma_xyz_t1, Gamma_xyz_t2);
-  GammaUPx.sf = interpolate(q, bounding_box, num_points, Gamma_xzz_t1, Gamma_xzz_t2);
+  GammaUPx.s0 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_xtt_t1, Gamma_xtt_t2);
+  GammaUPx.s1 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_xtx_t1, Gamma_xtx_t2);
+  GammaUPx.s2 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_xty_t1, Gamma_xty_t2);
+  GammaUPx.s3 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_xtz_t1, Gamma_xtz_t2);
+  GammaUPx.s5 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_xxx_t1, Gamma_xxx_t2);
+  GammaUPx.s6 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_xxy_t1, Gamma_xxy_t2);
+  GammaUPx.s7 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_xxz_t1, Gamma_xxz_t2);
+  GammaUPx.sa = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_xyy_t1, Gamma_xyy_t2);
+  GammaUPx.sb = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_xyz_t1, Gamma_xyz_t2);
+  GammaUPx.sf = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_xzz_t1, Gamma_xzz_t2);
 
   GammaUPx.s489 = GammaUPx.s126;
   GammaUPx.scde = GammaUPx.s37b;
 
 
-  GammaUPy.s0 = interpolate(q, bounding_box, num_points, Gamma_ytt_t1, Gamma_ytt_t2);
-  GammaUPy.s1 = interpolate(q, bounding_box, num_points, Gamma_ytx_t1, Gamma_ytx_t2);
-  GammaUPy.s2 = interpolate(q, bounding_box, num_points, Gamma_yty_t1, Gamma_yty_t2);
-  GammaUPy.s3 = interpolate(q, bounding_box, num_points, Gamma_ytz_t1, Gamma_ytz_t2);
-  GammaUPy.s5 = interpolate(q, bounding_box, num_points, Gamma_yxx_t1, Gamma_yxx_t2);
-  GammaUPy.s6 = interpolate(q, bounding_box, num_points, Gamma_yxy_t1, Gamma_yxy_t2);
-  GammaUPy.s7 = interpolate(q, bounding_box, num_points, Gamma_yxz_t1, Gamma_yxz_t2);
-  GammaUPy.sa = interpolate(q, bounding_box, num_points, Gamma_yyy_t1, Gamma_yyy_t2);
-  GammaUPy.sb = interpolate(q, bounding_box, num_points, Gamma_yyz_t1, Gamma_yyz_t2);
-  GammaUPy.sf = interpolate(q, bounding_box, num_points, Gamma_yzz_t1, Gamma_yzz_t2);
+  GammaUPy.s0 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_ytt_t1, Gamma_ytt_t2);
+  GammaUPy.s1 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_ytx_t1, Gamma_ytx_t2);
+  GammaUPy.s2 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_yty_t1, Gamma_yty_t2);
+  GammaUPy.s3 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_ytz_t1, Gamma_ytz_t2);
+  GammaUPy.s5 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_yxx_t1, Gamma_yxx_t2);
+  GammaUPy.s6 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_yxy_t1, Gamma_yxy_t2);
+  GammaUPy.s7 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_yxz_t1, Gamma_yxz_t2);
+  GammaUPy.sa = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_yyy_t1, Gamma_yyy_t2);
+  GammaUPy.sb = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_yyz_t1, Gamma_yyz_t2);
+  GammaUPy.sf = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_yzz_t1, Gamma_yzz_t2);
 
   GammaUPy.s489 = GammaUPy.s126;
   GammaUPy.scde = GammaUPy.s37b;
 
 
-  GammaUPz.s0 = interpolate(q, bounding_box, num_points, Gamma_ztt_t1, Gamma_ztt_t2);
-  GammaUPz.s1 = interpolate(q, bounding_box, num_points, Gamma_ztx_t1, Gamma_ztx_t2);
-  GammaUPz.s2 = interpolate(q, bounding_box, num_points, Gamma_zty_t1, Gamma_zty_t2);
-  GammaUPz.s3 = interpolate(q, bounding_box, num_points, Gamma_ztz_t1, Gamma_ztz_t2);
-  GammaUPz.s5 = interpolate(q, bounding_box, num_points, Gamma_zxx_t1, Gamma_zxx_t2);
-  GammaUPz.s6 = interpolate(q, bounding_box, num_points, Gamma_zxy_t1, Gamma_zxy_t2);
-  GammaUPz.s7 = interpolate(q, bounding_box, num_points, Gamma_zxz_t1, Gamma_zxz_t2);
-  GammaUPz.sa = interpolate(q, bounding_box, num_points, Gamma_zyy_t1, Gamma_zyy_t2);
-  GammaUPz.sb = interpolate(q, bounding_box, num_points, Gamma_zyz_t1, Gamma_zyz_t2);
-  GammaUPz.sf = interpolate(q, bounding_box, num_points, Gamma_zzz_t1, Gamma_zzz_t2);
+  GammaUPz.s0 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_ztt_t1, Gamma_ztt_t2);
+  GammaUPz.s1 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_ztx_t1, Gamma_ztx_t2);
+  GammaUPz.s2 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_zty_t1, Gamma_zty_t2);
+  GammaUPz.s3 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_ztz_t1, Gamma_ztz_t2);
+  GammaUPz.s5 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_zxx_t1, Gamma_zxx_t2);
+  GammaUPz.s6 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_zxy_t1, Gamma_zxy_t2);
+  GammaUPz.s7 = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_zxz_t1, Gamma_zxz_t2);
+  GammaUPz.sa = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_zyy_t1, Gamma_zyy_t2);
+  GammaUPz.sb = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_zyz_t1, Gamma_zyz_t2);
+  GammaUPz.sf = interpolate(q, bounding_box, x_grid, y_grid, z_grid, num_points, Gamma_zzz_t1, Gamma_zzz_t2);
 
   GammaUPz.s489 = GammaUPz.s126;
   GammaUPz.scde = GammaUPz.s37b;

@@ -112,7 +112,7 @@ _exec(Lux_job *ego)
 
 
 	/* We load the coordinates */
-	lux_check_failure_code(load_spatial_bounding_box(ego), cleanup3);
+	lux_check_failure_code(load_coordinates(ego), cleanup3);
 
 	/* Here we read the snapshot at t = tmin */
 	lux_check_failure_code(load_next_snapshot(ego, 0), cleanup3);

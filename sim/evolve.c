@@ -55,6 +55,12 @@ evolve(Lux_job *ego)
   arg_num++;
   ocl->set(ocl, EGO->evolve, arg_num, sizeof(cl_float8), &(EGO->bounding_box));
   arg_num++;
+  ocl->setM(ocl, EGO->evolve, arg_num, EGO->coordinates[0]);
+  arg_num++;
+  ocl->setM(ocl, EGO->evolve, arg_num, EGO->coordinates[1]);
+  arg_num++;
+  ocl->setM(ocl, EGO->evolve, arg_num, EGO->coordinates[2]);
+  arg_num++;
   ocl->set(ocl, EGO->evolve, arg_num, sizeof(cl_int4), &(EGO->num_points));
   arg_num++;
   /* We have 40 Gammas at t1 */

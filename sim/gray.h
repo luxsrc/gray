@@ -76,6 +76,7 @@ struct gray {
 	/* We need these quantities to convert from unnormalized OpenCL coordiantes
 	   to physical coordiantes and viceversa. */
 	cl_float8 bounding_box;
+	cl_mem coordinates[3];
 	/* Points along the various coordinates */
 	cl_int4 num_points;			/* The .w coordinate is not used */
 

@@ -73,6 +73,9 @@ evolve_drv(__global real *data,  /**< States of the rays     */
            const    whole n_sub, /**< Number of sub-steps    */
            __local  real *scratch,
 		   const    real8 bounding_box, /**< Max coordinates of the grid    */
+		   __read_only image3d_t x_grid, /**< Coordinates of the grid    */
+		   __read_only image3d_t y_grid,
+		   __read_only image3d_t z_grid,
 		   const    int4 num_points,  /**< Number of points on the grid    */
 		   __read_only image3d_t Gamma_ttt_t1,
 		   __read_only image3d_t Gamma_ttx_t1,
@@ -172,6 +175,9 @@ evolve_drv(__global real *data,  /**< States of the rays     */
 			d = integrate(d,
 						  dt / n_sub,
 						  bounding_box,
+						  x_grid,
+						  y_grid,
+						  z_grid,
 						  num_points,
 						  Gamma_ttt_t1,
 						  Gamma_ttx_t1,

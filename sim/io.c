@@ -190,8 +190,13 @@ populate_ego_available_times(Lux_job *ego) {
 }
 
 size_t
-load_spatial_bounding_box(Lux_job *ego){
-	/* Here we fill the spatial part of the bounding box */
+load_coordinates(Lux_job *ego){
+	/* Here we load the coordinates from the 'grid' dataset in the HDF5 file */
+
+	/* OpenCL Image properties */
+	cl_image_format imgfmt;
+	cl_image_desc imgdesc;
+	cl_int err;
 
 	struct param *p = &EGO->param;
 
@@ -241,6 +246,36 @@ load_spatial_bounding_box(Lux_job *ego){
 		/* xmax */
 		EGO->bounding_box.s[i + 4] = ((cl_float *)coordinates[i - 1])[EGO->num_points.s[i - 1] - 1];
 	}
+
+	lux_debug("Creating images\n");
+
+	/* Finally, we create the images */
+
+	imgfmt.image_channel_order = CL_R;         /* use one channel */
+	imgfmt.image_channel_data_type = CL_FLOAT; /* each channel is a float */
+	imgdesc.image_type = CL_MEM_OBJECT_IMAGE3D;
+	imgdesc.image_width = EGO->num_points.s[0];  /* x */
+	imgdesc.image_height = EGO->num_points.s[1]; /* y */
+	imgdesc.image_depth = EGO->num_points.s[2];  /* z */
+	imgdesc.image_row_pitch = 0;
+	imgdesc.image_slice_pitch = 0;
+	imgdesc.num_mip_levels = 0;
+	imgdesc.num_samples = 0;
+	imgdesc.buffer = NULL;
+
+
+	for (size_t i = 0; i < 3; i++) {
+		EGO->coordinates[i] = clCreateImage(
+			EGO->ocl->ctx, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, &imgfmt,
+			&imgdesc, coordinates[i], &err);
+		/* https://streamhpc.com/blog/2013-04-28/opencl-error-codes/ */
+		if (err != CL_SUCCESS) {
+			lux_print("Error in creating coordinate images\n");
+			return err;
+		}
+	}
+
+	lux_debug("Images created\n");
 
 	for (size_t i = 0; i < 3; i++)
 		free(coordinates[i]);

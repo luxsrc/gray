@@ -30,5 +30,5 @@ with h5py.File("data.h5", "w") as f:
                     it_group.create_dataset(
                         name,
                         # data=np.random.randn(Nx * Ny * Nz).astype('f'),
-                        data=zeros,
+                        data=ones,
                     )
