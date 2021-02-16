@@ -85,6 +85,58 @@ inline int address_mode(int x, int size){
   return clamp(x, 0, size - 1);
 }
 
+int4 xyz_to_uvw(real4 xyz, real8 bounding_box, int4 num_points){
+
+  /* Xmin = {0, xmin, ymin, zmin} */
+  real4 Xmin = {K(0.0), bounding_box.s1, bounding_box.s2, bounding_box.s3};
+  real4 Xmax = {K(0.0), bounding_box.s5, bounding_box.s6, bounding_box.s7};
+
+  /* The fisheye transformation is hard-coded here */
+  /* We work with n = 3 (n is the exponent in the sinh) */
+  real4 B = cbrt(asinh(Xmin));
+  /* /\* num_points_real is defined like this because openCL doesn't allow to cast vectors */
+  /*  * to vectors of a different type, so we instead define a new variables where we cast */
+  /*  * the individual variables. *\/ */
+  real4 num_points_real = {num_points.s0, num_points.s1, num_points.s2, num_points.s3};
+  real4 A = (cbrt(asinh(Xmax)) - B)/(num_points_real - 1);
+
+  return convert_int4(floor(cbrt(xyz)/A - B));
+}
+
+real4 trilinear_interpolation(real u, real v, real w,
+                             real4 Ti0j0k0,
+                             real4 Ti1j0k0,
+                             real4 Ti1j1k0,
+                             real4 Ti1j1k1,
+                             real4 Ti0j1k0,
+                             real4 Ti0j1k1,
+                             real4 Ti0j0k1,
+                             real4 Ti1j0k1){
+
+  /* OpenCL works better when everything is real4 */
+  real a1 = frac(u - 0.5);
+  real b1 = frac(v - 0.5);
+  real c1 = frac(w - 0.5);
+
+  real4 a = {a1, a1, a1, K(0.0)};
+  real4 b = {b1, b1, b1, K(0.0)};
+  real4 c = {c1, c1, c1, K(0.0)};
+
+  real4 one_minus_a = {K(1.0) - a1, K(1.0) - a1, K(1.0) - a1, K(0.0)};
+  real4 one_minus_b = {K(1.0) - b1, K(1.0) - b1, K(1.0) - b1, K(0.0)};
+  real4 one_minus_c = {K(1.0) - c1, K(1.0) - c1, K(1.0) - c1, K(0.0)};
+
+  /* OpenCL seems unable to compile this formula if I don't split it */
+
+  return one_minus_a * one_minus_b * one_minus_c * Ti0j0k0; + a * one_minus_b * one_minus_c * Ti1j0k0 \
+    + one_minus_a * b * one_minus_c * Ti0j1k0 + a * b * one_minus_c * Ti1j1k0 \
+    + one_minus_a * one_minus_b * c * Ti0j0k1 + a * one_minus_b * c * Ti1j0k1 \
+    + one_minus_a * b * c * Ti0j1k1 +  a * b * c * Ti1j1k1;
+
+}
+
+
+
 real4 physical_coords_to_unnormalized_coords(real4 xyz,
                                              real8 bounding_box,
                                              __read_only image3d_t x_grid,
@@ -96,99 +148,92 @@ real4 physical_coords_to_unnormalized_coords(real4 xyz,
    * This cannot be done with the OpenCL primitives because the points are
    * not evenly spaced. */
 
-  /* Xmin = {0, xmin, ymin, zmin} */
-  const real4 Xmin = {K(0.0), bounding_box.s1, bounding_box.s2, bounding_box.s3};
-  const real4 Xmax = {K(0.0), bounding_box.s5, bounding_box.s6, bounding_box.s7};
+  int4 unnormalized = xyz_to_uvw(xyz, bounding_box, num_points);
 
-  /* The fisheye transformation is hard-coded here */
-  /* We work with n = 3 (n is the exponent in the sinh) */
-  const real4 B = cbrt(asinh(Xmin));
-  /* num_points_real is defined like this because openCL doesn't allow to cast vectors
-   * to vectors of a different type, so we instead define a new variables where we cast
-   * the individual variables. */
-  const real4 num_points_real = {num_points.s0, num_points.s1, num_points.s2, num_points.s3};
-  const real4 A = (cbrt(asinh(Xmax)) - B)/(num_points_real - 1);
-
-  const int4 unnormalized = convert_int4(floor(cbrt(xyz)/A - B));
-  const int u = unnormalized.s1;
-  const int v = unnormalized.s2;
-  const int w = unnormalized.s3;
+  int u = unnormalized.s1;
+  int v = unnormalized.s2;
+  int w = unnormalized.s3;
 
   /* This is taken directly from the OpenCL 1.2 specification */
 
-  const real i0 = address_mode((int)floor(u - 0.5), num_points.x);
-  const real j0 = address_mode((int)floor(v - 0.5), num_points.y);
-  const real k0 = address_mode((int)floor(w - 0.5), num_points.z);
-  const real i1 = address_mode((int)floor(u - 0.5) + 1, num_points.x);
-  const real j1 = address_mode((int)floor(v - 0.5) + 1, num_points.y);
-  const real k1 = address_mode((int)floor(w - 0.5) + 1, num_points.z);
-  const real a  = frac(u - 0.5);
-  const real b  = frac(v - 0.5);
-  const real c  = frac(w - 0.5);
+  real i0 = address_mode((int)floor(u - 0.5), num_points.x);
+  real j0 = address_mode((int)floor(v - 0.5), num_points.y);
+  real k0 = address_mode((int)floor(w - 0.5), num_points.z);
+  real i1 = address_mode((int)floor(u - 0.5) + 1, num_points.x);
+  real j1 = address_mode((int)floor(v - 0.5) + 1, num_points.y);
+  real k1 = address_mode((int)floor(w - 0.5) + 1, num_points.z);
 
-  const real4 i0j0k0 = {i0, j0, k0, 0};
-  const real4 i1j0k0 = {i1, j0, k0, 0};
-  const real4 i1j1k0 = {i1, j1, k0, 0};
-  const real4 i1j1k1 = {i1, j1, k1, 0};
-  const real4 i0j1k0 = {i0, j1, k0, 0};
-  const real4 i0j1k1 = {i0, j1, k1, 0};
-  const real4 i0j0k1 = {i0, j0, k1, 0};
-  const real4 i1j0k1 = {i0, j0, k1, 0};
+  real4 i0j0k0 = {i0, j0, k0, K(0.0)};
+  real4 i1j0k0 = {i1, j0, k0, K(0.0)};
+  real4 i1j1k0 = {i1, j1, k0, K(0.0)};
+  real4 i1j1k1 = {i1, j1, k1, K(0.0)};
+  real4 i0j1k0 = {i0, j1, k0, K(0.0)};
+  real4 i0j1k1 = {i0, j1, k1, K(0.0)};
+  real4 i0j0k1 = {i0, j0, k1, K(0.0)};
+  real4 i1j0k1 = {i0, j0, k1, K(0.0)};
+
+  /* TODO: Implement coordinates are three channels of a single image instead
+   *       of three images */
 
   sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 
-  const real x_i0j0k0 = read_imagef(x_grid, sampler, i0j0k0).x;
-  const real x_i1j0k0 = read_imagef(x_grid, sampler, i1j0k0).x;
-  const real x_i1j1k0 = read_imagef(x_grid, sampler, i1j1k0).x;
-  const real x_i1j1k1 = read_imagef(x_grid, sampler, i1j1k1).x;
-  const real x_i0j1k0 = read_imagef(x_grid, sampler, i0j1k0).x;
-  const real x_i0j1k1 = read_imagef(x_grid, sampler, i0j1k1).x;
-  const real x_i0j0k1 = read_imagef(x_grid, sampler, i0j0k1).x;
-  const real x_i1j0k1 = read_imagef(x_grid, sampler, i1j0k1).x;
+  real x_i0j0k0 = read_imagef(x_grid, sampler, i0j0k0).x;
+  real x_i1j0k0 = read_imagef(x_grid, sampler, i1j0k0).x;
+  real x_i1j1k0 = read_imagef(x_grid, sampler, i1j1k0).x;
+  real x_i1j1k1 = read_imagef(x_grid, sampler, i1j1k1).x;
+  real x_i0j1k0 = read_imagef(x_grid, sampler, i0j1k0).x;
+  real x_i0j1k1 = read_imagef(x_grid, sampler, i0j1k1).x;
+  real x_i0j0k1 = read_imagef(x_grid, sampler, i0j0k1).x;
+  real x_i1j0k1 = read_imagef(x_grid, sampler, i1j0k1).x;
 
-  const real y_i0j0k0 = read_imagef(y_grid, sampler, i0j0k0).x;
-  const real y_i1j0k0 = read_imagef(y_grid, sampler, i1j0k0).x;
-  const real y_i1j1k0 = read_imagef(y_grid, sampler, i1j1k0).x;
-  const real y_i1j1k1 = read_imagef(y_grid, sampler, i1j1k1).x;
-  const real y_i0j1k0 = read_imagef(y_grid, sampler, i0j1k0).x;
-  const real y_i0j1k1 = read_imagef(y_grid, sampler, i0j1k1).x;
-  const real y_i0j0k1 = read_imagef(y_grid, sampler, i0j0k1).x;
-  const real y_i1j0k1 = read_imagef(y_grid, sampler, i1j0k1).x;
+  real y_i0j0k0 = read_imagef(y_grid, sampler, i0j0k0).x;
+  real y_i1j0k0 = read_imagef(y_grid, sampler, i1j0k0).x;
+  real y_i1j1k0 = read_imagef(y_grid, sampler, i1j1k0).x;
+  real y_i1j1k1 = read_imagef(y_grid, sampler, i1j1k1).x;
+  real y_i0j1k0 = read_imagef(y_grid, sampler, i0j1k0).x;
+  real y_i0j1k1 = read_imagef(y_grid, sampler, i0j1k1).x;
+  real y_i0j0k1 = read_imagef(y_grid, sampler, i0j0k1).x;
+  real y_i1j0k1 = read_imagef(y_grid, sampler, i1j0k1).x;
 
-  const real z_i0j0k0 = read_imagef(z_grid, sampler, i0j0k0).x;
-  const real z_i1j0k0 = read_imagef(z_grid, sampler, i1j0k0).x;
-  const real z_i1j1k0 = read_imagef(z_grid, sampler, i1j1k0).x;
-  const real z_i1j1k1 = read_imagef(z_grid, sampler, i1j1k1).x;
-  const real z_i0j1k0 = read_imagef(z_grid, sampler, i0j1k0).x;
-  const real z_i0j1k1 = read_imagef(z_grid, sampler, i0j1k1).x;
-  const real z_i0j0k1 = read_imagef(z_grid, sampler, i0j0k1).x;
-  const real z_i1j0k1 = read_imagef(z_grid, sampler, i1j0k1).x;
+  real z_i0j0k0 = read_imagef(z_grid, sampler, i0j0k0).x;
+  real z_i1j0k0 = read_imagef(z_grid, sampler, i1j0k0).x;
+  real z_i1j1k0 = read_imagef(z_grid, sampler, i1j1k0).x;
+  real z_i1j1k1 = read_imagef(z_grid, sampler, i1j1k1).x;
+  real z_i0j1k0 = read_imagef(z_grid, sampler, i0j1k0).x;
+  real z_i0j1k1 = read_imagef(z_grid, sampler, i0j1k1).x;
+  real z_i0j0k1 = read_imagef(z_grid, sampler, i0j0k1).x;
+  real z_i1j0k1 = read_imagef(z_grid, sampler, i1j0k1).x;
 
-  const real4 Ti0j0k0 = {x_i0j0k0, y_i0j0k0, z_i0j0k0, 0};
-  const real4 Ti1j0k0 = {x_i1j0k0, y_i1j0k0, z_i1j0k0, 0};
-  const real4 Ti1j1k0 = {x_i1j1k0, y_i1j1k0, z_i1j1k0, 0};
-  const real4 Ti1j1k1 = {x_i1j1k1, y_i1j1k1, z_i1j1k1, 0};
-  const real4 Ti0j1k0 = {x_i0j1k0, y_i0j1k0, z_i0j1k0, 0};
-  const real4 Ti0j1k1 = {x_i0j1k1, y_i0j1k1, z_i0j1k1, 0};
-  const real4 Ti0j0k1 = {x_i0j0k1, y_i0j0k1, z_i0j0k1, 0};
-  const real4 Ti1j0k1 = {x_i1j0k1, y_i1j0k1, z_i1j0k1, 0};
+  real4 Ti0j0k0 = {x_i0j0k0, y_i0j0k0, z_i0j0k0, K(0.0)};
+  real4 Ti1j0k0 = {x_i1j0k0, y_i1j0k0, z_i1j0k0, K(0.0)};
+  real4 Ti1j1k0 = {x_i1j1k0, y_i1j1k0, z_i1j1k0, K(0.0)};
+  real4 Ti1j1k1 = {x_i1j1k1, y_i1j1k1, z_i1j1k1, K(0.0)};
+  real4 Ti0j1k0 = {x_i0j1k0, y_i0j1k0, z_i0j1k0, K(0.0)};
+  real4 Ti0j1k1 = {x_i0j1k1, y_i0j1k1, z_i0j1k1, K(0.0)};
+  real4 Ti0j0k1 = {x_i0j0k1, y_i0j0k1, z_i0j0k1, K(0.0)};
+  real4 Ti1j0k1 = {x_i1j0k1, y_i1j0k1, z_i1j0k1, K(0.0)};
 
-  return (K(1.0) - a) * (K(1.0) - b) * (K(1.0) - c) * Ti0j0k0 + a * (K(1.0) - b) * (K(1.0) - c) * Ti1j0k0 \
-    + (K(1.0) - a) * b * (K(1.0) - c) * Ti0j1k0 +  a * b * (K(1.0) - c) * Ti1j1k0 \
-    + (K(1.0) - a) * (K(1.0) - b) * c * Ti0j0k1 + a * (K(1.0) - b) * c * Ti1j0k1 \
-    + (K(1.0) - a) * b * c * Ti0j1k1 +  a * b * c * Ti1j1k1;
+  return trilinear_interpolation(u, v, w,
+                                 Ti0j0k0,
+                                 Ti1j0k0,
+                                 Ti1j1k0,
+                                 Ti1j1k1,
+                                 Ti0j1k0,
+                                 Ti0j1k1,
+                                 Ti0j0k1,
+                                 Ti1j0k1);
 
   /* This is a linear transformation, so with no fisheye coordinates */
 
-  /* const real x = xyz.s1; */
-  /* const real y = xyz.s2; */
-  /* const real z = xyz.s3; */
-  /* const real xmin = bounding_box.s1; */
-  /* const real xmax = bounding_box.s5; */
-  /* const real ymin = bounding_box.s2; */
-  /* const real ymax = bounding_box.s6; */
-  /* const real zmin = bounding_box.s3; */
-  /* const real zmax = bounding_box.s7; */
+  /* real x = xyz.s1; */
+  /* real y = xyz.s2; */
+  /* real z = xyz.s3; */
+  /* real xmin = bounding_box.s1; */
+  /* real xmax = bounding_box.s5; */
+  /* real ymin = bounding_box.s2; */
+  /* real ymax = bounding_box.s6; */
+  /* real zmin = bounding_box.s3; */
+  /* real zmax = bounding_box.s7; */
 
 
   /* /\* The 0.5 is very important because OpenCL uses a pixel offset of 0.5 *\/ */
