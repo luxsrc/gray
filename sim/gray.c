@@ -24,6 +24,8 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <unistd.h>				/* For access and F_OK */
+#include <hdf5.h>
 
 static int
 _conf(Lux_job *ego, const char *restrict arg)
@@ -124,8 +126,47 @@ _exec(Lux_job *ego)
 
 	const  real t_init  = s->t_init;
 	const  real dt_dump = s->dt_dump;
+	real current_time = s->t_init;
+
+	size_t frozen_spacetime = p->enable_fast_light;
+
+	/* Times are saved as chars, so we need to do operations with this
+	 * data type. This is used to read the times in the HDF5 files. */
+	char *rem;
 
 	lux_debug("GRay2: executing instance %p\n", ego);
+
+	lux_print("GRay2: Reading spacetime from file %s\n", p->dyst_file);
+
+    /* We perform basic checks here */
+	lux_check_failure_code(access(p->dyst_file, F_OK), cleanup1);
+	hid_t file_id = H5Fopen(p->dyst_file, H5F_ACC_RDONLY, H5P_DEFAULT);
+	if (file_id == -1) goto cleanup2;
+
+	/* We list all the available times in the file */
+	lux_check_failure_code(populate_ego_available_times(ego), cleanup3);
+
+	/* We load the coordinates */
+	lux_check_failure_code(load_coordinates(ego), cleanup3);
+
+	/* Here we read the snapshot at t = tmin */
+	lux_check_failure_code(load_next_snapshot(ego, 0), cleanup3);
+
+	/* If max_available_time is equal to the first time available, it
+	 * means that it is the only one. */
+	if (EGO->max_available_time == strtod(EGO->available_times[0], &rem)){
+		lux_print("Found only one time in data, freezing spacetime\n");
+		frozen_spacetime = 1;
+	}
+
+	if (frozen_spacetime){
+		lux_print("Assuming fast light\n");
+		/* We are going to set t2 = current_time and the kernel will know
+		 * what to do. */
+		/* t2 = current_time; */
+		/* We have to fill t2 with something. */
+		copy_snapshot_to_t2(ego);
+	}
 
 	lux_print("%zu:  initialize at %4.1f", i, t_init);
 	icond(ego, t_init);
@@ -145,6 +186,15 @@ _exec(Lux_job *ego)
 	}
 
 	return EXIT_SUCCESS;
+
+cleanup1:
+	lux_print("ERROR: File %s could not be read\n", p->dyst_file);
+	return EXIT_FAILURE;
+cleanup2:
+	lux_print("ERROR: File %s is not a valid HDF5 file\n", p->dyst_file);
+	return EXIT_FAILURE;
+cleanup3:
+	return EXIT_FAILURE;
 }
 
 void *

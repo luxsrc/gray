@@ -35,3 +35,173 @@
 
 /** Turn an expression into a local variable that can be passed to function **/
 #define X(x) ({ struct state _; EACH(_) = (x); _; })
+
+/** Spacetime arguments for functions **/
+#define SPACETIME_PROTOTYPE_ARGS \
+const    real8 bounding_box, /**< Max coordinates of the grid    */ \
+const    int4 num_points, /**< Number of points on the grid    */ \
+__read_only image3d_t Gamma_ttt_t1, \
+__read_only image3d_t Gamma_ttx_t1, \
+__read_only image3d_t Gamma_tty_t1, \
+__read_only image3d_t Gamma_ttz_t1, \
+__read_only image3d_t Gamma_txx_t1, \
+__read_only image3d_t Gamma_txy_t1, \
+__read_only image3d_t Gamma_txz_t1, \
+__read_only image3d_t Gamma_tyy_t1, \
+__read_only image3d_t Gamma_tyz_t1, \
+__read_only image3d_t Gamma_tzz_t1, \
+__read_only image3d_t Gamma_xtt_t1, \
+__read_only image3d_t Gamma_xtx_t1, \
+__read_only image3d_t Gamma_xty_t1, \
+__read_only image3d_t Gamma_xtz_t1, \
+__read_only image3d_t Gamma_xxx_t1, \
+__read_only image3d_t Gamma_xxy_t1, \
+__read_only image3d_t Gamma_xxz_t1, \
+__read_only image3d_t Gamma_xyy_t1, \
+__read_only image3d_t Gamma_xyz_t1, \
+__read_only image3d_t Gamma_xzz_t1, \
+__read_only image3d_t Gamma_ytt_t1, \
+__read_only image3d_t Gamma_ytx_t1, \
+__read_only image3d_t Gamma_yty_t1, \
+__read_only image3d_t Gamma_ytz_t1, \
+__read_only image3d_t Gamma_yxx_t1, \
+__read_only image3d_t Gamma_yxy_t1, \
+__read_only image3d_t Gamma_yxz_t1, \
+__read_only image3d_t Gamma_yyy_t1, \
+__read_only image3d_t Gamma_yyz_t1, \
+__read_only image3d_t Gamma_yzz_t1, \
+__read_only image3d_t Gamma_ztt_t1, \
+__read_only image3d_t Gamma_ztx_t1, \
+__read_only image3d_t Gamma_zty_t1, \
+__read_only image3d_t Gamma_ztz_t1, \
+__read_only image3d_t Gamma_zxx_t1, \
+__read_only image3d_t Gamma_zxy_t1, \
+__read_only image3d_t Gamma_zxz_t1, \
+__read_only image3d_t Gamma_zyy_t1, \
+__read_only image3d_t Gamma_zyz_t1, \
+__read_only image3d_t Gamma_zzz_t1, \
+__read_only image3d_t Gamma_ttt_t2, \
+__read_only image3d_t Gamma_ttx_t2, \
+__read_only image3d_t Gamma_tty_t2, \
+__read_only image3d_t Gamma_ttz_t2, \
+__read_only image3d_t Gamma_txx_t2, \
+__read_only image3d_t Gamma_txy_t2, \
+__read_only image3d_t Gamma_txz_t2, \
+__read_only image3d_t Gamma_tyy_t2, \
+__read_only image3d_t Gamma_tyz_t2, \
+__read_only image3d_t Gamma_tzz_t2, \
+__read_only image3d_t Gamma_xtt_t2, \
+__read_only image3d_t Gamma_xtx_t2, \
+__read_only image3d_t Gamma_xty_t2, \
+__read_only image3d_t Gamma_xtz_t2, \
+__read_only image3d_t Gamma_xxx_t2, \
+__read_only image3d_t Gamma_xxy_t2, \
+__read_only image3d_t Gamma_xxz_t2, \
+__read_only image3d_t Gamma_xyy_t2, \
+__read_only image3d_t Gamma_xyz_t2, \
+__read_only image3d_t Gamma_xzz_t2, \
+__read_only image3d_t Gamma_ytt_t2, \
+__read_only image3d_t Gamma_ytx_t2, \
+__read_only image3d_t Gamma_yty_t2, \
+__read_only image3d_t Gamma_ytz_t2, \
+__read_only image3d_t Gamma_yxx_t2, \
+__read_only image3d_t Gamma_yxy_t2, \
+__read_only image3d_t Gamma_yxz_t2, \
+__read_only image3d_t Gamma_yyy_t2, \
+__read_only image3d_t Gamma_yyz_t2, \
+__read_only image3d_t Gamma_yzz_t2, \
+__read_only image3d_t Gamma_ztt_t2, \
+__read_only image3d_t Gamma_ztx_t2, \
+__read_only image3d_t Gamma_zty_t2, \
+__read_only image3d_t Gamma_ztz_t2, \
+__read_only image3d_t Gamma_zxx_t2, \
+__read_only image3d_t Gamma_zxy_t2, \
+__read_only image3d_t Gamma_zxz_t2, \
+__read_only image3d_t Gamma_zyy_t2, \
+__read_only image3d_t Gamma_zyz_t2, \
+__read_only image3d_t Gamma_zzz_t2
+
+
+#define SPACETIME_ARGS \
+bounding_box, \
+num_points,   \
+Gamma_ttt_t1, \
+Gamma_ttx_t1, \
+Gamma_tty_t1, \
+Gamma_ttz_t1, \
+Gamma_txx_t1, \
+Gamma_txy_t1, \
+Gamma_txz_t1, \
+Gamma_tyy_t1, \
+Gamma_tyz_t1, \
+Gamma_tzz_t1, \
+Gamma_xtt_t1, \
+Gamma_xtx_t1, \
+Gamma_xty_t1, \
+Gamma_xtz_t1, \
+Gamma_xxx_t1, \
+Gamma_xxy_t1, \
+Gamma_xxz_t1, \
+Gamma_xyy_t1, \
+Gamma_xyz_t1, \
+Gamma_xzz_t1, \
+Gamma_ytt_t1, \
+Gamma_ytx_t1, \
+Gamma_yty_t1, \
+Gamma_ytz_t1, \
+Gamma_yxx_t1, \
+Gamma_yxy_t1, \
+Gamma_yxz_t1, \
+Gamma_yyy_t1, \
+Gamma_yyz_t1, \
+Gamma_yzz_t1, \
+Gamma_ztt_t1, \
+Gamma_ztx_t1, \
+Gamma_zty_t1, \
+Gamma_ztz_t1, \
+Gamma_zxx_t1, \
+Gamma_zxy_t1, \
+Gamma_zxz_t1, \
+Gamma_zyy_t1, \
+Gamma_zyz_t1, \
+Gamma_zzz_t1, \
+Gamma_ttt_t2, \
+Gamma_ttx_t2, \
+Gamma_tty_t2, \
+Gamma_ttz_t2, \
+Gamma_txx_t2, \
+Gamma_txy_t2, \
+Gamma_txz_t2, \
+Gamma_tyy_t2, \
+Gamma_tyz_t2, \
+Gamma_tzz_t2, \
+Gamma_xtt_t2, \
+Gamma_xtx_t2, \
+Gamma_xty_t2, \
+Gamma_xtz_t2, \
+Gamma_xxx_t2, \
+Gamma_xxy_t2, \
+Gamma_xxz_t2, \
+Gamma_xyy_t2, \
+Gamma_xyz_t2, \
+Gamma_xzz_t2, \
+Gamma_ytt_t2, \
+Gamma_ytx_t2, \
+Gamma_yty_t2, \
+Gamma_ytz_t2, \
+Gamma_yxx_t2, \
+Gamma_yxy_t2, \
+Gamma_yxz_t2, \
+Gamma_yyy_t2, \
+Gamma_yyz_t2, \
+Gamma_yzz_t2, \
+Gamma_ztt_t2, \
+Gamma_ztx_t2, \
+Gamma_zty_t2, \
+Gamma_ztz_t2, \
+Gamma_zxx_t2, \
+Gamma_zxy_t2, \
+Gamma_zxz_t2, \
+Gamma_zyy_t2, \
+Gamma_zyz_t2, \
+Gamma_zzz_t2
