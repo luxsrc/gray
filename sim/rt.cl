@@ -47,9 +47,6 @@
 #define POW(x, y) pow(x, y) /* \todo Select the right precision for pow()  */
 #define EXP(x)    exp(x)    /* \todo Select the right precision for exp()  */
 
-static __constant real nus[n_freq] = {0}; /* \todo Initialize nus[] using run time parameters */
-static __constant real m_BH = 0;          /* \todo Initialize m_BH  using run time parameters */
-
 static __constant real log_K2it_tab[] = {
 	-10.747001122, -9.5813378172, -8.5317093904, -7.5850496322,
 	-6.7296803564, -5.9551606678, -5.2521532618, -4.6123059955,
