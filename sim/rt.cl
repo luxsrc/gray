@@ -25,8 +25,6 @@
  ** extinction (absorption) coefficients.
  **/
 
-#define EPSILON  1e-32
-
 #define CONST_c     (2.99792458e+10)
 #define CONST_h     (6.62606957e-27)
 #define CONST_G     (6.67384800e-08)
