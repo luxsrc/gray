@@ -138,7 +138,7 @@ L_j_ff(real nu, real te, real ne)
 	y *= nu / te; /* ~ 1e-10 */
 	f *= ne;      /* ~ 1e-15 */
 
-	return (m_BH * f * Gaunt(x, y)) * (f / (SQRT(te) * EXP(y) + (real)EPSILON));
+	return (M_bh * f * Gaunt(x, y)) * (f / (SQRT(te) * EXP(y) + (real)EPSILON));
 } /* 12 FLOP + FLOP(Gaunt) == 15+ FLOP */
 
 static inline real
@@ -165,7 +165,7 @@ L_j_syn(real nu, real te, real ne, real B,  real cos_theta)
 		            LOG(2 * te * te - (real)0.5) :
 		            log_K2it(te);
 
-	return (m_BH * xx * EXP(-cbrtx)) * (xx * EXP(-log_K2)) * (f * ne * nus);
+	return (M_bh * xx * EXP(-cbrtx)) * (xx * EXP(-log_K2)) * (f * ne * nus);
 } /* 25 FLOP + min(4 FLOP, FLOP(log_K2it)) == 29+ FLOP */
 
 
