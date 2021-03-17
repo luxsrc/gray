@@ -83,7 +83,8 @@ build(Lux_job *ego)
 	char buf[10240];
 
 	const char *src[] = {buf,
-	                     "preamble.cl",
+                         "preamble.cl",
+                         "interp.cl",
 	                     p->coordinates,
 	                     "flow.cl",
 	                     "rt.cl",
