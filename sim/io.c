@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2020-2021 Gabriele Bozzola
  * Copyright (C) 2016 Chi-kwan Chan
  * Copyright (C) 2016 Steward Observatory
  *
@@ -23,6 +24,15 @@
 #include <hdf5.h>
 #include <time.h>
 
+/* Compare function, needed for qsort (needed to sort the times in the HDF5 file) */
+int compare (const void *a, const void *b)
+{
+	/* With the help of https://stackoverflow.com/a/3886497 */
+	char *rem;
+	real a_num = strtod((char*)a, &rem);
+	real b_num = strtod((char*)b, &rem);
+	return (a_num > b_num) - (a_num < b_num);
+}
 
 /** \todo Implement load() */
 
@@ -169,6 +179,11 @@ populate_ego_available_times(Lux_job *ego) {
 		return status;
 	}
 
+	if (nobj < 2) {
+		lux_print("ERROR: Not enough groups in the HDF5 file\n");
+		return -1;
+	}
+
 	lux_debug("Available times: \n");
 
 	char time_name[MAX_TIME_NAME_LENGTH];
@@ -183,8 +198,18 @@ populate_ego_available_times(Lux_job *ego) {
 		}
 	}
 
+	/* Now we sort the available_times array in ascending order */
+	qsort(EGO->available_times, nobj - 1, sizeof(EGO->available_times[0]), compare);
+
+	lux_debug("Sorted available times: \n");
+
+	for (size_t i = 0; i < nobj - 1; i++){
+		lux_debug("%s\n", EGO->available_times[i]);
+	}
+
 	char *rem;
-	/* Here it is -2 because we have a 'grid' group around */
+	/* Here it is -2 because we have a 'grid' group around, and it has to be after
+	 * the numbers (nobj - 2 is the last element of the array) */
 	EGO->max_available_time = strtod(EGO->available_times[nobj - 2], &rem);
 
 	return 0;
@@ -251,27 +276,28 @@ load_coordinates(Lux_job *ego){
 	return 0;
 }
 
-size_t
-copy_snapshot_to_t2(Lux_job *ego){
-	/* In case we are working frozen spacetime, we have to fill the _t2 slot
-	 * with something. This function copies over the snapshot in _t1 to _t2.
-	 * For a frozen spacetime, _t2 is never used anyways. */
+void
+copy_snapshot(Lux_job *ego, size_t to_t1){
+	/* This function copies over the snapshot in _t2 to _t1 if to_t1 is true,
+	 * otherwise from _t1 to _t2.  For a frozen spacetime, _t2 is never used
+	 * anyways. */
 	size_t index = 0;
 	for (size_t i = 0; i < 4; i++)
 		for (size_t j = 0; j < 4; j++)
 			for (size_t k = j; k < 4; k++) {
+				if (to_t1)
+					EGO->spacetime_t1[index] = EGO->spacetime_t2[index];
+				else
 					EGO->spacetime_t2[index] = EGO->spacetime_t1[index];
-					index++;
+				index++;
 			}
 
 }
 
-
 size_t
-load_next_snapshot(Lux_job *ego, size_t time_snapshot_index){
+load_snapshot(Lux_job *ego, size_t time_snapshot_index, size_t load_in_t1){
 
-	/* This function always writes in spacetime_t2, except when
-	 * time_snapshot_index is 0 ! */
+	/* If load_in_t1 is true, then fill the t1 slot, otherwise, fill the t2 slot. */
 
 	/* TODO: Add support to compressed HDF5 files */
 	/* https://support.hdfgroup.org/ftp/HDF5/examples/examples-by-api/hdf5-examples/1_10/C/H5D/h5ex_d_shuffle.cgo */
@@ -319,8 +345,8 @@ load_next_snapshot(Lux_job *ego, size_t time_snapshot_index){
 	size_t num_points;
 	size_t index = 0;
 	const size_t expected_num_points = EGO->num_points.s[1] *
-		                               EGO->num_points.s[2] *
-		                               EGO->num_points.s[3];
+		EGO->num_points.s[2] *
+		EGO->num_points.s[3];
 
 	for (size_t i = 0; i < 4; i++)
 		for (size_t j = 0; j < 4; j++)
@@ -372,7 +398,7 @@ load_next_snapshot(Lux_job *ego, size_t time_snapshot_index){
 			for (size_t k = j; k < 4; k++) {
 				/* We fill _t1 only the first time, when snapshot_index = 0,
 				 * in all the other cases we fill _t2, and then we shift the pointers.*/
-				if (time_snapshot_index == 0){
+				if (load_in_t1){
 					EGO->spacetime_t1[index] = clCreateImage(
 						EGO->ocl->ctx, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, &imgfmt,
 						&imgdesc, Gamma[index], &err);

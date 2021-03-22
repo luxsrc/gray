@@ -27,6 +27,36 @@
 #include <unistd.h>				/* For access and F_OK */
 #include <hdf5.h>
 
+inline static real time_at_snapshot(Lux_job *ego, int snapshot_number){
+	/* Return the time corresponding to the given snapshot */
+
+	/* Times are saved as chars, so we need to do operations with this
+	 * data type.  This is used to read the times in the HDF5 files. */
+	char *rem;
+
+	return strtod(EGO->available_times[snapshot_number], &rem);
+}
+
+
+static void find_snapshot(Lux_job *ego, real t, size_t *snap){
+	/* Find snapshot number so that t1 <= t <= t2, where t1 is the time
+	 * corresponding to the snapshot number */
+
+	real t1, t2;
+
+	/* We assume that snapshots they are ordered from the min to the max. */
+	*snap = -1;
+	/* We have already performed all the necessary checks, so this loop should
+	 * be well defined. */
+	do{
+		(*snap)++;
+		t1 = time_at_snapshot(EGO, *snap);
+		t2 = time_at_snapshot(EGO, *snap + 1);
+		/* It has to be that slow_light_t2 > slow_light_t1 */
+	}while(!(t >= t1 && t <= t2));
+}
+
+
 static int
 _conf(Lux_job *ego, const char *restrict arg)
 {
@@ -126,13 +156,11 @@ _exec(Lux_job *ego)
 
 	const  real t_init  = s->t_init;
 	const  real dt_dump = s->dt_dump;
-	real current_time = s->t_init;
+	/* If we are working with slow light, these are the two extrema. */
+	real slow_light_t1, slow_light_t2;
 
 	size_t frozen_spacetime = p->enable_fast_light;
-
-	/* Times are saved as chars, so we need to do operations with this
-	 * data type. This is used to read the times in the HDF5 files. */
-	char *rem;
+	size_t only_one_snapshot = 0;
 
 	lux_debug("GRay2: executing instance %p\n", ego);
 
@@ -149,23 +177,64 @@ _exec(Lux_job *ego)
 	/* We load the coordinates */
 	lux_check_failure_code(load_coordinates(ego), cleanup3);
 
-	/* Here we read the snapshot at t = tmin */
-	lux_check_failure_code(load_next_snapshot(ego, 0), cleanup3);
-
 	/* If max_available_time is equal to the first time available, it
 	 * means that it is the only one. */
-	if (EGO->max_available_time == strtod(EGO->available_times[0], &rem)){
+
+	real min_available_time = time_at_snapshot(ego, 0);
+	if (EGO->max_available_time == min_available_time){
 		lux_print("Found only one time in data, freezing spacetime\n");
+		only_one_snapshot = 1;
 		frozen_spacetime = 1;
+	}else{
+		/* It does not make sense to perform the integration if we don't have
+		 * the desired initial time and final in range, unless we only have one
+		 * time snapshot. */
+		if ((t_init < min_available_time || t_init > EGO->max_available_time)){
+			lux_print("ERROR: t_init (%4.1f) is outside domain of the data (%5.1f, %5.1f)\n",
+					  t_init, min_available_time, EGO->max_available_time);
+			return EXIT_FAILURE;
+		}
+		real t_final = t_init + (++i) * dt_dump * n_dump;
+		if ((t_final < min_available_time || t_final > EGO->max_available_time)){
+			lux_print("ERROR: t_final (%4.1f) is outside domain of the data (%5.1f, %5.1f)\n",
+					  t_final, min_available_time, EGO->max_available_time);
+			return EXIT_FAILURE;
+		}
 	}
+
+	/* Snapshot of interest */
+	size_t snap_number;
 
 	if (frozen_spacetime){
 		lux_print("Assuming fast light\n");
-		/* We are going to set t2 = current_time and the kernel will know
-		 * what to do. */
-		/* t2 = current_time; */
-		/* We have to fill t2 with something. */
-		copy_snapshot_to_t2(ego);
+		if (only_one_snapshot){
+			/* 1 here means "load in t1" */
+			lux_check_failure_code(load_snapshot(ego, 0, 1), cleanup3);
+		}else{
+             /* Here we read the snapshot at t1 and t2 so that they contain t_init. */
+			find_snapshot(ego, t_init, &snap_number);
+			/* 1 here means "load in t1" */
+			lux_check_failure_code(load_snapshot(ego, snap_number, 1), cleanup3);
+		}
+		/* We have to fill t2 with something, otherwise it will produce errors.
+		 * We fill with the same data as t1.  Here 0 means "to_t2" */
+		copy_snapshot(ego, 0);
+		/* Next, we disable time interpolation by setting the two time extrema
+		 * of the bounding box to be the same */
+		EGO->bounding_box.s0 = 0;
+		EGO->bounding_box.s4 = 0;
+	}else{
+		lux_print("Working with slow light\n");
+		/* Here we read the snapshot at t1 and t2 so that they contain t_init. */
+		find_snapshot(ego, t_init, &snap_number);
+		slow_light_t1 = time_at_snapshot(ego, snap_number);
+		slow_light_t2 = time_at_snapshot(ego, snap_number + 1);
+		/* 1 here means "load in t1" */
+		lux_check_failure_code(load_snapshot(ego, snap_number, 1), cleanup3);
+		/* 0 here means "load in t2" */
+		lux_check_failure_code(load_snapshot(ego, snap_number + 1, 0), cleanup3);
+		EGO->bounding_box.s0 = slow_light_t1;
+		EGO->bounding_box.s4 = slow_light_t2;
 	}
 
 	lux_print("%zu:  initialize at %4.1f", i, t_init);
@@ -183,6 +252,42 @@ _exec(Lux_job *ego)
 		ns = evolve(ego, t, target, n_sub);
 		dump(ego, i);
 		lux_print(": DONE (%.3gns/step/ray)\n", ns/n_sub/n_rays);
+
+		/* If we are not freezing the spacetime, we need to change the snapshots */
+		if (!frozen_spacetime && (target < slow_light_t1 || target > slow_light_t2)){
+
+			/* If snap_number is off by 1 compared to old_snap_number, this
+			 * means that we can read only one of the two snapshots and copy
+			 * over the other one.  If it is off by more than 1, then we have to
+			 * read them both. */
+			size_t old_snap_number = snap_number;
+			find_snapshot(ego, target, &snap_number);
+			slow_light_t1 = time_at_snapshot(ego, snap_number);
+			slow_light_t2 = time_at_snapshot(ego, snap_number + 1);
+
+			if (snap_number == old_snap_number + 1){
+				/* In this case, the old t2 has to become the new t1.  Here 1
+				 * means "copy to t1" */
+				copy_snapshot(ego, 1);
+				/* 0 here means "load in t2" */
+				lux_check_failure_code(load_snapshot(ego, snap_number + 1, 0), cleanup3);
+			}else if (snap_number == old_snap_number - 1){
+				/* In this case, the old t1 has to become the new t2.  Here 0
+				 * means "copy to t2" */
+				copy_snapshot(ego, 0);
+				/* 1 here means "load in t1" */
+				lux_check_failure_code(load_snapshot(ego, snap_number, 1), cleanup3);
+			}else{
+				/* We have to read them both */
+				/* 1 here means "load in t1" */
+				lux_check_failure_code(load_snapshot(ego, snap_number, 1), cleanup3);
+				/* 0 here means "load in t2" */
+				lux_check_failure_code(load_snapshot(ego, snap_number + 1, 0), cleanup3);
+			}
+			/* Update bounding box */
+			EGO->bounding_box.s0 = slow_light_t1;
+			EGO->bounding_box.s4 = slow_light_t2;
+		}
 	}
 
 	return EXIT_SUCCESS;

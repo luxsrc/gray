@@ -47,7 +47,8 @@ be structured in a specific way:
 * Always at the top level, all the groups that are not named "grid" will be
   considered time levels. The names of such groups has to be their time. For
   example, possible groups names would be "1.0", "1.1", "1.2", ... The group
-  "1.0" contains variables at that time.
+  "1.0" contains variables at that time. The groups have to be in alphanumerical
+  order.
 * In each group, the following datasets have to be defined. Gamma_ttt,
   Gamma_ttx, Gamma_tty, Gamma_ttz, Gamma_txx, Gamma_txy, Gamma_txz, Gamma_tyy,
   Gamma_tyz, Gamma_tzz, Gamma_xtt, Gamma_xtx, Gamma_xty, Gamma_xtz, Gamma_xxx,
