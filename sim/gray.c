@@ -50,8 +50,8 @@ static void find_snapshot(Lux_job *ego, real t, size_t *snap){
 	 * be well defined. */
 	do{
 		(*snap)++;
-		t1 = time_at_snapshot(EGO, *snap);
-		t2 = time_at_snapshot(EGO, *snap + 1);
+		t1 = time_at_snapshot(ego, *snap);
+		t2 = time_at_snapshot(ego, *snap + 1);
 		/* It has to be that slow_light_t2 > slow_light_t1 */
 	}while(!(t >= t1 && t <= t2));
 }
