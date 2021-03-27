@@ -49,7 +49,7 @@ real
 getdt(struct gr g, real dt)
 {
 	real r   = sqrt(getrr(g.q));
-	real eps = r - (1.0 + sqrt(1.0 - a_spin * a_spin));
+	real eps = geteps(g.q);
 
 	if(eps < 0.01) /* stop near horizon */
 		return 0;

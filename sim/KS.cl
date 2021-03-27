@@ -54,6 +54,12 @@ getrr(real4 q)
 	return sqrt(kk * kk + aa * zz) + kk;
 }
 
+real
+geteps(real4 q)
+{
+	return sqrt(getrr(q)) - (1.0 + sqrt(1.0 - a_spin * a_spin));
+}
+
 real4
 down(real4 q, real4 u)
 {
