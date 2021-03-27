@@ -41,6 +41,24 @@ real4 matrix_vector_product(real16 a, real4 b){
 };
 
 real
+getrr(real4 q)
+{
+  return 0; /* \todo define the black hole location and implement getrr() */
+}
+
+real
+geteps(real4 q)
+{
+  return 1;
+}
+
+real4
+down(real4 q, real4 u)
+{
+  return u; /* \todo implement the down() operator for dynamic spacetime */
+}
+
+real
 getuu(struct gr s)  /**< state of the ray */
 {
 
