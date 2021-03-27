@@ -158,5 +158,5 @@ gr_rhs(struct gr g, SPACETIME_PROTOTYPE_ARGS)
                -dot(u, matrix_vector_product(GammaUPy, u)) + GammaUU * u.s2,
                -dot(u, matrix_vector_product(GammaUPz, u)) + GammaUU * u.s3};
 
-  return (struct gr){u, rhs.s0, rhs.s1, rhs.s2, rhs.s3};
+  return (struct gr){u, rhs};
 }
