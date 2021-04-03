@@ -166,7 +166,7 @@ _exec(Lux_job *ego)
 
 	lux_print("GRay2: Reading spacetime from file %s\n", p->dyst_file);
 
-    /* We perform basic checks here */
+	/* We perform basic checks here */
 	lux_check_failure_code(access(p->dyst_file, F_OK), cleanup1);
 	hid_t file_id = H5Fopen(p->dyst_file, H5F_ACC_RDONLY, H5P_DEFAULT);
 	if (file_id == -1) goto cleanup2;
@@ -194,7 +194,7 @@ _exec(Lux_job *ego)
 					  t_init, min_available_time, EGO->max_available_time);
 			return EXIT_FAILURE;
 		}
-		real t_final = t_init + (++i) * dt_dump * n_dump;
+		real t_final = t_init + (i+1) * dt_dump * n_dump;
 		if ((t_final < min_available_time || t_final > EGO->max_available_time)){
 			lux_print("ERROR: t_final (%4.1f) is outside domain of the data (%5.1f, %5.1f)\n",
 					  t_final, min_available_time, EGO->max_available_time);
