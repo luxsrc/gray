@@ -81,17 +81,9 @@ down(real4 q, real4 u, SPACETIME_PROTOTYPE_ARGS)
 }
 
 real
-getuu(struct gr s)  /**< state of the ray */
+getuu(struct gr s, SPACETIME_PROTOTYPE_ARGS)  /**< state of the ray */
 {
-
-  return 0;
-
-  /*   return (real4){dot(u, matrix_vector_product(g, u)), */
-  /* fabs(dot(g.s0123, u) * u.s0) + */
-  /* fabs(dot(g.s4567, u) * u.s1) + */
-  /* fabs(dot(g.s89ab, u) * u.s2) + */
-  /* fabs(dot(g.scdef, u) * u.s3), */
-  /* K(0.0), K(0.0)}; */
+  return dot(s.u, down(s.q, s.u, SPACETIME_ARGS));
 }
 
 struct gr
