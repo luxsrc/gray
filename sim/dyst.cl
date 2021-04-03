@@ -43,19 +43,41 @@ real4 matrix_vector_product(real16 a, real4 b){
 real
 getrr(real4 q)
 {
-  return 0; /* \todo define the black hole location and implement getrr() */
+  return 1; /* \todo define the black hole location and implement getrr() */
 }
 
 real
 geteps(real4 q)
 {
-  return 1;
+  return 1; /* \todo */
 }
 
 real4
-down(real4 q, real4 u)
+down(real4 q, real4 u, SPACETIME_PROTOTYPE_ARGS)
 {
-  return u; /* \todo implement the down() operator for dynamic spacetime */
+  real16 g;
+
+  g.s0 = interpolate(q, bounding_box, num_points, g_tt_t1, g_tt_t2);
+  g.s1 = interpolate(q, bounding_box, num_points, g_tx_t1, g_tx_t2);
+  g.s2 = interpolate(q, bounding_box, num_points, g_ty_t1, g_ty_t2);
+  g.s3 = interpolate(q, bounding_box, num_points, g_tz_t1, g_tz_t2);
+
+  g.s4 = g.s1;
+  g.s5 = interpolate(q, bounding_box, num_points, g_xx_t1, g_xx_t2);
+  g.s6 = interpolate(q, bounding_box, num_points, g_xy_t1, g_xy_t2);
+  g.s7 = interpolate(q, bounding_box, num_points, g_xz_t1, g_xz_t2);
+
+  g.s8 = g.s2;
+  g.s9 = g.s6;
+  g.sa = interpolate(q, bounding_box, num_points, g_yy_t1, g_yy_t2);
+  g.sb = interpolate(q, bounding_box, num_points, g_yz_t1, g_yz_t2);
+
+  g.sc = g.s3;
+  g.sd = g.s7;
+  g.se = g.sb;
+  g.sf = interpolate(q, bounding_box, num_points, g_yz_t1, g_yz_t2);
+
+  return matrix_vector_product(g, u);
 }
 
 real
