@@ -73,13 +73,13 @@ dump(Lux_job *ego, size_t i)
 
 size_t
 read_variable_from_h5_file_and_return_num_points(const hid_t group_id,
-												 const char *var_name,
-												 void **var_array)
+                                                 const char *var_name,
+                                                 void **var_array)
 {
 
 	/* Here we read var_name from group_id and put in var_array*/
-	/* var_array is a pointer to a pointer to the area of memory where the data
-	 * will be written */
+	/* var_array is a pointer to a pointer to the area of memory
+	 * where the data will be written */
 	/* We want a pointer to a pointer because we want to modify var_array
 	 * with malloc */
 
@@ -124,7 +124,7 @@ read_variable_from_h5_file_and_return_num_points(const hid_t group_id,
 	const size_t sz = H5Tget_size(datasetH5type);
 
 	status = H5Dread(dataset_id, datasetH5type, H5S_ALL, H5S_ALL, H5P_DEFAULT,
-					 *var_array);
+	                 *var_array);
 
 	if (status != 0) {
 		lux_print("Error in reading dataset: %s", var_name);
@@ -149,7 +149,7 @@ read_variable_from_h5_file_and_return_num_points(const hid_t group_id,
 size_t
 populate_ego_available_times(Lux_job *ego) {
 
-    /* HDF5 identifiers */
+	/* HDF5 identifiers */
 	hid_t file_id;
 	hid_t group_id;
 	herr_t status;
@@ -253,10 +253,10 @@ load_coordinates(Lux_job *ego){
 	}
 
 	/* First, we read the coordinates */
-    /* dimension_names[i + 1] because we ignore the time, which is the zeroth */
+	/* dimension_names[i + 1] because we ignore the time, which is the zeroth */
 	for (size_t i = 0; i < 3; i++){
-        EGO->num_points.s[i + 1] = read_variable_from_h5_file_and_return_num_points(
-			group_id, dimension_names[i + 1], &coordinates[i]);
+		EGO->num_points.s[i + 1] = read_variable_from_h5_file_and_return_num_points(
+			      group_id, dimension_names[i + 1], &coordinates[i]);
 		/* This is an error, something didn't work as expected */
 		/* We have already printed what */
 		if (EGO->num_points.s[i + 1] <= 0)
@@ -339,6 +339,9 @@ load_snapshot(Lux_job *ego, size_t time_snapshot_index, size_t load_in_t1){
 	}
 
 	lux_debug("Reading time %s\n", time);
+
+	/* Read metric */
+	void *g[10];
 
 	/* Now, we read the Gammas */
 	void *Gamma[40];
@@ -430,8 +433,8 @@ load_snapshot(Lux_job *ego, size_t time_snapshot_index, size_t load_in_t1){
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 
 	lux_print("Reading file and creating images for time %s took %.5f s\n",
-			  time,
-			  cpu_time_used);
+	          time,
+	          cpu_time_used);
 
 	return 0;
 }
