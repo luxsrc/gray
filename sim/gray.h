@@ -85,12 +85,12 @@ struct gray {
 	/* num_points.s2 contains point along the y direction */
 	/* num_points.s3 contains point along the z direction */
 
-	/* We need 40 images to contain all the 40 spacetime variables */
-	/* In this implementation, spacetime contains the connection. */
+	/* We need 40+10+1 == 51 images to contain all the 40 christoffel
+	   symbols, 10 metric components, and 1 fluid quality */
 
 	/* We always have two timesteps loaded */
-	cl_mem spacetime_t1[40];
-	cl_mem spacetime_t2[40];
+	cl_mem spacetime_t1[40+10+1];
+	cl_mem spacetime_t2[40+10+1];
 
 	char available_times[MAX_AVAILABLE_TIMES][MAX_TIME_NAME_LENGTH];
 

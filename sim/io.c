@@ -172,7 +172,7 @@ populate_ego_available_times(Lux_job *ego) {
 		return group_id;
 	}
 
-    /* Get all the members of the groups, one at a time */
+	/* Get all the members of the groups, one at a time */
 	status = H5Gget_num_objs(group_id, &nobj);
 	if (status != 0) {
 		lux_print("ERROR: Could not obtain number of groups in HDF5 file\n");
@@ -265,7 +265,7 @@ load_coordinates(Lux_job *ego){
 
 	lux_debug("Read coordiantes\n");
 
-    /* Fill spatial bounding box */
+	/* Fill spatial bounding box */
 	for (int i = 1; i < 4; i++){
 		/* xmin */
 		EGO->bounding_box.s[i] = ((cl_float *)coordinates[i - 1])[0];
@@ -340,9 +340,6 @@ load_snapshot(Lux_job *ego, size_t time_snapshot_index, size_t load_in_t1){
 
 	lux_debug("Reading time %s\n", time);
 
-	/* Read metric */
-	void *g[10];
-
 	/* Now, we read the Gammas */
 	void *Gamma[40];
 	size_t num_points;
@@ -381,6 +378,52 @@ load_snapshot(Lux_job *ego, size_t time_snapshot_index, size_t load_in_t1){
 
 	lux_debug("Read Gammas\n");
 
+	/* Read metric */
+	void *g[10];
+
+	index = 0;
+	for(size_t i = 0; i < 4; i++)
+		for(size_t j = i; j < 4; j++) {
+			char var_name[256];
+			snprintf(var_name, sizeof(var_name), "g_%s%s", dimension_names[i], dimension_names[j]);
+
+			/* We treat our 3D data as 1D */
+			num_points = read_variable_from_h5_file_and_return_num_points(
+				group_id, var_name, &g[index]);
+
+			/* This is an error, something didn't work as expected */
+			/* We have already printed what */
+			if (num_points <= 0)
+				return num_points;
+
+			if (num_points != expected_num_points) {
+				lux_print("Number of points in Gammas inconsistent with coordinates\n");
+				return -1;
+			}
+			index++;
+		}
+
+	lux_debug("Read metric\n");
+
+	void *rho;
+	{
+		/* We treat our 3D data as 1D */
+		num_points = read_variable_from_h5_file_and_return_num_points(
+			group_id, "rho", &rho);
+
+		/* This is an error, something didn't work as expected */
+		/* We have already printed what */
+		if (num_points <= 0)
+			return num_points;
+
+		if (num_points != expected_num_points) {
+			lux_print("Number of points in Gammas inconsistent with coordinates\n");
+			return -1;
+		}
+	}
+
+	lux_debug("Read fluid\n");
+
 	/* Finally, we create the images */
 
 	imgfmt.image_channel_order = CL_R;         /* use one channel */
@@ -418,10 +461,55 @@ load_snapshot(Lux_job *ego, size_t time_snapshot_index, size_t load_in_t1){
 				index++;
 			}
 
+	for (size_t i = 0; i < 4; i++)
+		for (size_t j = i; j < 4; j++) {
+			/* We fill _t1 only the first time, when snapshot_index = 0,
+			 * in all the other cases we fill _t2, and then we shift the pointers.*/
+			if (load_in_t1){
+				EGO->spacetime_t1[index] = clCreateImage(
+					EGO->ocl->ctx, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, &imgfmt,
+					&imgdesc, g[index-40], &err);
+			}else{
+				EGO->spacetime_t2[index] = clCreateImage(
+					EGO->ocl->ctx, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, &imgfmt,
+					&imgdesc, g[index-40], &err);
+			}
+			/* https://streamhpc.com/blog/2013-04-28/opencl-error-codes/ */
+			if (err != CL_SUCCESS) {
+				lux_print("Error in creating images\n");
+				return err;
+			}
+			index++;
+		}
+
+	{
+		/* We fill _t1 only the first time, when snapshot_index = 0,
+		 * in all the other cases we fill _t2, and then we shift the pointers.*/
+		if (load_in_t1){
+			EGO->spacetime_t1[index] = clCreateImage(
+				EGO->ocl->ctx, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, &imgfmt,
+				&imgdesc, rho, &err);
+		}else{
+			EGO->spacetime_t2[index] = clCreateImage(
+				EGO->ocl->ctx, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, &imgfmt,
+				&imgdesc, rho, &err);
+		}
+		/* https://streamhpc.com/blog/2013-04-28/opencl-error-codes/ */
+		if (err != CL_SUCCESS) {
+			lux_print("Error in creating images\n");
+			return err;
+		}
+	}
+
 	lux_debug("Images created\n");
 
 	for (size_t i = 0; i < 40; i++)
 		free(Gamma[i]);
+
+	for (size_t i = 0; i < 10; i++)
+		free(g[i]);
+
+	free(rho);
 
 	status = H5Fclose(file_id);
 	if (status != 0) {
