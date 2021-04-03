@@ -80,6 +80,17 @@ __read_only image3d_t Gamma_zxz_t1, \
 __read_only image3d_t Gamma_zyy_t1, \
 __read_only image3d_t Gamma_zyz_t1, \
 __read_only image3d_t Gamma_zzz_t1, \
+__read_only image3d_t g_tt_t1, \
+__read_only image3d_t g_tx_t1, \
+__read_only image3d_t g_ty_t1, \
+__read_only image3d_t g_tz_t1, \
+__read_only image3d_t g_xx_t1, \
+__read_only image3d_t g_xy_t1, \
+__read_only image3d_t g_xz_t1, \
+__read_only image3d_t g_yy_t1, \
+__read_only image3d_t g_yz_t1, \
+__read_only image3d_t g_zz_t1, \
+__read_only image3d_t rho_t1, \
 __read_only image3d_t Gamma_ttt_t2, \
 __read_only image3d_t Gamma_ttx_t2, \
 __read_only image3d_t Gamma_tty_t2, \
@@ -119,7 +130,18 @@ __read_only image3d_t Gamma_zxy_t2, \
 __read_only image3d_t Gamma_zxz_t2, \
 __read_only image3d_t Gamma_zyy_t2, \
 __read_only image3d_t Gamma_zyz_t2, \
-__read_only image3d_t Gamma_zzz_t2
+__read_only image3d_t Gamma_zzz_t2, \
+__read_only image3d_t g_tt_t2, \
+__read_only image3d_t g_tx_t2, \
+__read_only image3d_t g_ty_t2, \
+__read_only image3d_t g_tz_t2, \
+__read_only image3d_t g_xx_t2, \
+__read_only image3d_t g_xy_t2, \
+__read_only image3d_t g_xz_t2, \
+__read_only image3d_t g_yy_t2, \
+__read_only image3d_t g_yz_t2, \
+__read_only image3d_t g_zz_t2, \
+__read_only image3d_t rho_t2
 
 
 #define SPACETIME_ARGS \
@@ -165,6 +187,17 @@ Gamma_zxz_t1, \
 Gamma_zyy_t1, \
 Gamma_zyz_t1, \
 Gamma_zzz_t1, \
+g_tt_t1, \
+g_tx_t1, \
+g_ty_t1, \
+g_tz_t1, \
+g_xx_t1, \
+g_xy_t1, \
+g_xz_t1, \
+g_yy_t1, \
+g_yz_t1, \
+g_zz_t1, \
+rho_t1, \
 Gamma_ttt_t2, \
 Gamma_ttx_t2, \
 Gamma_tty_t2, \
@@ -204,4 +237,15 @@ Gamma_zxy_t2, \
 Gamma_zxz_t2, \
 Gamma_zyy_t2, \
 Gamma_zyz_t2, \
-Gamma_zzz_t2
+Gamma_zzz_t2, \
+g_tt_t2, \
+g_tx_t2, \
+g_ty_t2, \
+g_tz_t2, \
+g_xx_t2, \
+g_xy_t2, \
+g_xz_t2, \
+g_yy_t2, \
+g_yz_t2, \
+g_zz_t2, \
+rho_t2
