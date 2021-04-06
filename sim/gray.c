@@ -38,22 +38,24 @@ inline static real time_at_snapshot(Lux_job *ego, int snapshot_number){
 }
 
 
-static void find_snapshot(Lux_job *ego, real t, size_t *snap){
+static size_t find_snapshot(Lux_job *ego, real t){
 	/* Find snapshot number so that t1 <= t <= t2, where t1 is the time
 	 * corresponding to the snapshot number */
 
 	real t1, t2;
 
 	/* We assume that snapshots they are ordered from the min to the max. */
-	*snap = -1;
+	size_t snap = -1;
 	/* We have already performed all the necessary checks, so this loop should
 	 * be well defined. */
 	do{
-		(*snap)++;
-		t1 = time_at_snapshot(ego, *snap);
-		t2 = time_at_snapshot(ego, *snap + 1);
+		snap++;
+		t1 = time_at_snapshot(ego, snap);
+		t2 = time_at_snapshot(ego, snap + 1);
 		/* It has to be that slow_light_t2 > slow_light_t1 */
 	}while(!(t >= t1 && t <= t2));
+
+	return snap;
 }
 
 
@@ -207,18 +209,19 @@ _exec(Lux_job *ego)
 
 	if (frozen_spacetime){
 		lux_print("Assuming fast light\n");
-		if (only_one_snapshot){
-			/* 1 here means "load in t1" */
-			lux_check_failure_code(load_snapshot(ego, 0, 1), cleanup3);
-		}else{
-             /* Here we read the snapshot at t1 and t2 so that they contain t_init. */
-			find_snapshot(ego, t_init, &snap_number);
-			/* 1 here means "load in t1" */
-			lux_check_failure_code(load_snapshot(ego, snap_number, 1), cleanup3);
-		}
+
+		/* If we have only one snapshot, then we must read it (it has index 0). */
+		snap_number = 0 ? only_one_snapshot: find_snapshot(ego, t_init);
+
+		/* 1 here means "load in t1" */
+		lux_check_failure_code(load_snapshot(ego, snap_number, 1), cleanup3);
+
 		/* We have to fill t2 with something, otherwise it will produce errors.
-		 * We fill with the same data as t1.  Here 0 means "to_t2" */
-		copy_snapshot(ego, 0);
+		 * We fill with the same data as t1.  We do not use copy_snapshot, because
+		 * the function assumes that the EGO already contains valid images.
+		 * Here 0 means "to_t2" */
+		lux_check_failure_code(load_snapshot(ego, snap_number, 0), cleanup3);
+
 		/* Next, we disable time interpolation by setting the two time extrema
 		 * of the bounding box to be the same */
 		EGO->bounding_box.s0 = 0;
@@ -226,7 +229,7 @@ _exec(Lux_job *ego)
 	}else{
 		lux_print("Working with slow light\n");
 		/* Here we read the snapshot at t1 and t2 so that they contain t_init. */
-		find_snapshot(ego, t_init, &snap_number);
+		snap_number = find_snapshot(ego, t_init);
 		slow_light_t1 = time_at_snapshot(ego, snap_number);
 		slow_light_t2 = time_at_snapshot(ego, snap_number + 1);
 		/* 1 here means "load in t1" */
@@ -261,7 +264,7 @@ _exec(Lux_job *ego)
 			 * over the other one.  If it is off by more than 1, then we have to
 			 * read them both. */
 			size_t old_snap_number = snap_number;
-			find_snapshot(ego, target, &snap_number);
+			snap_number = find_snapshot(ego, target);
 			slow_light_t1 = time_at_snapshot(ego, snap_number);
 			slow_light_t2 = time_at_snapshot(ego, snap_number + 1);
 
