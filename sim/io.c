@@ -279,16 +279,21 @@ load_coordinates(Lux_job *ego){
 void
 copy_snapshot(Lux_job *ego, size_t to_t1){
 	/* This function copies over the snapshot in _t2 to _t1 if to_t1 is true,
-	 * otherwise from _t1 to _t2.  For a frozen spacetime, _t2 is never used
-	 * anyways. */
+	 * otherwise from _t1 to _t2.  Before doing this, the memory is released.
+	 * We assume that data is already defined before copying. */
 	size_t index = 0;
 	for (size_t i = 0; i < 4; i++)
 		for (size_t j = 0; j < 4; j++)
 			for (size_t k = j; k < 4; k++) {
-				if (to_t1)
+				if (to_t1){
+					/* TODO: Error checking on clReleaseMemObject */
+					clReleaseMemObject(EGO->spacetime_t1[index]);
 					EGO->spacetime_t1[index] = EGO->spacetime_t2[index];
-				else
+				}else{
+					/* TODO: Error checking on clReleaseMemObject */
+					clReleaseMemObject(EGO->spacetime_t2[index]);
 					EGO->spacetime_t2[index] = EGO->spacetime_t1[index];
+				}
 				index++;
 			}
 
