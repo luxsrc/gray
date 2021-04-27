@@ -70,5 +70,5 @@ rhs(struct state s, SPACETIME_PROTOTYPE_ARGS) /**< state of the ray */
 	real4 k = down(q, s.g.u, SPACETIME_ARGS);
 	return (struct state){
 		gr_rhs(s.g, SPACETIME_ARGS),
-		rt_rhs(getflow(q, k, SPACETIME_ARGS))};
+		rt_rhs(s.r, getflow(q, k, SPACETIME_ARGS))};
 }

@@ -183,10 +183,8 @@ rt_icond(void)
 }
 
 struct rt
-rt_rhs(struct flow f)
+rt_rhs(struct rt r, struct flow f)
 {
-	struct rt r;
-
 	for(whole i = 0; i < n_freq; ++i) {
 		const real nu     = nus[i] * f.shift;
 		const real B_nu   = B_Planck(nu, f.te);
