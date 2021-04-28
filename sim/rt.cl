@@ -185,14 +185,17 @@ rt_icond(void)
 struct rt
 rt_rhs(struct rt r, struct flow f)
 {
+
+	struct rt rhs;
+
 	for(whole i = 0; i < n_freq; ++i) {
 		const real nu     = nus[i] * f.shift;
 		const real B_nu   = B_Planck(nu, f.te);
 		const real L_j_nu = L_j_syn(nu, f.te, f.ne, f.b, f.bkcos) + L_j_ff(nu, f.te, f.ne);
 
-		r.I  [i] = -L_j_nu * EXP(-r.tau[i]) / (f.shift * f.shift + (real)EPSILON);
-		r.tau[i] = -L_j_nu * f.shift        / (B_nu              + (real)EPSILON);
+		rhs.I  [i] = -L_j_nu * EXP(-r.tau[i]) / (f.shift * f.shift + (real)EPSILON);
+		rhs.tau[i] = -L_j_nu * f.shift        / (B_nu              + (real)EPSILON);
 	}
 
-	return r;
+	return rhs;
 }
