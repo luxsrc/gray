@@ -180,6 +180,15 @@ real space_interpolate(real4 xyz,
   return read_imagef(var, sampler, coords).x;
 }
 
+real time_interpolate(real t, real t1, real t2, real y1, real y2){
+  /* Perform linear time interpolation between t1 and t2 with values y1 and
+   * y2. */
+
+  /* y(t) = y_1 + (t - t_1) / (t_2 - t_1) * (y_2 - y_1) */
+
+  return y1 + (t - t1) / (t2 - t1) * (y2 - y1);
+}
+
 real interpolate(real4 q,
                  real8 bounding_box,
                  int4 num_points,
@@ -196,10 +205,8 @@ real interpolate(real4 q,
   if (t1 == t2)
     return space_interpolate(q, bounding_box, num_points, var_t1);
 
-  /* y(t) = y_1 + (t - t_1) / (t2 - t1) * (y_2 - y_1) */
-
   real y1 = space_interpolate(q, bounding_box, num_points, var_t1);
   real y2 = space_interpolate(q, bounding_box, num_points, var_t2);
 
-  return y1 + (q.s0 - t1) / (t2 - t1) * (y2 - y1);
+  return time_interpolate(q.s0, t1, t2, y1, y2);
 }

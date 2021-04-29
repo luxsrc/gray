@@ -72,9 +72,13 @@ evolve_drv(__global real *data,  /**< states of the rays     */
            __global real *info,  /**< diagnostic information */
            const    real  dt,    /**< step size              */
            const    whole n_sub, /**< number of sub-steps    */
-           __local  real *scratch,
+		   __local  real *scratch,
+           const    whole snapshot_number, /**< index of the current snapshot
+											*   (used by the horizons) */
+		   HORIZON_PROTOTYPE_ARGS,
            SPACETIME_PROTOTYPE_ARGS)
 {
+
 	const size_t gj = get_global_id(0); /* for h, slowest changing index */
 	const size_t gi = get_global_id(1); /* for w, fastest changing index */
 	const size_t g  = gi + gj * w_rays;
@@ -90,7 +94,7 @@ evolve_drv(__global real *data,  /**< states of the rays     */
 
 		/* Substepping */
 		for(h = 0; h < n; h += dh) {
-			dh = getdt(d.g, dt/n_sub) / dt * n;
+			dh = getdt(d.g, dt/n_sub, snapshot_number, HORIZON_ARGS) / dt * n;
 			if(!dh)
 				break;
 			if(dh > n - h)

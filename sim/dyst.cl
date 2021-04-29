@@ -1,5 +1,63 @@
 /* Automatically generated, do not edit */
 
+#define compute_eps_hor(index)                                          \
+  if (ah_valid_##index[snap_number] > 0){                               \
+                                                                        \
+    /* Perform time interpolation for radius and centroid */            \
+                                                                        \
+    /* Note that we don't allow runs where t_final is outside the range of \
+     * snapshots, so we always have a "+1" snapshot. When we are working with \
+     * only one snapshot, we copied over the horizons to have two, so that \
+     * we can still run through these routines. */                      \
+                                                                        \
+    /* We do not want to include the time in the distance, so we set    \
+     * it to be the same as out point. */                               \
+    centroid.s0 = q.s0;                                                 \
+                                                                        \
+    /* We need to do time interpolation only if the times are different \
+     * Otherwise, we can just read the value */                         \
+                                                                        \
+    if (ah_centr_##index[snap_number].s0                                \
+        != ah_centr_##index[snap_number + 1].s0) {                      \
+                                                                        \
+    centroid.s1 = time_interpolate(                                     \
+      q.s0,                                                             \
+      ah_centr_##index[snap_number].s0,       /* t1 */                  \
+      ah_centr_##index[snap_number + 1].s0,   /* t2 */                  \
+      ah_centr_##index[snap_number].s1,       /* y1 */                  \
+      ah_centr_##index[snap_number + 1].s1);  /* y2 */                  \
+                                                                        \
+    centroid.s2 = time_interpolate(                                     \
+      q.s0,                                                             \
+      ah_centr_##index[snap_number].s0,       /* t1 */                  \
+      ah_centr_##index[snap_number + 1].s0,   /* t2 */                  \
+      ah_centr_##index[snap_number].s2,       /* y1 */                  \
+      ah_centr_##index[snap_number + 1].s2);  /* y2 */                  \
+                                                                        \
+    centroid.s3 = time_interpolate(                                     \
+      q.s0,                                                             \
+      ah_centr_##index[snap_number].s0,       /* t1 */                  \
+      ah_centr_##index[snap_number + 1].s0,   /* t2 */                  \
+      ah_centr_##index[snap_number].s3,       /* y1 */                  \
+      ah_centr_##index[snap_number + 1].s3);  /* y2 */                  \
+                                                                        \
+    radius_max = time_interpolate(                                      \
+      q.s0,                                                             \
+      ah_centr_##index[snap_number].s0,       /* t1 */                  \
+      ah_centr_##index[snap_number + 1].s0,   /* t2 */                  \
+      ah_max_r_##index[snap_number],          /* y1 */                  \
+      ah_max_r_##index[snap_number + 1]);     /* y2 */                  \
+    }else{                                                              \
+      centroid.s1 = ah_centr_##index[snap_number].s1;                   \
+      centroid.s2 = ah_centr_##index[snap_number].s2;                   \
+      centroid.s3 = ah_centr_##index[snap_number].s3;                   \
+      radius_max = ah_max_r_##index[snap_number];                       \
+    }                                                                   \
+                                                                        \
+    eps_tmp = sqrt(distance(q, centroid)) - radius_max;                 \
+    if (eps_tmp < eps) eps = eps_tmp;                                   \
+}
+
 struct gr {
     real4 q;
     real4 u;
@@ -43,13 +101,35 @@ real4 matrix_vector_product(real16 a, real4 b){
 real
 getrr(real4 q)
 {
-  return 1; /* \todo define the black hole location and implement getrr() */
+  /* We use the flat Cartesian metric for this. This is used
+   * only to check if we are far away from the center of the
+   * domain. */
+  return q.s1 * q.s1 + q.s2 * q.s2 + q.s3 * q.s3;
 }
 
 real
-geteps(real4 q)
+geteps(real4 q, const whole snap_number,
+       HORIZON_PROTOTYPE_ARGS)
 {
-  return 1; /* \todo */
+
+  /* We loop over the horizons, look at the ones that are valid,
+   * and take the Euclidean distance from a sphere defined by
+   * the minimum radius. Then, we take the minimum across all
+   * the horizons. If there are no horizons, then we set eps
+   * to 0.01 */
+
+  real eps = 0.01;
+  real eps_tmp;
+
+  real4 centroid;
+  real radius_max;
+
+  /* One per each horizon */
+  compute_eps_hor(1);
+  compute_eps_hor(2);
+  compute_eps_hor(3);
+
+  return eps;
 }
 
 real4

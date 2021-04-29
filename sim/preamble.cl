@@ -249,3 +249,36 @@ g_yy_t2, \
 g_yz_t2, \
 g_zz_t2, \
 rho_t2
+
+#define HORIZON_PROTOTYPE_ARGS \
+__global const int   *ah_valid_1, \
+__global const real4 *ah_centr_1, \
+__global const real  *ah_min_r_1, \
+__global const real  *ah_max_r_1, \
+__global const int   *ah_valid_2, \
+__global const real4 *ah_centr_2, \
+__global const real  *ah_min_r_2, \
+__global const real  *ah_max_r_2, \
+__global const int   *ah_valid_3, \
+__global const real4 *ah_centr_3, \
+__global const real  *ah_min_r_3, \
+__global const real  *ah_max_r_3
+
+
+
+
+
+
+#define HORIZON_ARGS \
+ah_valid_1, \
+ah_centr_1, \
+ah_min_r_1, \
+ah_max_r_1, \
+ah_valid_2, \
+ah_centr_2, \
+ah_min_r_2, \
+ah_max_r_2, \
+ah_valid_3, \
+ah_centr_3, \
+ah_min_r_3, \
+ah_max_r_3

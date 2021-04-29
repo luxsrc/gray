@@ -58,3 +58,7 @@ be structured in a specific way:
   Gamma_zxz, Gamma_zyy, Gamma_zyz, Gamma_zzz, g_tt, g_tx, g_ty, g_tz, g_xx,
   g_xy, g_xz, g_yy, g_yz, g_zz,
 * All the variables must have the same precision (e.g., single or double).
+* Each group has to be tagged with attributes with names ah_N, where N is the
+  number of horizon (starting from 1). These attributes have to be arrays with
+  5 elements: the x,y,z location of the Nth horizon, and its minimum and
+  maximum radii.

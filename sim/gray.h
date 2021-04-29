@@ -42,10 +42,15 @@
 #include "param.h"
 #include "setup.h"
 
-/* Max number of times in the HDF5 file and max length of the group
- * name in the files */
+/** Max number of times in the HDF5 file and max length of the group
+ ** name in the files */
+
 #define MAX_AVAILABLE_TIMES 1024
 #define MAX_TIME_NAME_LENGTH 64
+
+/* You cannot simply increase this, you also have to add more horizons
+ * in the struct and pass them to the kernel.  */
+#define MAX_NUM_HORIZONS 3
 
 /**
  ** Run-time data structure for GRay2
@@ -85,8 +90,8 @@ struct gray {
 	/* num_points.s2 contains point along the y direction */
 	/* num_points.s3 contains point along the z direction */
 
-	/* We need 40+10+1 == 51 images to contain all the 40 christoffel
-	   symbols, 10 metric components, and 1 fluid quality */
+	/* We need 40+10+1 == 51 images to contain all the 40 Christoffel symbols,
+	   10 metric components, and 1 fluid variable */
 
 	/* We always have two timesteps loaded */
 	cl_mem spacetime_t1[40+10+1];
@@ -96,7 +101,26 @@ struct gray {
 
 	cl_float max_available_time;
 
+	/* If horizon_is_valid is positive, then we are going to process
+	 * this horizon. */
+	cl_int    ah_valid_1[MAX_AVAILABLE_TIMES];
+	cl_float4 ah_centr_1[MAX_AVAILABLE_TIMES];
+	/* Minimum and maximum radii */
+	cl_float  ah_min_r_1[MAX_AVAILABLE_TIMES];
+	cl_float  ah_max_r_1[MAX_AVAILABLE_TIMES];
+
+	cl_int    ah_valid_2[MAX_AVAILABLE_TIMES];
+	cl_float4 ah_centr_2[MAX_AVAILABLE_TIMES];
+	cl_float  ah_min_r_2[MAX_AVAILABLE_TIMES];
+	cl_float  ah_max_r_2[MAX_AVAILABLE_TIMES];
+
+	cl_int    ah_valid_3[MAX_AVAILABLE_TIMES];
+	cl_float4 ah_centr_3[MAX_AVAILABLE_TIMES];
+	cl_float  ah_min_r_3[MAX_AVAILABLE_TIMES];
+	cl_float  ah_max_r_3[MAX_AVAILABLE_TIMES];
+
 };
+
 
 #define EGO ((struct gray *)ego)
 #define CKR lux_check_func_success
@@ -108,7 +132,7 @@ extern Lux_opencl *build(Lux_job *);
 extern void icond(Lux_job *, real);
 
 /** Evolve the states of photons to the next (super) step */
-extern real evolve(Lux_job *, real, real, size_t);
+extern real evolve(Lux_job *, real, real, size_t, size_t snapshot_number);
 
 /** Output data to a file */
 extern void dump(Lux_job *, size_t);

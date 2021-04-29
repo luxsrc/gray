@@ -24,6 +24,77 @@
 #include <hdf5.h>
 #include <time.h>
 
+
+/* Macro that we use to assign horizon properties from attributes */
+#define assign_horizon(index)					                                \
+/* The indexing for horizons start from 1 */									\
+snprintf(attr_name, sizeof(attr_name), "ah_%d", index);					    	\
+																				\
+/* If the attribute does not exist, then we have to invalidate the				\
+ * horizon */																	\
+																				\
+/* "." means: the attribute is attached to group_id */							\
+if (H5Aexists_by_name(group_id, ".", attr_name, H5P_DEFAULT)){					\
+																				\
+	attr = H5Aopen_by_name(group_id, ".", attr_name, H5P_DEFAULT, H5P_DEFAULT);	\
+	if (attr == -1) {															\
+		lux_print("Error in opening attribute: %s\n", attr_name);				\
+		return attr;															\
+	}																			\
+																				\
+	/* Get size */																\
+	atype = H5Aget_type(attr);													\
+	if (atype == -1) {															\
+		lux_print("Error in reading type of attribute: %s\n", attr_name);		\
+		return atype;															\
+	}																			\
+																				\
+	size_t sz_tmp = H5Tget_size(atype);											\
+																				\
+	/* Check that size is consistent */											\
+	if (sz == 0)																\
+		sz = sz_tmp;															\
+	else																		\
+		if (sz != sz_tmp){														\
+			lux_print("Precision inconsistent in horizon information.");		\
+			return -1;															\
+		}																		\
+																				\
+	aspace = H5Aget_space(attr);												\
+	if (aspace == -1) {															\
+		lux_print("Error in reading dataspace in attribute: %s\n", attr_name);	\
+		return aspace;															\
+	}																			\
+	size_t npoints = H5Sget_simple_extent_npoints(aspace);						\
+																				\
+	if (npoints != expected_attr_num){											\
+		lux_print("Unexpected number of points in attribute %s\n.");			\
+		return -1;																\
+	}																			\
+																				\
+	cl_float* attr_array = (cl_float *)malloc(sz * (int)npoints);				\
+	H5Aread(attr, atype, attr_array);											\
+	/* The 4th attribute is the maximum radius, if it is not positive,			\
+	 * the horizon is not valid */												\
+    if (attr_array[4] <= 0){													\
+    	EGO->ah_valid_##index[i] = -1;											\
+    }else{																		\
+    	EGO->ah_valid_##index[i] = 1;											\
+    	char *rem;																\
+    	cl_float time = strtod(EGO->available_times[i], &rem);					\
+    	EGO->ah_centr_##index[i].s0 = time;										\
+    	EGO->ah_centr_##index[i].s1 = attr_array[0];							\
+    	EGO->ah_centr_##index[i].s2 = attr_array[1];							\
+    	EGO->ah_centr_##index[i].s3 = attr_array[2];							\
+    	EGO->ah_min_r_##index[i] = attr_array[3];							    \
+    	EGO->ah_max_r_##index[i] = attr_array[4];							    \
+    }																			\
+	H5Aclose(attr);																\
+}else{				/* Attribute does not exist */								\
+	lux_print("Attribute %s does not exist\n", attr_name);						\
+	EGO->ah_valid_##index[i] = -1;								                \
+}
+
 /* Compare function, needed for qsort (needed to sort the times in the HDF5 file) */
 int compare (const void *a, const void *b)
 {
@@ -216,6 +287,78 @@ populate_ego_available_times(Lux_job *ego) {
 }
 
 size_t
+load_horizons(Lux_job *ego){
+	/* Here we load the horizon information from the attributes of the
+	 * datasets. */
+
+	struct param *p = &EGO->param;
+
+	const char *file_name = p->dyst_file;
+
+	/* HDF5 identifiers */
+	hid_t file_id;
+	hid_t group_id, root_group_id;
+	hid_t attr;
+	hid_t atype;
+	hid_t aspace;
+	herr_t status;
+
+	hsize_t nobj;
+
+	size_t sz = 0;
+	size_t expected_attr_num = 5;
+
+	file_id = H5Fopen(file_name, H5F_ACC_RDONLY, H5P_DEFAULT);
+	if (file_id == -1) {
+		lux_print("ERROR: File %s is not a valid HDF5 file\n", file_name);
+		return file_id;
+	}
+
+	root_group_id = H5Gopen(file_id, "/", H5P_DEFAULT);
+	if (root_group_id == -1) {
+		lux_print("ERROR: root group not found!\n");
+		return root_group_id;
+	}
+
+    /* Get the number of times */
+	status = H5Gget_num_objs(root_group_id, &nobj);
+	if (status == -1) {
+		lux_print("ERROR: reading number of objects!\n");
+		return status;
+	}
+
+	/* Now we loop over all the times. We have to remove 1 from nobj because we
+	 * also have the 'grid' group. */
+	for (size_t i = 0; i < nobj - 1; i++) {
+		group_id = H5Gopen(root_group_id, EGO->available_times[i], H5P_DEFAULT);
+		if (group_id == -1) {
+			lux_print("ERROR: problem with group %s\n", EGO->available_times[i]);
+			return group_id;
+		}
+		size_t	num_attr = H5Aget_num_attrs(group_id);
+		if (num_attr > MAX_NUM_HORIZONS){
+			lux_print("ERROR: too many horizons! (found %d attributes) \n", num_attr);
+			return -1;
+		}
+		char attr_name[256];
+
+		assign_horizon(1);
+		assign_horizon(2);
+		assign_horizon(3);
+
+		status = H5Gclose(group_id);
+		if (status != 0) {
+			lux_print("Error in closing group: %s", EGO->available_times[i]);
+			return status;
+		}
+	}
+
+	return 0;
+
+}
+
+
+size_t
 load_coordinates(Lux_job *ego){
 	/* Here we load the coordinates from the 'grid' dataset in the HDF5 file */
 
@@ -256,7 +399,7 @@ load_coordinates(Lux_job *ego){
 	/* dimension_names[i + 1] because we ignore the time, which is the zeroth */
 	for (size_t i = 0; i < 3; i++){
 		EGO->num_points.s[i + 1] = read_variable_from_h5_file_and_return_num_points(
-			      group_id, dimension_names[i + 1], &coordinates[i]);
+			group_id, dimension_names[i + 1], &coordinates[i]);
 		/* This is an error, something didn't work as expected */
 		/* We have already printed what */
 		if (EGO->num_points.s[i + 1] <= 0)
@@ -518,7 +661,7 @@ load_snapshot(Lux_job *ego, size_t time_snapshot_index, size_t load_in_t1){
 
 	status = H5Fclose(file_id);
 	if (status != 0) {
-		printf("Error in closing HDF5 file");
+		lux_print("Error in closing HDF5 file");
 		return status;
 	}
 

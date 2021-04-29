@@ -46,10 +46,11 @@ icond(real r_obs, /**< distance of the image from the black hole */
 }
 
 real
-getdt(struct gr g, real dt)
+getdt(struct gr g, real dt, const whole snapshot_number,
+	  HORIZON_PROTOTYPE_ARGS)
 {
 	real r   = sqrt(getrr(g.q));
-	real eps = geteps(g.q);
+	real eps = geteps(g.q, snapshot_number, HORIZON_ARGS);
 
 	if(eps < 0.01) /* stop near horizon */
 		return 0;

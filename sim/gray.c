@@ -27,6 +27,16 @@
 #include <unistd.h>				/* For access and F_OK */
 #include <hdf5.h>
 
+/* Copy  */
+#define copy_hor_time(index) \
+	EGO->ah_valid_##index[1]    = EGO->ah_valid_##index[0];		\
+	EGO->ah_centr_##index[1].s0 = EGO->ah_centr_##index[0].s0;	\
+	EGO->ah_centr_##index[1].s1 = EGO->ah_centr_##index[0].s1;	\
+	EGO->ah_centr_##index[1].s2 = EGO->ah_centr_##index[0].s2;	\
+	EGO->ah_centr_##index[1].s3 = EGO->ah_centr_##index[0].s3;	\
+	EGO->ah_min_r_##index[1]    = EGO->ah_min_r_##index[0];		\
+	EGO->ah_max_r_##index[1]    = EGO->ah_max_r_##index[0];
+
 inline static real time_at_snapshot(Lux_job *ego, int snapshot_number){
 	/* Return the time corresponding to the given snapshot */
 
@@ -179,6 +189,9 @@ _exec(Lux_job *ego)
 	/* We load the coordinates */
 	lux_check_failure_code(load_coordinates(ego), cleanup3);
 
+	/* We load the horizon data */
+	lux_check_failure_code(load_horizons(ego), cleanup3);
+
 	/* If max_available_time is equal to the first time available, it
 	 * means that it is the only one. */
 
@@ -202,6 +215,15 @@ _exec(Lux_job *ego)
 					  t_final, min_available_time, EGO->max_available_time);
 			return EXIT_FAILURE;
 		}
+	}
+
+	/* If we have only one snapshot, we have to add a fake horizon snapshot, to
+	 * make sure that we can assume to have always at least horizons at t1 and t2. */
+	if (only_one_snapshot){
+		/* 3 horizons */
+		copy_hor_time(1);
+		copy_hor_time(2);
+		copy_hor_time(3);
 	}
 
 	/* Snapshot of interest */
@@ -252,7 +274,7 @@ _exec(Lux_job *ego)
 		target = t_init + (++i) * dt_dump;
 
 		lux_print("%zu: %4.1f -> %4.1f", i, t, target);
-		ns = evolve(ego, t, target, n_sub);
+		ns = evolve(ego, t, target, n_sub, snap_number);
 		dump(ego, i);
 		lux_print(": DONE (%.3gns/step/ray)\n", ns/n_sub/n_rays);
 
@@ -266,6 +288,8 @@ _exec(Lux_job *ego)
 			size_t old_snap_number = snap_number;
 			snap_number = find_snapshot(ego, target);
 			slow_light_t1 = time_at_snapshot(ego, snap_number);
+			/* snap_number + 1 has to exist because we checked that t_final is
+			 * in the range of snapshots. */
 			slow_light_t2 = time_at_snapshot(ego, snap_number + 1);
 
 			if (snap_number == old_snap_number + 1){

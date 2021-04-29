@@ -19,6 +19,32 @@
  */
 #include "gray.h"
 
+#define pass_horizon_parameters(index)									\
+	buffer = clCreateBuffer(ocl->ctx,									\
+							CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,	\
+							sizeof(cl_int) * MAX_AVAILABLE_TIMES,		\
+							EGO->ah_valid_##index, &success);			\
+    evolve->setM(evolve, arg_num, buffer);								\
+	arg_num++;															\
+	buffer = clCreateBuffer(ocl->ctx,									\
+							CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,	\
+							sizeof(cl_float4) * MAX_AVAILABLE_TIMES,	\
+							EGO->ah_centr_##index, &success);			\
+    evolve->setM(evolve, arg_num, buffer);								\
+	arg_num++;															\
+	buffer = clCreateBuffer(ocl->ctx,									\
+							CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,	\
+							sizeof(cl_float4) * MAX_AVAILABLE_TIMES,	\
+							EGO->ah_max_r_##index, &success);			\
+    evolve->setM(evolve, arg_num, buffer);								\
+	arg_num++;															\
+	buffer = clCreateBuffer(ocl->ctx,									\
+							CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,	\
+							sizeof(cl_float) * MAX_AVAILABLE_TIMES,		\
+							EGO->ah_min_r_##index, &success);			\
+    evolve->setM(evolve, arg_num, buffer);								\
+	arg_num++;
+
 static inline size_t
 max(size_t a, size_t b)
 {
@@ -26,7 +52,7 @@ max(size_t a, size_t b)
 }
 
 real
-evolve(Lux_job *ego, real t, real target, size_t n_sub)
+evolve(Lux_job *ego, real t, real target, size_t n_sub, size_t snapshot_number)
 {
 	Lux_opencl        *ocl    = EGO->ocl;
 	Lux_opencl_kernel *evolve = EGO->evolve;
@@ -42,6 +68,9 @@ evolve(Lux_job *ego, real t, real target, size_t n_sub)
 
 	size_t arg_num = 0;
 
+	cl_int success;
+	cl_mem buffer;
+
 	evolve->setM(evolve, arg_num, EGO->data);
 	arg_num++;
 	evolve->setM(evolve, arg_num, EGO->info);
@@ -52,6 +81,11 @@ evolve(Lux_job *ego, real t, real target, size_t n_sub)
 	arg_num++;
 	evolve->setS(evolve, arg_num, sz * max(n_data, n_info));
 	arg_num++;
+	evolve->setW(evolve, arg_num, snapshot_number);
+	arg_num++;
+	pass_horizon_parameters(1);
+	pass_horizon_parameters(2);
+	pass_horizon_parameters(3);
 	evolve->set(evolve, arg_num, sizeof(cl_float8), &(EGO->bounding_box));
 	arg_num++;
 	evolve->set(evolve, arg_num, sizeof(cl_int4), &(EGO->num_points));
