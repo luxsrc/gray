@@ -116,9 +116,9 @@ geteps(real4 q, const whole snap_number,
    * and take the Euclidean distance from a sphere defined by
    * the minimum radius. Then, we take the minimum across all
    * the horizons. If there are no horizons, then we set eps
-   * to 0.01 */
+   * to a very large value. */
 
-  real eps = 0.01;
+  real eps = K(1e4);
   real eps_tmp;
 
   real4 centroid;
