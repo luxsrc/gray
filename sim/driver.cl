@@ -55,7 +55,7 @@ icond_drv(__global real *data,  /**< states of the rays     */
 		/* Compute initial conditions from parameters */
 		real alpha = ((gi + 0.5) / w_rays - 0.5) * w_img;
 		real beta  = ((gj + 0.5) / h_rays - 0.5) * h_img;
-		d = icond(r_obs, i_obs, j_obs, alpha, beta);
+		d = icond(r_obs, i_obs, j_obs, alpha, beta, SPACETIME_ARGS);
 
 		/* Output to global array */
 		for(s = 0; s < n_data; ++s)

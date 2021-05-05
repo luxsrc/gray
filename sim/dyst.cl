@@ -171,7 +171,8 @@ gr_icond(real r_obs, /**< Distance of the observer from the black hole */
          real i_obs, /**< Inclination angle of the observer in degrees */
          real j_obs, /**< Azimuthal   angle of the observer in degrees */
          real alpha, /**< One of the local Cartesian coordinates       */
-         real beta)  /**< The other  local Cartesian coordinate        */
+         real beta,
+         SPACETIME_PROTOTYPE_ARGS)  /**< The other  local Cartesian coordinate        */
 {
 
   real  deg2rad = K(3.14159265358979323846264338327950288) / K(180.0);
@@ -185,6 +186,45 @@ gr_icond(real r_obs, /**< Distance of the observer from the black hole */
 
   real4 q = (real4){K(0.0), x, y, z};
   real4 u = (real4){K(1.0), si * cj, si * sj, ci};
+
+  real16 g;
+
+  /* g_t */
+  g.s0 = interpolate(q, bounding_box, num_points, g_tt_t1, g_tt_t2);
+  g.s1 = interpolate(q, bounding_box, num_points, g_tx_t1, g_tx_t2);
+  g.s2 = interpolate(q, bounding_box, num_points, g_ty_t1, g_ty_t2);
+  g.s3 = interpolate(q, bounding_box, num_points, g_tz_t1, g_tz_t2);
+
+  /* g_x */
+  g.s4 = g.s1;
+  g.s5 = interpolate(q, bounding_box, num_points, g_xx_t1, g_xx_t2);
+  g.s6 = interpolate(q, bounding_box, num_points, g_xy_t1, g_xy_t2);
+  g.s7 = interpolate(q, bounding_box, num_points, g_xz_t1, g_xz_t2);
+
+  /* g_y */
+  g.s8 = g.s2;
+  g.s9 = g.s6;
+  g.sa = interpolate(q, bounding_box, num_points, g_yy_t1, g_yy_t2);
+  g.sb = interpolate(q, bounding_box, num_points, g_yz_t1, g_yz_t2);
+
+  /* g_z */
+  g.sc = g.s3;
+  g.sd = g.s7;
+  g.se = g.sb;
+  g.sf = interpolate(q, bounding_box, num_points, g_yz_t1, g_yz_t2);
+
+	real4 gt = g.s0123;
+	real4 gx = g.s4567;
+	real4 gy = g.s89ab;
+	real4 gz = g.scdef;
+
+	real  A  =  gt.s0;
+	real  B  =  dot(gt.s123, u.s123) * K(2.0);
+	real  C  = (dot(gx.s123, u.s123) * u.s1 +
+	            dot(gy.s123, u.s123) * u.s2 +
+	            dot(gz.s123, u.s123) * u.s3);
+
+	u.s123 /= -(B + sqrt(B * B - K(4.0) * A * C)) / (K(2.0) * A);
 
   return (struct gr){q, u};
 }

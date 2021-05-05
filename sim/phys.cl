@@ -37,10 +37,11 @@ icond(real r_obs, /**< distance of the image from the black hole */
       real i_obs, /**< inclination angle of the image in degrees */
       real j_obs, /**< azimuthal   angle of the image in degrees */
       real alpha, /**< one of the local Cartesian coordinates */
-      real beta)  /**< the other  local Cartesian coordinate  */
+      real beta,
+	  SPACETIME_PROTOTYPE_ARGS)  /**< the other  local Cartesian coordinate  */
 {
 	return (struct state){
-		gr_icond(r_obs, i_obs, j_obs, alpha, beta),
+	    gr_icond(r_obs, i_obs, j_obs, alpha, beta, SPACETIME_ARGS),
 		rt_icond()
 	};
 }
