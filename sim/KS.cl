@@ -1,3 +1,62 @@
+
+#define compute_eps_hor(index)                                          \
+  if (ah_valid_##index[snap_number] > 0){                               \
+                                                                        \
+    /* Perform time interpolation for radius and centroid */            \
+                                                                        \
+    /* Note that we don't allow runs where t_final is outside the range of \
+     * snapshots, so we always have a "+1" snapshot. When we are working with \
+     * only one snapshot, we copied over the horizons to have two, so that \
+     * we can still run through these routines. */                      \
+                                                                        \
+    /* We do not want to include the time in the distance, so we set    \
+     * it to be the same as out point. */                               \
+    centroid.s0 = q.s0;                                                 \
+                                                                        \
+    /* We need to do time interpolation only if the times are different \
+     * Otherwise, we can just read the value */                         \
+                                                                        \
+    if (ah_centr_##index[snap_number].s0                                \
+        != ah_centr_##index[snap_number + 1].s0) {                      \
+                                                                        \
+    centroid.s1 = time_interpolate(                                     \
+      q.s0,                                                             \
+      ah_centr_##index[snap_number].s0,       /* t1 */                  \
+      ah_centr_##index[snap_number + 1].s0,   /* t2 */                  \
+      ah_centr_##index[snap_number].s1,       /* y1 */                  \
+      ah_centr_##index[snap_number + 1].s1);  /* y2 */                  \
+                                                                        \
+    centroid.s2 = time_interpolate(                                     \
+      q.s0,                                                             \
+      ah_centr_##index[snap_number].s0,       /* t1 */                  \
+      ah_centr_##index[snap_number + 1].s0,   /* t2 */                  \
+      ah_centr_##index[snap_number].s2,       /* y1 */                  \
+      ah_centr_##index[snap_number + 1].s2);  /* y2 */                  \
+                                                                        \
+    centroid.s3 = time_interpolate(                                     \
+      q.s0,                                                             \
+      ah_centr_##index[snap_number].s0,       /* t1 */                  \
+      ah_centr_##index[snap_number + 1].s0,   /* t2 */                  \
+      ah_centr_##index[snap_number].s3,       /* y1 */                  \
+      ah_centr_##index[snap_number + 1].s3);  /* y2 */                  \
+                                                                        \
+    radius_max = time_interpolate(                                      \
+      q.s0,                                                             \
+      ah_centr_##index[snap_number].s0,       /* t1 */                  \
+      ah_centr_##index[snap_number + 1].s0,   /* t2 */                  \
+      ah_max_r_##index[snap_number],          /* y1 */                  \
+      ah_max_r_##index[snap_number + 1]);     /* y2 */                  \
+    }else{                                                              \
+      centroid.s1 = ah_centr_##index[snap_number].s1;                   \
+      centroid.s2 = ah_centr_##index[snap_number].s2;                   \
+      centroid.s3 = ah_centr_##index[snap_number].s3;                   \
+      radius_max = ah_max_r_##index[snap_number];                       \
+    }                                                                   \
+                                                                        \
+    eps_tmp = sqrt(distance(q, centroid)) - radius_max;                 \
+    if (eps_tmp < eps) eps = eps_tmp;                                   \
+}
+
 /*
  * Copyright (C) 2016 Chi-kwan Chan
  * Copyright (C) 2016 Steward Observatory
@@ -40,6 +99,8 @@
  ** z^2 = r^2 + a^2 (1 - z^2 / r^2)\f$.
  **/
 
+#define a_spin 0.6
+
 struct gr {
 	real4 q;
 	real4 u;
@@ -55,13 +116,40 @@ getrr(real4 q)
 }
 
 real
-geteps(real4 q)
+geteps(real4 q, const whole snap_number,
+       HORIZON_PROTOTYPE_ARGS)
 {
-	return sqrt(getrr(q)) - (1.0 + sqrt(1.0 - a_spin * a_spin));
+
+  /* We loop over the horizons, look at the ones that are valid,
+   * and take the Euclidean distance from a sphere defined by
+   * the minimum radius. Then, we take the minimum across all
+   * the horizons. If there are no horizons, then we set eps
+   * to a very large value. */
+
+  real eps = K(1e4);
+  real eps_tmp;
+
+  real4 centroid;
+  real radius_max;
+
+  /* One per each horizon */
+  compute_eps_hor(1);
+  compute_eps_hor(2);
+  compute_eps_hor(3);
+
+  return eps;
 }
 
+
+/* real */
+/* geteps(real4 q, const whole snap_number, */
+/*        HORIZON_PROTOTYPE_ARGS) */
+/* { */
+/* 	/\* return sqrt(getrr(q)) - (1.0 + sqrt(1.0 - a_spin * a_spin)); *\/ */
+/* } */
+
 real4
-down(real4 q, real4 u)
+down(real4 q, real4 u, SPACETIME_PROTOTYPE_ARGS)
 {
 	real  aa = a_spin * a_spin;
 	real  zz = q.s3 * q.s3;
@@ -95,9 +183,9 @@ down(real4 q, real4 u)
  ** \return The square of u at q
  **/
 real
-getuu(struct gr g) /**< state of the ray */
+getuu(struct gr g, SPACETIME_PROTOTYPE_ARGS) /**< state of the ray */
 {
-	return dot(down(g.q, g.u), g.u);
+	return dot(down(g.q, g.u, SPACETIME_ARGS), g.u);
 }
 
 /**
@@ -123,7 +211,8 @@ gr_icond(real r_obs, /**< distance of the image from the black hole */
          real i_obs, /**< inclination angle of the image in degrees */
          real j_obs, /**< azimuthal   angle of the image in degrees */
          real alpha, /**< one of the local Cartesian coordinates */
-         real beta)  /**< the other  local Cartesian coordinate  */
+         real beta,
+         SPACETIME_PROTOTYPE_ARGS)  /**< the other  local Cartesian coordinate  */
 {
 	real  deg2rad = K(3.14159265358979323846264338327950288) / K(180.0);
 	real  ci, si  = sincos(deg2rad * i_obs, &ci);
@@ -194,7 +283,7 @@ gr_icond(real r_obs, /**< distance of the image from the black hole */
  ** \return The right hand sides of the geodesic equations
  **/
 struct gr
-gr_rhs(struct gr g) /**< state of the ray */
+gr_rhs(struct gr g, SPACETIME_PROTOTYPE_ARGS) /**< state of the ray */
 {
 	real4 q = g.q;
 	real4 u = g.u;
