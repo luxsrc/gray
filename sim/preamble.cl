@@ -91,6 +91,10 @@ __read_only image3d_t g_yy_t1, \
 __read_only image3d_t g_yz_t1, \
 __read_only image3d_t g_zz_t1, \
 __read_only image3d_t rho_t1, \
+__read_only image3d_t bt_t1, \
+__read_only image3d_t bx_t1, \
+__read_only image3d_t by_t1, \
+__read_only image3d_t bz_t1, \
 __read_only image3d_t Gamma_ttt_t2, \
 __read_only image3d_t Gamma_ttx_t2, \
 __read_only image3d_t Gamma_tty_t2, \
@@ -141,8 +145,11 @@ __read_only image3d_t g_xz_t2, \
 __read_only image3d_t g_yy_t2, \
 __read_only image3d_t g_yz_t2, \
 __read_only image3d_t g_zz_t2, \
-__read_only image3d_t rho_t2
-
+__read_only image3d_t rho_t2, \
+__read_only image3d_t bt_t2, \
+__read_only image3d_t bx_t2, \
+__read_only image3d_t by_t2, \
+__read_only image3d_t bz_t2
 
 #define SPACETIME_ARGS \
 bounding_box, \
@@ -198,6 +205,10 @@ g_yy_t1, \
 g_yz_t1, \
 g_zz_t1, \
 rho_t1, \
+bt_t1, \
+bx_t1, \
+by_t1, \
+bz_t1, \
 Gamma_ttt_t2, \
 Gamma_ttx_t2, \
 Gamma_tty_t2, \
@@ -248,7 +259,11 @@ g_xz_t2, \
 g_yy_t2, \
 g_yz_t2, \
 g_zz_t2, \
-rho_t2
+rho_t2, \
+bt_t2, \
+bx_t2, \
+by_t2, \
+bz_t2
 
 #define HORIZON_PROTOTYPE_ARGS \
 __global const int   *ah_valid_1, \
@@ -263,10 +278,6 @@ __global const int   *ah_valid_3, \
 __global const real4 *ah_centr_3, \
 __global const real  *ah_min_r_3, \
 __global const real  *ah_max_r_3
-
-
-
-
 
 
 #define HORIZON_ARGS \

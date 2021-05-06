@@ -545,7 +545,7 @@ load_snapshot(Lux_job *ego, size_t time_snapshot_index, size_t load_in_t1){
 				return num_points;
 
 			if (num_points != expected_num_points) {
-				lux_print("Number of points in Gammas inconsistent with coordinates\n");
+				lux_print("Number of points in the metric inconsistent with coordinates\n");
 				return -1;
 			}
 			index++;
@@ -565,7 +565,29 @@ load_snapshot(Lux_job *ego, size_t time_snapshot_index, size_t load_in_t1){
 			return num_points;
 
 		if (num_points != expected_num_points) {
-			lux_print("Number of points in Gammas inconsistent with coordinates\n");
+			lux_print("Number of points in rho inconsistent with coordinates\n");
+			return -1;
+		}
+	}
+
+	/* Read magnetic field */
+	void *b[4];
+
+	for(size_t j = 0; j < 4; j++) {
+		char var_name[256];
+		snprintf(var_name, sizeof(var_name), "b_%s", dimension_names[j]);
+
+		/* We treat our 3D data as 1D */
+		num_points = read_variable_from_h5_file_and_return_num_points(
+			group_id, var_name, &b[j]);
+
+		/* This is an error, something didn't work as expected */
+		/* We have already printed what */
+		if (num_points <= 0)
+			return num_points;
+
+		if (num_points != expected_num_points) {
+			lux_print("Number of points in the magnetic field inconsistent with coordinates\n");
 			return -1;
 		}
 	}
@@ -648,6 +670,27 @@ load_snapshot(Lux_job *ego, size_t time_snapshot_index, size_t load_in_t1){
 			return err;
 		}
 	}
+	index++;
+
+	for (size_t j = 0; j < 4; j++) {
+		/* We fill _t1 only the first time, when snapshot_index = 0,
+		 * in all the other cases we fill _t2, and then we shift the pointers.*/
+		if (load_in_t1){
+			EGO->spacetime_t1[index] = clCreateImage(
+				EGO->ocl->ctx, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, &imgfmt,
+				&imgdesc, g[j], &err);
+		}else{
+			EGO->spacetime_t2[index] = clCreateImage(
+				EGO->ocl->ctx, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, &imgfmt,
+				&imgdesc, g[j], &err);
+		}
+		/* https://streamhpc.com/blog/2013-04-28/opencl-error-codes/ */
+		if (err != CL_SUCCESS) {
+			lux_print("Error in creating images\n");
+			return err;
+		}
+		index++;
+	}
 
 	lux_debug("Images created\n");
 
@@ -658,6 +701,9 @@ load_snapshot(Lux_job *ego, size_t time_snapshot_index, size_t load_in_t1){
 		free(g[i]);
 
 	free(rho);
+
+	for (size_t i = 0; i < 4; i++)
+		free(b[i]);
 
 	status = H5Fclose(file_id);
 	if (status != 0) {

@@ -39,16 +39,21 @@ getflow(real4 q, real4 k, SPACETIME_PROTOTYPE_ARGS)
 	struct flow f;
 
 	real4 u = {1, 0, 0, 0};
-	real4 b = {1, 0, 0, 1}; /* \todo check b is defined consistently;
-                                   to compute synchrotron radiation, all we
-                                   care are the magnitude of the magnetic
-                                   field and the angle cosine between the
-                                   magnetic field and the photon momentum
-                                   vector. */
+	real4 b; /* \todo check b is defined consistently;
+				to compute synchrotron radiation, all we
+				care are the magnitude of the magnetic
+				field and the angle cosine between the
+				magnetic field and the photon momentum
+				vector. */
+
+	b.s0 = interpolate(q, bounding_box, num_points, bt_t1, bt_t2);
+	b.s1 = interpolate(q, bounding_box, num_points, bx_t1, bx_t2);
+	b.s2 = interpolate(q, bounding_box, num_points, by_t1, by_t2);
+	b.s3 = interpolate(q, bounding_box, num_points, bz_t1, bz_t2);
 
 	f.ne = interpolate(q, bounding_box, num_points, rho_t1, rho_t2);
 	f.te = 1e12;
-	f.b  = 1;
+	f.b  = sqrt(dot(b, down(q, b, SPACETIME_ARGS)));
 
 	f.shift = -dot(k, u);
 	f.bkcos =  dot(k, b) / (f.shift * f.b + (real)EPSILON);

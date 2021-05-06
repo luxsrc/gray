@@ -143,7 +143,7 @@ L_j_ff(real nu, real te, real ne)
 } /* 12 FLOP + FLOP(Gaunt) == 15+ FLOP */
 
 static inline real
-L_j_syn(real nu, real te, real ne, real B,  real cos_theta)
+L_j_syn(real nu, real te, real ne, real B, real cos_theta)
 {
 	/* An approximate expression for thermal magnetobremsstrahlung
 	   emission, see Leung, Gammie, & Noble (2011) equation (72).
@@ -185,7 +185,6 @@ rt_icond(void)
 struct rt
 rt_rhs(struct rt r, struct flow f)
 {
-
 	struct rt rhs;
 
 	for(whole i = 0; i < n_freq; ++i) {

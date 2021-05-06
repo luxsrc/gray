@@ -94,8 +94,8 @@ struct gray {
 	   10 metric components, and 1 fluid variable */
 
 	/* We always have two timesteps loaded */
-	cl_mem spacetime_t1[40+10+1];
-	cl_mem spacetime_t2[40+10+1];
+	cl_mem spacetime_t1[40+10+5];
+	cl_mem spacetime_t2[40+10+5];
 
 	char available_times[MAX_AVAILABLE_TIMES][MAX_TIME_NAME_LENGTH];
 
