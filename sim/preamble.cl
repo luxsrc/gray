@@ -95,6 +95,7 @@ __read_only image3d_t bt_t1, \
 __read_only image3d_t bx_t1, \
 __read_only image3d_t by_t1, \
 __read_only image3d_t bz_t1, \
+__read_only image3d_t temperature_t1, \
 __read_only image3d_t Gamma_ttt_t2, \
 __read_only image3d_t Gamma_ttx_t2, \
 __read_only image3d_t Gamma_tty_t2, \
@@ -149,7 +150,8 @@ __read_only image3d_t rho_t2, \
 __read_only image3d_t bt_t2, \
 __read_only image3d_t bx_t2, \
 __read_only image3d_t by_t2, \
-__read_only image3d_t bz_t2
+__read_only image3d_t bz_t2, \
+__read_only image3d_t temperature_t2
 
 #define SPACETIME_ARGS \
 bounding_box, \
@@ -209,6 +211,7 @@ bt_t1, \
 bx_t1, \
 by_t1, \
 bz_t1, \
+temperature_t1, \
 Gamma_ttt_t2, \
 Gamma_ttx_t2, \
 Gamma_tty_t2, \
@@ -263,7 +266,8 @@ rho_t2, \
 bt_t2, \
 bx_t2, \
 by_t2, \
-bz_t2
+bz_t2, \
+temperature_t2
 
 #define HORIZON_PROTOTYPE_ARGS \
 __global const int   *ah_valid_1, \

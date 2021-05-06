@@ -74,10 +74,10 @@ icond(Lux_job *ego, real t_init)
 	icond->set(icond, arg_num, sizeof(cl_int4), &(EGO->num_points));
 	arg_num++;
 	/* We have 40 Gammas + 10 metric components + 5 fluid property at t1 */
-	for (size_t old_arg_num = arg_num; arg_num < old_arg_num + 55; arg_num++)
+	for (size_t old_arg_num = arg_num; arg_num < old_arg_num + 56; arg_num++)
 		icond->setM(icond, arg_num, EGO->spacetime_t1[arg_num-old_arg_num]);
 	/* And here the 40 Gammas + 10 metric components + 5 fluid property at t2 */
-	for (size_t old_arg_num = arg_num; arg_num < old_arg_num + 55; arg_num++)
+	for (size_t old_arg_num = arg_num; arg_num < old_arg_num + 56; arg_num++)
 		icond->setM(icond, arg_num, EGO->spacetime_t2[arg_num-old_arg_num]);
 
 	(void)ocl->exec(ocl, icond, 2, shape);

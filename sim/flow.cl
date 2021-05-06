@@ -52,7 +52,7 @@ getflow(real4 q, real4 k, SPACETIME_PROTOTYPE_ARGS)
 	b.s3 = interpolate(q, bounding_box, num_points, bz_t1, bz_t2);
 
 	f.ne = interpolate(q, bounding_box, num_points, rho_t1, rho_t2);
-	f.te = 1e12;
+	f.te = interpolate(q, bounding_box, num_points, temperature_t1, temperature_t2);
 	f.b  = sqrt(dot(b, down(q, b, SPACETIME_ARGS)));
 
 	f.shift = -dot(k, u);

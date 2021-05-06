@@ -592,6 +592,23 @@ load_snapshot(Lux_job *ego, size_t time_snapshot_index, size_t load_in_t1){
 		}
 	}
 
+	void *temperature;
+	{
+		/* We treat our 3D data as 1D */
+		num_points = read_variable_from_h5_file_and_return_num_points(
+			group_id, "temperature", &temperature);
+
+		/* This is an error, something didn't work as expected */
+		/* We have already printed what */
+		if (num_points <= 0)
+			return num_points;
+
+		if (num_points != expected_num_points) {
+			lux_print("Number of points in temperature inconsistent with coordinates\n");
+			return -1;
+		}
+	}
+
 	lux_debug("Read fluid\n");
 
 	/* Finally, we create the images */
@@ -692,6 +709,27 @@ load_snapshot(Lux_job *ego, size_t time_snapshot_index, size_t load_in_t1){
 		index++;
 	}
 
+	{
+		/* We fill _t1 only the first time, when snapshot_index = 0,
+		 * in all the other cases we fill _t2, and then we shift the pointers.*/
+		if (load_in_t1){
+			EGO->spacetime_t1[index] = clCreateImage(
+				EGO->ocl->ctx, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, &imgfmt,
+				&imgdesc, temperature, &err);
+		}else{
+			EGO->spacetime_t2[index] = clCreateImage(
+				EGO->ocl->ctx, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, &imgfmt,
+				&imgdesc, temperature, &err);
+		}
+		/* https://streamhpc.com/blog/2013-04-28/opencl-error-codes/ */
+		if (err != CL_SUCCESS) {
+			lux_print("Error in creating images\n");
+			return err;
+		}
+	}
+	index++;
+
+
 	lux_debug("Images created\n");
 
 	for (size_t i = 0; i < 40; i++)
@@ -704,6 +742,8 @@ load_snapshot(Lux_job *ego, size_t time_snapshot_index, size_t load_in_t1){
 
 	for (size_t i = 0; i < 4; i++)
 		free(b[i]);
+
+	free(temperature);
 
 	status = H5Fclose(file_id);
 	if (status != 0) {

@@ -91,11 +91,11 @@ struct gray {
 	/* num_points.s3 contains point along the z direction */
 
 	/* We need 40+10+1 == 51 images to contain all the 40 Christoffel symbols,
-	   10 metric components, and 1 fluid variable */
+	   10 metric components, and 6 fluid variable */
 
 	/* We always have two timesteps loaded */
-	cl_mem spacetime_t1[40+10+5];
-	cl_mem spacetime_t2[40+10+5];
+	cl_mem spacetime_t1[40+10+6];
+	cl_mem spacetime_t2[40+10+6];
 
 	char available_times[MAX_AVAILABLE_TIMES][MAX_TIME_NAME_LENGTH];
 
