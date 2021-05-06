@@ -155,7 +155,7 @@ down(real4 q, real4 u, SPACETIME_PROTOTYPE_ARGS)
   g.sc = g.s3;
   g.sd = g.s7;
   g.se = g.sb;
-  g.sf = interpolate(q, bounding_box, num_points, g_yz_t1, g_yz_t2);
+  g.sf = interpolate(q, bounding_box, num_points, g_zz_t1, g_zz_t2);
 
   return matrix_vector_product(g, u);
 }
@@ -211,7 +211,7 @@ gr_icond(real r_obs, /**< Distance of the observer from the black hole */
   g.sc = g.s3;
   g.sd = g.s7;
   g.se = g.sb;
-  g.sf = interpolate(q, bounding_box, num_points, g_yz_t1, g_yz_t2);
+  g.sf = interpolate(q, bounding_box, num_points, g_zz_t1, g_zz_t2);
 
 	real4 gt = g.s0123;
 	real4 gx = g.s4567;
