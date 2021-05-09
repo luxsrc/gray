@@ -395,6 +395,10 @@ gr_rhs(struct gr g, SPACETIME_PROTOTYPE_ARGS) /**< state of the ray */
 			hDzu - uD.s3 + lz * tmp
 		}; /* 10 (-3) FLOPs */
 
+		#if coordinate_time
+		return (struct gr){u, a - a.s0 * u};
+		#else
 		return (struct gr){u, a};
+		#endif
 	}
 }
