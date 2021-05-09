@@ -140,6 +140,7 @@ extern void dump(Lux_job *, size_t);
 /** I/O helper functions */
 extern size_t populate_ego_available_times(Lux_job *);
 extern size_t load_coordinates(Lux_job *);
+extern size_t load_horizons(Lux_job *);
 extern size_t load_snapshot(Lux_job *, size_t, size_t);
 extern void   copy_snapshot(Lux_job *, size_t);
 
