@@ -4,7 +4,8 @@
 real	M_ADM:m	= 4.3e6	= strtod(val, &rem);	/**< Spacetime mass in unit of solar mass; It is needed in radiative transfer and in the spacetime boundary conditions*/
 const char *	coordinates:coor	    = "dyst"	    = val;	/**< Coordinate system */
 const char *	dyst_file:data   	    = "data.h5"	    = val;	/**< File with all the information for dynamical spacetime */
-size_t	enable_fast_light:fast_light	= 0          	= strtoul(val, &rem, 0);	/**< If non-zero, assume fast light */
+int	coordinate_time:ct	= 0	    = strtoul(val, &rem, 0);	/**< If non-zero, integrate in coordinate time */
+int	enable_fast_light:fast_light	= 0          	= strtoul(val, &rem, 0);	/**< If non-zero, assume fast light */
 
 # Numerical setup
 size_t	w_rays:W	= 512	= strtoul(val, &rem, 0);	/**< Number of rays along the width  of the image */

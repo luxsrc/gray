@@ -102,6 +102,7 @@ build(Lux_job *ego)
 		tail[-1] = '\0';
 
 	snprintf(buf, sizeof(buf),
+	         "#define coordinate_time %d\n"
 	         "#define n_freq %zu\n"
 	         "#define n_data %zu\n"
 	         "#define n_info %zu\n"
@@ -112,6 +113,7 @@ build(Lux_job *ego)
 	         "typedef real%zu realE;\n"
 	         "static __constant real nus[n_freq] = {%s};\n"
 	         "static __constant real M_ADM = %.18e;\n",
+	         p->coordinate_time,
 	         EGO->n_freq,
 	         n_data,
 	         n_info,
