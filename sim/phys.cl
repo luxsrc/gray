@@ -59,7 +59,7 @@ getdt(struct gr g, real dt, const whole snapshot_number,
 	if(dot(g.q.s123, g.q.s123) < 0 && r > K(1e3)) /* stop outside domain */
 		return 0;
 
-	if(fabs(dt) > 0.01 * eps * eps)
+	if(fabs(dt) > 0.01 * eps * eps && eps < K(1e5))
 		return sign(dt) * 0.01 * eps * eps;
 	else
 		return dt;
