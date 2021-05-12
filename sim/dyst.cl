@@ -140,6 +140,88 @@ geteps(real4 q, const whole snap_number,
   return eps;
 }
 
+
+void interp_metric(real4 q, real16 *g, SPACETIME_PROTOTYPE_ARGS)
+{
+  /* Performing the fisheye transformation is expensive. So, we are not going to
+   * use the full interp.cl module, but part of it, and implement the
+   * interpolation of all the Gammas at once. */
+
+  /* We follow space_interpolate */
+
+  /* Return var evaluated on xyz */
+  sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE \
+    | CLK_FILTER_LINEAR;
+
+  real4 coords = find_correct_uvw(q, bounding_box, num_points);
+  /* In read_imagef, coords have to be in the slots 0, 1, and 2. The slot 3 is
+   * ignored */
+  coords.s012 = coords.s123;
+
+  real t1 = bounding_box.s0;
+  real t2 = bounding_box.s4;
+  real t  = q.s0;
+
+  if (t1 == t2){
+    (*g).s0 = interpolate(q, bounding_box, num_points, g_tt_t1, g_tt_t2);
+    (*g).s1 = interpolate(q, bounding_box, num_points, g_tx_t1, g_tx_t2);
+    (*g).s2 = interpolate(q, bounding_box, num_points, g_ty_t1, g_ty_t2);
+    (*g).s3 = interpolate(q, bounding_box, num_points, g_tz_t1, g_tz_t2);
+    (*g).s4 = (*g).s1;
+    (*g).s5 = interpolate(q, bounding_box, num_points, g_xx_t1, g_xx_t2);
+    (*g).s6 = interpolate(q, bounding_box, num_points, g_xy_t1, g_xy_t2);
+    (*g).s7 = interpolate(q, bounding_box, num_points, g_xz_t1, g_xz_t2);
+    (*g).s8 = (*g).s2;
+    (*g).s9 = (*g).s6;
+    (*g).sa = interpolate(q, bounding_box, num_points, g_yy_t1, g_yy_t2);
+    (*g).sb = interpolate(q, bounding_box, num_points, g_yz_t1, g_yz_t2);
+    (*g).sc = (*g).s3;
+    (*g).sd = (*g).s7;
+    (*g).se = (*g).sb;
+    (*g).sf = interpolate(q, bounding_box, num_points, g_zz_t1, g_zz_t2);
+  }else{
+    (*g).s0 = time_interpolate(t, t1, t2,
+                               read_imagef(g_tt_t1, sampler, coords).x,
+                               read_imagef(g_tt_t2, sampler, coords).x);
+    (*g).s1 = time_interpolate(t, t1, t2,
+                               read_imagef(g_tx_t1, sampler, coords).x,
+                               read_imagef(g_tx_t2, sampler, coords).x);
+    (*g).s2 = time_interpolate(t, t1, t2,
+                               read_imagef(g_ty_t1, sampler, coords).x,
+                               read_imagef(g_ty_t2, sampler, coords).x);
+    (*g).s3 = time_interpolate(t, t1, t2,
+                               read_imagef(g_tz_t1, sampler, coords).x,
+                               read_imagef(g_tz_t2, sampler, coords).x);
+    (*g).s4 = (*g).s1;
+    (*g).s5 = time_interpolate(t, t1, t2,
+                               read_imagef(g_xx_t1, sampler, coords).x,
+                               read_imagef(g_xx_t2, sampler, coords).x);
+    (*g).s6 = time_interpolate(t, t1, t2,
+                               read_imagef(g_xy_t1, sampler, coords).x,
+                               read_imagef(g_xy_t2, sampler, coords).x);
+    (*g).s7 = time_interpolate(t, t1, t2,
+                               read_imagef(g_xz_t1, sampler, coords).x,
+                               read_imagef(g_xz_t2, sampler, coords).x);
+    (*g).s8 = (*g).s2;
+    (*g).s9 = (*g).s6;
+    (*g).sa = time_interpolate(t, t1, t2,
+                               read_imagef(g_yy_t1, sampler, coords).x,
+                               read_imagef(g_yy_t2, sampler, coords).x);
+    (*g).sb = time_interpolate(t, t1, t2,
+                               read_imagef(g_yz_t1, sampler, coords).x,
+                               read_imagef(g_yz_t2, sampler, coords).x);
+    (*g).sc = (*g).s3;
+    (*g).sd = (*g).s7;
+    (*g).se = (*g).sb;
+    (*g).sf = time_interpolate(t, t1, t2,
+                               read_imagef(g_zz_t1, sampler, coords).x,
+                               read_imagef(g_zz_t2, sampler, coords).x);
+
+
+  }
+}
+
+
 real4
 down(real4 q, real4 u, SPACETIME_PROTOTYPE_ARGS)
 {
@@ -148,26 +230,7 @@ down(real4 q, real4 u, SPACETIME_PROTOTYPE_ARGS)
   int inside_boundary = is_q_inside_boundary(q, bounding_box);
 
   if (inside_boundary){
-
-    g.s0 = interpolate(q, bounding_box, num_points, g_tt_t1, g_tt_t2);
-    g.s1 = interpolate(q, bounding_box, num_points, g_tx_t1, g_tx_t2);
-    g.s2 = interpolate(q, bounding_box, num_points, g_ty_t1, g_ty_t2);
-    g.s3 = interpolate(q, bounding_box, num_points, g_tz_t1, g_tz_t2);
-
-    g.s4 = g.s1;
-    g.s5 = interpolate(q, bounding_box, num_points, g_xx_t1, g_xx_t2);
-    g.s6 = interpolate(q, bounding_box, num_points, g_xy_t1, g_xy_t2);
-    g.s7 = interpolate(q, bounding_box, num_points, g_xz_t1, g_xz_t2);
-
-    g.s8 = g.s2;
-    g.s9 = g.s6;
-    g.sa = interpolate(q, bounding_box, num_points, g_yy_t1, g_yy_t2);
-    g.sb = interpolate(q, bounding_box, num_points, g_yz_t1, g_yz_t2);
-
-    g.sc = g.s3;
-    g.sd = g.s7;
-    g.se = g.sb;
-    g.sf = interpolate(q, bounding_box, num_points, g_zz_t1, g_zz_t2);
+    interp_metric(q, &g, SPACETIME_ARGS);
   }else{
     real  rr = q.s1 * q.s1 + q.s2 * q.s2 + q.s3 * q.s3;
     real  r  = sqrt(rr);
@@ -226,31 +289,7 @@ gr_icond(real r_obs, /**< Distance of the observer from the black hole */
     /* Here we are inside the boundary */
 
     real16 g;
-
-    /* g_t */
-    g.s0 = interpolate(q, bounding_box, num_points, g_tt_t1, g_tt_t2);
-    g.s1 = interpolate(q, bounding_box, num_points, g_tx_t1, g_tx_t2);
-    g.s2 = interpolate(q, bounding_box, num_points, g_ty_t1, g_ty_t2);
-    g.s3 = interpolate(q, bounding_box, num_points, g_tz_t1, g_tz_t2);
-
-    /* g_x */
-    g.s4 = g.s1;
-    g.s5 = interpolate(q, bounding_box, num_points, g_xx_t1, g_xx_t2);
-    g.s6 = interpolate(q, bounding_box, num_points, g_xy_t1, g_xy_t2);
-    g.s7 = interpolate(q, bounding_box, num_points, g_xz_t1, g_xz_t2);
-
-    /* g_y */
-    g.s8 = g.s2;
-    g.s9 = g.s6;
-    g.sa = interpolate(q, bounding_box, num_points, g_yy_t1, g_yy_t2);
-    g.sb = interpolate(q, bounding_box, num_points, g_yz_t1, g_yz_t2);
-
-    /* g_z */
-    g.sc = g.s3;
-    g.sd = g.s7;
-    g.se = g.sb;
-    g.sf = interpolate(q, bounding_box, num_points, g_zz_t1, g_zz_t2);
-
+    interp_metric(q, &g, SPACETIME_ARGS);
     gt = g.s0123;
     gx = g.s4567;
     gy = g.s89ab;
@@ -282,7 +321,8 @@ gr_icond(real r_obs, /**< Distance of the observer from the black hole */
   return (struct gr){q, u};
 }
 
-void interp_gammas(real4 xyz, real16 *GammaUPt, real16 *GammaUPx, real16 *GammaUPy, real16 *GammaUPz,
+void interp_gammas(real4 q, real16 *GammaUPt, real16 *GammaUPx,
+                   real16 *GammaUPy, real16 *GammaUPz,
                    SPACETIME_PROTOTYPE_ARGS)
 {
   /* Performing the fisheye transformation is expensive. So, we are not going to
@@ -291,18 +331,18 @@ void interp_gammas(real4 xyz, real16 *GammaUPt, real16 *GammaUPx, real16 *GammaU
 
   /* We follow space_interpolate */
 
-  /* Return var evaluated on xyz */
+  /* Return var evaluated on q */
   sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE \
     | CLK_FILTER_LINEAR;
 
-  real4 coords = find_correct_uvw(xyz, bounding_box, num_points);
+  real4 coords = find_correct_uvw(q, bounding_box, num_points);
   /* In read_imagef, coords have to be in the slots 0, 1, and 2. The slot 3 is
    * ignored */
   coords.s012 = coords.s123;
 
   real t1 = bounding_box.s0;
   real t2 = bounding_box.s4;
-  real t  = xyz.s0;
+  real t  = q.s0;
 
   if (t1 == t2){
     (*GammaUPt).s0 = read_imagef(Gamma_ttt_t1, sampler, coords).x;
