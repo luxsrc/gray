@@ -177,10 +177,10 @@ down(real4 q, real4 u, SPACETIME_PROTOTYPE_ARGS)
     real  ly = q.s2 / r;
     real  lz = q.s3 / r;
 
-    gt = {-1 + f   ,     f*   lx,     f*   ly,     f*   lz};
-    gx = {     f*lx, 1 + f*lx*lx,     f*lx*ly,     f*lx*lz};
-    gy = {     f*ly,     f*ly*lx, 1 + f*ly*ly,     f*ly*lz};
-    gz = {     f*lz,     f*lz*lx,     f*lz*ly, 1 + f*lz*lz};
+    real4 gt = {-1 + f   ,     f*   lx,     f*   ly,     f*   lz};
+    real4 gx = {     f*lx, 1 + f*lx*lx,     f*lx*ly,     f*lx*lz};
+    real4 gy = {     f*ly,     f*ly*lx, 1 + f*ly*ly,     f*ly*lz};
+    real4 gz = {     f*lz,     f*lz*lx,     f*lz*ly, 1 + f*lz*lz};
 
     g.s0123 = gt;
     g.s4567 = gx;
@@ -265,10 +265,10 @@ gr_icond(real r_obs, /**< Distance of the observer from the black hole */
     real  ly = q.s2 / r;
     real  lz = q.s3 / r;
 
-    gt = {-1 + f   ,     f*   lx,     f*   ly,     f*   lz};
-    gx = {     f*lx, 1 + f*lx*lx,     f*lx*ly,     f*lx*lz};
-    gy = {     f*ly,     f*ly*lx, 1 + f*ly*ly,     f*ly*lz};
-    gz = {     f*lz,     f*lz*lx,     f*lz*ly, 1 + f*lz*lz};
+    gt = (real4){-1 + f   ,     f*   lx,     f*   ly,     f*   lz};
+    gx = (real4){     f*lx, 1 + f*lx*lx,     f*lx*ly,     f*lx*lz};
+    gy = (real4){     f*ly,     f*ly*lx, 1 + f*ly*ly,     f*ly*lz};
+    gz = (real4){     f*lz,     f*lz*lx,     f*lz*ly, 1 + f*lz*lz};
   }
 
 	real  A  =  gt.s0;
@@ -281,6 +281,280 @@ gr_icond(real r_obs, /**< Distance of the observer from the black hole */
 
   return (struct gr){q, u};
 }
+
+void interp_gammas(real4 xyz, real16 *GammaUPt, real16 *GammaUPx, real16 *GammaUPy, real16 *GammaUPz,
+                   SPACETIME_PROTOTYPE_ARGS)
+{
+  /* Performing the fisheye transformation is expensive. So, we are not going to
+   * use the full interp.cl module, but part of it, and implement the
+   * interpolation of all the Gammas at once. */
+
+  /* We follow space_interpolate */
+
+  /* Return var evaluated on xyz */
+  sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE \
+    | CLK_FILTER_LINEAR;
+
+  real4 coords = find_correct_uvw(xyz, bounding_box, num_points);
+  /* In read_imagef, coords have to be in the slots 0, 1, and 2. The slot 3 is
+   * ignored */
+  coords.s012 = coords.s123;
+
+  real t1 = bounding_box.s0;
+  real t2 = bounding_box.s4;
+  real t  = xyz.s0;
+
+  if (t1 == t2){
+    (*GammaUPt).s0 = read_imagef(Gamma_ttt_t1, sampler, coords).x;
+    (*GammaUPt).s1 = read_imagef(Gamma_ttx_t1, sampler, coords).x;
+    (*GammaUPt).s2 = read_imagef(Gamma_tty_t1, sampler, coords).x;
+    (*GammaUPt).s3 = read_imagef(Gamma_ttz_t1, sampler, coords).x;
+    /* GammaUPt.s4 = GammaUPt.s1; */
+    (*GammaUPt).s5 = read_imagef(Gamma_txx_t1, sampler, coords).x;
+    (*GammaUPt).s6 = read_imagef(Gamma_txy_t1, sampler, coords).x;
+    (*GammaUPt).s7 = read_imagef(Gamma_txz_t1, sampler, coords).x;
+    /* GammaUPt.s8 = GammaUPt.s2; */
+    /* GammaUPt.s9 = GammaUPt.s6; */
+    (*GammaUPt).sa = read_imagef(Gamma_tyy_t1, sampler, coords).x;
+    (*GammaUPt).sb = read_imagef(Gamma_tyz_t1, sampler, coords).x;
+    /* GammaUPt.sc = GammaUPt.s3; */
+    /* GammaUPt.sd = GammaUPt.s7; */
+    /* GammaUPt.se = GammaUPt.sb; */
+    (*GammaUPt).sf = read_imagef(Gamma_tzz_t1, sampler, coords).x;
+
+    (*GammaUPt).s489 = (*GammaUPt).s126;
+    (*GammaUPt).scde = (*GammaUPt).s37b;
+
+
+    (*GammaUPx).s0 = read_imagef(Gamma_xtt_t1, sampler, coords).x;
+    (*GammaUPx).s1 = read_imagef(Gamma_xtx_t1, sampler, coords).x;
+    (*GammaUPx).s2 = read_imagef(Gamma_xty_t1, sampler, coords).x;
+    (*GammaUPx).s3 = read_imagef(Gamma_xtz_t1, sampler, coords).x;
+    /* GammaUPx.s4 = GammaUPx.s1; */
+    (*GammaUPx).s5 = read_imagef(Gamma_xxx_t1, sampler, coords).x;
+    (*GammaUPx).s6 = read_imagef(Gamma_xxy_t1, sampler, coords).x;
+    (*GammaUPx).s7 = read_imagef(Gamma_xxz_t1, sampler, coords).x;
+    /* GammaUPx.s8 = GammaUPx.s2; */
+    /* GammaUPx.s9 = GammaUPx.s6; */
+    (*GammaUPx).sa = read_imagef(Gamma_xyy_t1, sampler, coords).x;
+    (*GammaUPx).sb = read_imagef(Gamma_xyz_t1, sampler, coords).x;
+    /* GammaUPx.sc = GammaUPx.s3; */
+    /* GammaUPx.sd = GammaUPx.s7; */
+    /* GammaUPx.se = GammaUPx.sb; */
+    (*GammaUPx).sf = read_imagef(Gamma_xzz_t1, sampler, coords).x;
+
+    (*GammaUPx).s489 = (*GammaUPx).s126;
+    (*GammaUPx).scde = (*GammaUPx).s37b;
+
+
+    (*GammaUPy).s0 = read_imagef(Gamma_ytt_t1, sampler, coords).x;
+    (*GammaUPy).s1 = read_imagef(Gamma_ytx_t1, sampler, coords).x;
+    (*GammaUPy).s2 = read_imagef(Gamma_yty_t1, sampler, coords).x;
+    (*GammaUPy).s3 = read_imagef(Gamma_ytz_t1, sampler, coords).x;
+    /* GammaUPy.s4 = GammaUPy.s1; */
+    (*GammaUPy).s5 = read_imagef(Gamma_yxx_t1, sampler, coords).x;
+    (*GammaUPy).s6 = read_imagef(Gamma_yxy_t1, sampler, coords).x;
+    (*GammaUPy).s7 = read_imagef(Gamma_yxz_t1, sampler, coords).x;
+    /* GammaUPy.s8 = GammaUPy.s2; */
+    /* GammaUPy.s9 = GammaUPy.s6; */
+    (*GammaUPy).sa = read_imagef(Gamma_yyy_t1, sampler, coords).x;
+    (*GammaUPy).sb = read_imagef(Gamma_yyz_t1, sampler, coords).x;
+    /* GammaUPy.sc = GammaUPy.s3; */
+    /* GammaUPy.sd = GammaUPy.s7; */
+    /* GammaUPy.se = GammaUPy.sb; */
+    (*GammaUPy).sf = read_imagef(Gamma_yzz_t1, sampler, coords).x;
+
+    (*GammaUPy).s489 = (*GammaUPy).s126;
+    (*GammaUPy).scde = (*GammaUPy).s37b;
+
+
+    (*GammaUPz).s0 = read_imagef(Gamma_ztt_t1, sampler, coords).x;
+    (*GammaUPz).s1 = read_imagef(Gamma_ztx_t1, sampler, coords).x;
+    (*GammaUPz).s2 = read_imagef(Gamma_zty_t1, sampler, coords).x;
+    (*GammaUPz).s3 = read_imagef(Gamma_ztz_t1, sampler, coords).x;
+    /* GammaUPz.s4 = GammaUPz.s1; */
+    (*GammaUPz).s5 = read_imagef(Gamma_zxx_t1, sampler, coords).x;
+    (*GammaUPz).s6 = read_imagef(Gamma_zxy_t1, sampler, coords).x;
+    (*GammaUPz).s7 = read_imagef(Gamma_zxz_t1, sampler, coords).x;
+    /* GammaUPz.s8 = GammaUPz.s2; */
+    /* GammaUPz.s9 = GammaUPz.s6; */
+    (*GammaUPz).sa = read_imagef(Gamma_zyy_t1, sampler, coords).x;
+    (*GammaUPz).sb = read_imagef(Gamma_zyz_t1, sampler, coords).x;
+    /* GammaUPz.sc = GammaUPz.s3; */
+    /* GammaUPz.sd = GammaUPz.s7; */
+    /* GammaUPz.se = GammaUPz.sb; */
+    (*GammaUPz).sf = read_imagef(Gamma_zzz_t1, sampler, coords).x;
+
+    (*GammaUPz).s489 = (*GammaUPz).s126;
+    (*GammaUPz).scde = (*GammaUPz).s37b;
+  }else{
+    (*GammaUPt).s0 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_ttt_t1, sampler, coords).x,
+                                      read_imagef(Gamma_ttt_t2, sampler, coords).x);
+    (*GammaUPt).s1 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_ttx_t1, sampler, coords).x,
+                                      read_imagef(Gamma_ttx_t2, sampler, coords).x);
+    (*GammaUPt).s2 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_tty_t1, sampler, coords).x,
+                                      read_imagef(Gamma_tty_t2, sampler, coords).x);
+    (*GammaUPt).s3 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_ttz_t1, sampler, coords).x,
+                                      read_imagef(Gamma_ttz_t2, sampler, coords).x);
+    /* GammaUPt.s4 = GammaUPt.s1; */
+    (*GammaUPt).s5 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_txx_t1, sampler, coords).x,
+                                      read_imagef(Gamma_txx_t2, sampler, coords).x);
+    (*GammaUPt).s6 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_txy_t1, sampler, coords).x,
+                                      read_imagef(Gamma_txy_t2, sampler, coords).x);
+    (*GammaUPt).s7 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_txz_t1, sampler, coords).x,
+                                      read_imagef(Gamma_txz_t2, sampler, coords).x);
+    /* GammaUPt.s8 = GammaUPt.s2; */
+    /* GammaUPt.s9 = GammaUPt.s6; */
+    (*GammaUPt).sa = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_tyy_t1, sampler, coords).x,
+                                      read_imagef(Gamma_tyy_t2, sampler, coords).x);
+    (*GammaUPt).sb = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_tyz_t1, sampler, coords).x,
+                                      read_imagef(Gamma_tyz_t2, sampler, coords).x);
+    /* GammaUPt.sc = GammaUPt.s3; */
+    /* GammaUPt.sd = GammaUPt.s7; */
+    /* GammaUPt.se = GammaUPt.sb; */
+    (*GammaUPt).sf = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_tzz_t1, sampler, coords).x,
+                                      read_imagef(Gamma_tzz_t2, sampler, coords).x);
+
+    (*GammaUPt).s489 = (*GammaUPt).s126;
+    (*GammaUPt).scde = (*GammaUPt).s37b;
+
+
+    (*GammaUPx).s0 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_xtt_t1, sampler, coords).x,
+                                      read_imagef(Gamma_xtt_t2, sampler, coords).x);
+    (*GammaUPx).s1 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_xtx_t1, sampler, coords).x,
+                                      read_imagef(Gamma_xtx_t2, sampler, coords).x);
+    (*GammaUPx).s2 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_xty_t1, sampler, coords).x,
+                                      read_imagef(Gamma_xty_t2, sampler, coords).x);
+    (*GammaUPx).s3 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_xtz_t1, sampler, coords).x,
+                                      read_imagef(Gamma_xtz_t2, sampler, coords).x);
+    /* GammaUPx.s4 = GammaUPx.s1; */
+    (*GammaUPx).s5 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_xxx_t1, sampler, coords).x,
+                                      read_imagef(Gamma_xxx_t2, sampler, coords).x);
+    (*GammaUPx).s6 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_xxy_t1, sampler, coords).x,
+                                      read_imagef(Gamma_xxy_t2, sampler, coords).x);
+    (*GammaUPx).s7 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_xxz_t1, sampler, coords).x,
+                                      read_imagef(Gamma_xxz_t2, sampler, coords).x);
+    /* GammaUPx.s8 = GammaUPx.s2; */
+    /* GammaUPx.s9 = GammaUPx.s6; */
+    (*GammaUPx).sa = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_xyy_t1, sampler, coords).x,
+                                      read_imagef(Gamma_xyy_t2, sampler, coords).x);
+    (*GammaUPx).sb = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_xyz_t1, sampler, coords).x,
+                                      read_imagef(Gamma_xyz_t2, sampler, coords).x);
+    /* GammaUPx.sc = GammaUPx.s3; */
+    /* GammaUPx.sd = GammaUPx.s7; */
+    /* GammaUPx.se = GammaUPx.sb; */
+    (*GammaUPx).sf = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_xzz_t1, sampler, coords).x,
+                                      read_imagef(Gamma_xzz_t2, sampler, coords).x);
+
+    (*GammaUPx).s489 = (*GammaUPx).s126;
+    (*GammaUPx).scde = (*GammaUPx).s37b;
+
+
+    (*GammaUPy).s0 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_ytt_t1, sampler, coords).x,
+                                      read_imagef(Gamma_ytt_t2, sampler, coords).x);
+    (*GammaUPy).s1 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_ytx_t1, sampler, coords).x,
+                                      read_imagef(Gamma_ytx_t2, sampler, coords).x);
+    (*GammaUPy).s2 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_yty_t1, sampler, coords).x,
+                                      read_imagef(Gamma_yty_t2, sampler, coords).x);
+    (*GammaUPy).s3 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_ytz_t1, sampler, coords).x,
+                                      read_imagef(Gamma_ytz_t2, sampler, coords).x);
+    /* GammaUPy.s4 = GammaUPy.s1; */
+    (*GammaUPy).s5 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_yxx_t1, sampler, coords).x,
+                                      read_imagef(Gamma_yxx_t2, sampler, coords).x);
+    (*GammaUPy).s6 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_yxy_t1, sampler, coords).x,
+                                      read_imagef(Gamma_yxy_t2, sampler, coords).x);
+    (*GammaUPy).s7 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_yxz_t1, sampler, coords).x,
+                                      read_imagef(Gamma_yxz_t2, sampler, coords).x);
+    /* GammaUPy.s8 = GammaUPy.s2; */
+    /* GammaUPy.s9 = GammaUPy.s6; */
+    (*GammaUPy).sa = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_yyy_t1, sampler, coords).x,
+                                      read_imagef(Gamma_yyy_t2, sampler, coords).x);
+    (*GammaUPy).sb = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_yyz_t1, sampler, coords).x,
+                                      read_imagef(Gamma_yyz_t2, sampler, coords).x);
+    /* GammaUPy.sc = GammaUPy.s3; */
+    /* GammaUPy.sd = GammaUPy.s7; */
+    /* GammaUPy.se = GammaUPy.sb; */
+    (*GammaUPy).sf = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_yzz_t1, sampler, coords).x,
+                                      read_imagef(Gamma_yzz_t2, sampler, coords).x);
+
+    (*GammaUPy).s489 = (*GammaUPy).s126;
+    (*GammaUPy).scde = (*GammaUPy).s37b;
+
+
+    (*GammaUPz).s0 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_ztt_t1, sampler, coords).x,
+                                      read_imagef(Gamma_ztt_t2, sampler, coords).x);
+    (*GammaUPz).s1 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_ztx_t1, sampler, coords).x,
+                                      read_imagef(Gamma_ztx_t2, sampler, coords).x);
+    (*GammaUPz).s2 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_zty_t1, sampler, coords).x,
+                                      read_imagef(Gamma_zty_t2, sampler, coords).x);
+    (*GammaUPz).s3 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_ztz_t1, sampler, coords).x,
+                                      read_imagef(Gamma_ztz_t2, sampler, coords).x);
+    /* GammaUPz.s4 = GammaUPz.s1; */
+    (*GammaUPz).s5 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_zxx_t1, sampler, coords).x,
+                                      read_imagef(Gamma_zxx_t2, sampler, coords).x);
+    (*GammaUPz).s6 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_zxy_t1, sampler, coords).x,
+                                      read_imagef(Gamma_zxy_t2, sampler, coords).x);
+    (*GammaUPz).s7 = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_zxz_t1, sampler, coords).x,
+                                      read_imagef(Gamma_zxz_t2, sampler, coords).x);
+    /* GammaUPz.s8 = GammaUPz.s2; */
+    /* GammaUPz.s9 = GammaUPz.s6; */
+    (*GammaUPz).sa = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_zyy_t1, sampler, coords).x,
+                                      read_imagef(Gamma_zyy_t2, sampler, coords).x);
+    (*GammaUPz).sb = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_zyz_t1, sampler, coords).x,
+                                      read_imagef(Gamma_zyz_t2, sampler, coords).x);
+    /* GammaUPz.sc = GammaUPz.s3; */
+    /* GammaUPz.sd = GammaUPz.s7; */
+    /* GammaUPz.se = GammaUPz.sb; */
+    (*GammaUPz).sf = time_interpolate(t, t1, t2,
+                                      read_imagef(Gamma_zzz_t1, sampler, coords).x,
+                                      read_imagef(Gamma_zzz_t2, sampler, coords).x);
+
+    (*GammaUPz).s489 = (*GammaUPz).s126;
+    (*GammaUPz).scde = (*GammaUPz).s37b;
+
+  }
+}
+
+
 
 struct gr
 gr_rhs(struct gr g, SPACETIME_PROTOTYPE_ARGS)
@@ -416,70 +690,7 @@ gr_rhs(struct gr g, SPACETIME_PROTOTYPE_ARGS)
 
     real16 GammaUPt, GammaUPx, GammaUPy, GammaUPz;
 
-    /* We compute the commented ones in one shot */
-    GammaUPt.s0 = interpolate(q, bounding_box, num_points, Gamma_ttt_t1, Gamma_ttt_t2);
-    GammaUPt.s1 = interpolate(q, bounding_box, num_points, Gamma_ttx_t1, Gamma_ttx_t2);
-    GammaUPt.s2 = interpolate(q, bounding_box, num_points, Gamma_tty_t1, Gamma_tty_t2);
-    GammaUPt.s3 = interpolate(q, bounding_box, num_points, Gamma_ttz_t1, Gamma_ttz_t2);
-    /* GammaUPt.s4 = GammaUPt.s1; */
-    GammaUPt.s5 = interpolate(q, bounding_box, num_points, Gamma_txx_t1, Gamma_txx_t2);
-    GammaUPt.s6 = interpolate(q, bounding_box, num_points, Gamma_txy_t1, Gamma_txy_t2);
-    GammaUPt.s7 = interpolate(q, bounding_box, num_points, Gamma_txz_t1, Gamma_txz_t2);
-    /* GammaUPt.s8 = GammaUPt.s2; */
-    /* GammaUPt.s9 = GammaUPt.s6; */
-    GammaUPt.sa = interpolate(q, bounding_box, num_points, Gamma_tyy_t1, Gamma_tyy_t2);
-    GammaUPt.sb = interpolate(q, bounding_box, num_points, Gamma_tyz_t1, Gamma_tyz_t2);
-    /* GammaUPt.sc = GammaUPt.s3; */
-    /* GammaUPt.sd = GammaUPt.s7; */
-    /* GammaUPt.se = GammaUPt.sb; */
-    GammaUPt.sf = interpolate(q, bounding_box, num_points, Gamma_tzz_t1, Gamma_tzz_t2);
-
-    GammaUPt.s489 = GammaUPt.s126;
-    GammaUPt.scde = GammaUPt.s37b;
-
-
-    GammaUPx.s0 = interpolate(q, bounding_box, num_points, Gamma_xtt_t1, Gamma_xtt_t2);
-    GammaUPx.s1 = interpolate(q, bounding_box, num_points, Gamma_xtx_t1, Gamma_xtx_t2);
-    GammaUPx.s2 = interpolate(q, bounding_box, num_points, Gamma_xty_t1, Gamma_xty_t2);
-    GammaUPx.s3 = interpolate(q, bounding_box, num_points, Gamma_xtz_t1, Gamma_xtz_t2);
-    GammaUPx.s5 = interpolate(q, bounding_box, num_points, Gamma_xxx_t1, Gamma_xxx_t2);
-    GammaUPx.s6 = interpolate(q, bounding_box, num_points, Gamma_xxy_t1, Gamma_xxy_t2);
-    GammaUPx.s7 = interpolate(q, bounding_box, num_points, Gamma_xxz_t1, Gamma_xxz_t2);
-    GammaUPx.sa = interpolate(q, bounding_box, num_points, Gamma_xyy_t1, Gamma_xyy_t2);
-    GammaUPx.sb = interpolate(q, bounding_box, num_points, Gamma_xyz_t1, Gamma_xyz_t2);
-    GammaUPx.sf = interpolate(q, bounding_box, num_points, Gamma_xzz_t1, Gamma_xzz_t2);
-
-    GammaUPx.s489 = GammaUPx.s126;
-    GammaUPx.scde = GammaUPx.s37b;
-
-
-    GammaUPy.s0 = interpolate(q, bounding_box, num_points, Gamma_ytt_t1, Gamma_ytt_t2);
-    GammaUPy.s1 = interpolate(q, bounding_box, num_points, Gamma_ytx_t1, Gamma_ytx_t2);
-    GammaUPy.s2 = interpolate(q, bounding_box, num_points, Gamma_yty_t1, Gamma_yty_t2);
-    GammaUPy.s3 = interpolate(q, bounding_box, num_points, Gamma_ytz_t1, Gamma_ytz_t2);
-    GammaUPy.s5 = interpolate(q, bounding_box, num_points, Gamma_yxx_t1, Gamma_yxx_t2);
-    GammaUPy.s6 = interpolate(q, bounding_box, num_points, Gamma_yxy_t1, Gamma_yxy_t2);
-    GammaUPy.s7 = interpolate(q, bounding_box, num_points, Gamma_yxz_t1, Gamma_yxz_t2);
-    GammaUPy.sa = interpolate(q, bounding_box, num_points, Gamma_yyy_t1, Gamma_yyy_t2);
-    GammaUPy.sb = interpolate(q, bounding_box, num_points, Gamma_yyz_t1, Gamma_yyz_t2);
-    GammaUPy.sf = interpolate(q, bounding_box, num_points, Gamma_yzz_t1, Gamma_yzz_t2);
-
-    GammaUPy.s489 = GammaUPy.s126;
-    GammaUPy.scde = GammaUPy.s37b;
-
-    GammaUPz.s0 = interpolate(q, bounding_box, num_points, Gamma_ztt_t1, Gamma_ztt_t2);
-    GammaUPz.s1 = interpolate(q, bounding_box, num_points, Gamma_ztx_t1, Gamma_ztx_t2);
-    GammaUPz.s2 = interpolate(q, bounding_box, num_points, Gamma_zty_t1, Gamma_zty_t2);
-    GammaUPz.s3 = interpolate(q, bounding_box, num_points, Gamma_ztz_t1, Gamma_ztz_t2);
-    GammaUPz.s5 = interpolate(q, bounding_box, num_points, Gamma_zxx_t1, Gamma_zxx_t2);
-    GammaUPz.s6 = interpolate(q, bounding_box, num_points, Gamma_zxy_t1, Gamma_zxy_t2);
-    GammaUPz.s7 = interpolate(q, bounding_box, num_points, Gamma_zxz_t1, Gamma_zxz_t2);
-    GammaUPz.sa = interpolate(q, bounding_box, num_points, Gamma_zyy_t1, Gamma_zyy_t2);
-    GammaUPz.sb = interpolate(q, bounding_box, num_points, Gamma_zyz_t1, Gamma_zyz_t2);
-    GammaUPz.sf = interpolate(q, bounding_box, num_points, Gamma_zzz_t1, Gamma_zzz_t2);
-
-    GammaUPz.s489 = GammaUPz.s126;
-    GammaUPz.scde = GammaUPz.s37b;
+    interp_gammas(q, &GammaUPt, &GammaUPx, &GammaUPy, &GammaUPz, SPACETIME_ARGS);
 
     real4 rhs = {-dot(u, matrix_vector_product(GammaUPt, u)),
     -dot(u, matrix_vector_product(GammaUPx, u)),
