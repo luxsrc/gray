@@ -288,7 +288,6 @@ gr_rhs(struct gr g, SPACETIME_PROTOTYPE_ARGS)
   GammaUPy.s489 = GammaUPy.s126;
   GammaUPy.scde = GammaUPy.s37b;
 
-
   GammaUPz.s0 = interpolate(q, bounding_box, num_points, Gamma_ztt_t1, Gamma_ztt_t2);
   GammaUPz.s1 = interpolate(q, bounding_box, num_points, Gamma_ztx_t1, Gamma_ztx_t2);
   GammaUPz.s2 = interpolate(q, bounding_box, num_points, Gamma_zty_t1, Gamma_zty_t2);
@@ -303,12 +302,10 @@ gr_rhs(struct gr g, SPACETIME_PROTOTYPE_ARGS)
   GammaUPz.s489 = GammaUPz.s126;
   GammaUPz.scde = GammaUPz.s37b;
 
-  real GammaUU = dot(u, matrix_vector_product(GammaUPt, u));
+  real4 rhs = {-dot(u, matrix_vector_product(GammaUPt, u)),
+               -dot(u, matrix_vector_product(GammaUPx, u)),
+               -dot(u, matrix_vector_product(GammaUPy, u)),
+               -dot(u, matrix_vector_product(GammaUPz, u))};
 
-  real4 rhs = {-dot(u, matrix_vector_product(GammaUPt, u)) + GammaUU * u.s0,
-               -dot(u, matrix_vector_product(GammaUPx, u)) + GammaUU * u.s1,
-               -dot(u, matrix_vector_product(GammaUPy, u)) + GammaUU * u.s2,
-               -dot(u, matrix_vector_product(GammaUPz, u)) + GammaUU * u.s3};
-
-  return (struct gr){u, rhs};
+  return (struct gr){u, rhs - rhs.s0 * u};
 }
