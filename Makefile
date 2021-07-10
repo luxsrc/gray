@@ -1,4 +1,4 @@
-SUBDIRS = sim doc
+SUBDIRS = tests sim doc
 
 ifeq ($(MAKECMDGOALS),)
 	GOALS = all
@@ -7,6 +7,8 @@ else
 endif
 
 all: recursive
+
+check: recursive
 
 install: recursive
 
