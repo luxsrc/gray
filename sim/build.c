@@ -84,7 +84,8 @@ build(Lux_job *ego)
 	char buf[10240];
 
 	const char *src[] = {buf,
-	                     "preamble.cl",
+                         "preamble.cl",
+                         "interp.cl",
 	                     p->coordinates,
 	                     "flow.cl",
 	                     "rt.cl",
@@ -102,8 +103,6 @@ build(Lux_job *ego)
 		tail[-1] = '\0';
 
 	snprintf(buf, sizeof(buf),
-	         "#define a_spin K(%.18f)\n" /* DBL_EPSILON ~ 1e-16 */
-	         "#define r_match K(%.18f)\n"
 	         "#define n_freq %zu\n"
 	         "#define n_data %zu\n"
 	         "#define n_info %zu\n"
@@ -113,9 +112,7 @@ build(Lux_job *ego)
 	         "#define n_chunk %zu\n"
 	         "typedef real%zu realE;\n"
 	         "static __constant real nus[n_freq] = {%s};\n"
-	         "static __constant real M_bh = %.18e;\n",
-	         p->a_spin,
-	         i->r_obs,
+	         "static __constant real M_ADM = %.18e;\n",
 	         EGO->n_freq,
 	         n_data,
 	         n_info,
@@ -125,7 +122,7 @@ build(Lux_job *ego)
 	         n_chunk,
 	         e_chunk,
 	         lst,
-	         p->M_bh);
+	         p->M_ADM);
 
 	lux_print("n_data  = %zu\n"
 	          "n_info  = %zu\n"

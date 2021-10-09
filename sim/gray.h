@@ -42,6 +42,11 @@
 #include "param.h"
 #include "setup.h"
 
+/* Max number of times in the HDF5 file and max length of the group
+ * name in the files */
+#define MAX_AVAILABLE_TIMES 1024
+#define MAX_TIME_NAME_LENGTH 64
+
 /**
  ** Run-time data structure for GRay2
  **
@@ -65,6 +70,32 @@ struct gray {
 	cl_mem data;
 	cl_mem info;
 	Lux_opencl_kernel *evolve;
+
+	/* Grid details */
+	/* Bounding_box is a vector with 8 numbers:
+	 * {tmin, xmin, ymin, zmin, tmax, xmax, ymax, zmax} */
+	/* tmin and tmax are between the two lodaded timesteps */
+
+	/* We need these quantities to convert from unnormalized OpenCL coordiantes
+	   to physical coordiantes and viceversa. */
+	cl_float8 bounding_box;
+	/* Points along the various coordinates */
+	cl_int4 num_points;			/* The .s0 coordinate is not used */
+	/* num_points.s1 contains point along the x direction */
+	/* num_points.s2 contains point along the y direction */
+	/* num_points.s3 contains point along the z direction */
+
+	/* We need 40+10+1 == 51 images to contain all the 40 christoffel
+	   symbols, 10 metric components, and 1 fluid quality */
+
+	/* We always have two timesteps loaded */
+	cl_mem spacetime_t1[40+10+1];
+	cl_mem spacetime_t2[40+10+1];
+
+	char available_times[MAX_AVAILABLE_TIMES][MAX_TIME_NAME_LENGTH];
+
+	cl_float max_available_time;
+
 };
 
 #define EGO ((struct gray *)ego)
@@ -81,5 +112,11 @@ extern real evolve(Lux_job *, real, real, size_t);
 
 /** Output data to a file */
 extern void dump(Lux_job *, size_t);
+
+/** I/O helper functions */
+extern size_t populate_ego_available_times(Lux_job *);
+extern size_t load_coordinates(Lux_job *);
+extern size_t load_snapshot(Lux_job *, size_t, size_t);
+extern void   copy_snapshot(Lux_job *, size_t);
 
 #endif /* _GRAY_H */

@@ -36,11 +36,12 @@
  **/
 struct state
 integrate(struct state s,  /**< state of the ray */
-          real         dt) /**< step size        */
+          real         dt, /**< step size        */
+          SPACETIME_PROTOTYPE_ARGS)
 {
-	struct state k1 = rhs(X(E(s)                      ));
-	struct state k2 = rhs(X(E(s) + K(0.5) * dt * E(k1)));
-	struct state k3 = rhs(X(E(s) + K(0.5) * dt * E(k2)));
-	struct state k4 = rhs(X(E(s) +          dt * E(k3)));
+	struct state k1 = rhs(X(E(s)                      ), SPACETIME_ARGS);
+	struct state k2 = rhs(X(E(s) + K(0.5) * dt * E(k1)), SPACETIME_ARGS);
+	struct state k3 = rhs(X(E(s) + K(0.5) * dt * E(k2)), SPACETIME_ARGS);
+	struct state k4 = rhs(X(E(s) +          dt * E(k3)), SPACETIME_ARGS);
 	return X(E(s) + dt * (E(k1) + K(2.0) * (E(k2) + E(k3)) + E(k4)) / K(6.0));
 }

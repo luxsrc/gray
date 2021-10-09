@@ -47,17 +47,40 @@ icond(Lux_job *ego, real t_init)
 
 	icond = ocl->mkkern(ocl, "icond_drv");
 
-	(void)ocl->exec(ocl,
-	                icond->with(icond,
-	                            EGO->data,
-	                            EGO->info,
-	                            i->w_img,
-	                            i->h_img,
-	                            i->r_obs,
-	                            i->i_obs,
-	                            i->j_obs,
-	                            sz * max(n_data, n_info)),
-	                2, shape);
+
+	size_t arg_num = 0;
+
+	icond->setM(icond, arg_num, EGO->data);
+	arg_num++;
+	icond->setM(icond, arg_num, EGO->info);
+	arg_num++;
+
+	icond->setR(icond, arg_num, i->w_img);
+	arg_num++;
+	icond->setR(icond, arg_num, i->h_img);
+	arg_num++;
+	icond->setR(icond, arg_num, i->r_obs);
+	arg_num++;
+	icond->setR(icond, arg_num, i->i_obs);
+	arg_num++;
+	icond->setR(icond, arg_num, i->j_obs);
+	arg_num++;
+
+	icond->setS(icond, arg_num, sz * max(n_data, n_info));
+	arg_num++;
+
+	icond->set(icond, arg_num, sizeof(cl_float8), &(EGO->bounding_box));
+	arg_num++;
+	icond->set(icond, arg_num, sizeof(cl_int4), &(EGO->num_points));
+	arg_num++;
+	/* We have 40 Gammas + 10 metric components + 1 fluid property at t1 */
+	for (size_t old_arg_num = arg_num; arg_num < old_arg_num + 51; arg_num++)
+		icond->setM(icond, arg_num, EGO->spacetime_t1[arg_num-old_arg_num]);
+	/* And here the 40 Gammas + 10 metric components + 1 fluid property at t2 */
+	for (size_t old_arg_num = arg_num; arg_num < old_arg_num + 51; arg_num++)
+		icond->setM(icond, arg_num, EGO->spacetime_t2[arg_num-old_arg_num]);
+
+	(void)ocl->exec(ocl, icond, 2, shape);
 
 	ocl->rmkern(ocl, icond);
 }

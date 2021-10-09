@@ -25,18 +25,21 @@
  ** extinction (absorption) coefficients.
  **/
 
-#define CONST_c     (2.99792458e+10)
-#define CONST_h     (6.62606957e-27)
-#define CONST_G     (6.67384800e-08)
-#define CONST_kB    (1.38064881e-16)
-#define CONST_Ry    (2.17987197e-11)
-#define CONST_e     (4.80320425e-10)
-#define CONST_me    (9.10938291e-28)
-#define CONST_mp_me (1836.152672450)
-#define CONST_mSun  (1.98910000e+33)
+#define CONST_c     K(2.99792458e+10)
+#define CONST_h     K(6.62606957e-27)
+#define CONST_G     K(6.67384800e-08)
+#define CONST_kB    K(1.38064881e-16)
+#define CONST_Ry    K(2.17987197e-11)
+#define CONST_e     K(4.80320425e-10)
+#define CONST_me    K(9.10938291e-28)
+#define CONST_mp_me K(1836.152672450)
+#define CONST_mSun  K(1.98910000e+33)
 
-#define T_MIN  (1e-1)
-#define T_MAX  (1e+2)
+#define M_PI    K(3.14159265358979323846)
+#define M_SQRT2 K(1.41421356237309504880)
+
+#define T_MIN K(1e-1)
+#define T_MAX K(1e+2)
 #define T_GRID (60)
 
 #define LOG(x)    log(x)    /* \todo Select the right precision for log()  */
@@ -97,11 +100,11 @@ Gaunt(real x, real y)
 
 	if(x > 1)
 		return y > 1 ?
-			(real)SQRT(3.0 / M_PI) / sqrt_y :
-			(real)(SQRT(3.0) / M_PI) *
-			((real)LOG(4.0 / 1.78107241799) - LOG(y + (real)EPSILON));
+			(real)SQRT(K(3.0) / M_PI) / sqrt_y :
+			(real)(SQRT(K(3.0)) / M_PI) *
+			((real)LOG(K(4.0) / K(1.78107241799)) - LOG(y + (real)EPSILON));
 	else if(x * y > 1)
-		return (real)SQRT(12.0) / (sqrt_x * sqrt_y);
+		return (real)SQRT(K(12.0)) / (sqrt_x * sqrt_y);
 	else if(y > sqrt_x)
 		return 1;
 	else {
@@ -110,8 +113,8 @@ Gaunt(real x, real y)
 		   (1973) are inconsistent; it seems that both
 		   versions contain typos.  TODO: double-check the
 		   following formula */
-		const real g = (real)(SQRT(3.0) / M_PI) *
-			((real)LOG(4.0 / POW(1.78107241799, 2.5)) + LOG(sqrt_x / (y + (real)EPSILON)));
+		const real g = (real)(SQRT(K(3.0)) / M_PI) *
+			((real)LOG(K(4.0) / POW(K(1.78107241799), K(2.5))) + LOG(sqrt_x / (y + (real)EPSILON)));
 		return g > (real)EPSILON ? g : (real)EPSILON;
 	}
 } /* 3+ FLOP */
@@ -129,14 +132,14 @@ L_j_ff(real nu, real te, real ne)
 
 	real x = CONST_me * CONST_c * CONST_c / CONST_Ry;  /* ~ 4e4 */
 	real y = CONST_h / (CONST_me * CONST_c * CONST_c); /* ~ 3e-21 */
-	real f = SQRT(CONST_G * CONST_mSun / (CONST_c * CONST_c) * 6.8e-38 /
+	real f = SQRT(CONST_G * CONST_mSun / (CONST_c * CONST_c) * K(6.8e-38) /
 	              (4 * M_PI * SQRT(CONST_me * CONST_c * CONST_c / CONST_kB)));
 
 	x *= te;      /* ~ 1e+04 */
 	y *= nu / te; /* ~ 1e-10 */
 	f *= ne;      /* ~ 1e-15 */
 
-	return (M_bh * f * Gaunt(x, y)) * (f / (SQRT(te) * EXP(y) + (real)EPSILON));
+	return (M_ADM * f * Gaunt(x, y)) * (f / (SQRT(te) * EXP(y) + (real)EPSILON));
 } /* 12 FLOP + FLOP(Gaunt) == 15+ FLOP */
 
 static inline real
@@ -163,7 +166,7 @@ L_j_syn(real nu, real te, real ne, real B,  real cos_theta)
 		            LOG(2 * te * te - (real)0.5) :
 		            log_K2it(te);
 
-	return (M_bh * xx * EXP(-cbrtx)) * (xx * EXP(-log_K2)) * (f * ne * nus);
+	return (M_ADM * xx * EXP(-cbrtx)) * (xx * EXP(-log_K2)) * (f * ne * nus);
 } /* 25 FLOP + min(4 FLOP, FLOP(log_K2it)) == 29+ FLOP */
 
 
@@ -180,10 +183,8 @@ rt_icond(void)
 }
 
 struct rt
-rt_rhs(struct flow f)
+rt_rhs(struct rt r, struct flow f)
 {
-	struct rt r;
-
 	for(whole i = 0; i < n_freq; ++i) {
 		const real nu     = nus[i] * f.shift;
 		const real B_nu   = B_Planck(nu, f.te);

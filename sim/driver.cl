@@ -41,7 +41,8 @@ icond_drv(__global real *data,  /**< states of the rays     */
           const    real  r_obs, /**< Distance of the image from the black hole */
           const    real  i_obs, /**< Inclination angle of the image in degrees */
           const    real  j_obs, /**< Azimuthal   angle of the image in degrees */
-          __local  real *scratch)
+          __local  real *scratch,
+          SPACETIME_PROTOTYPE_ARGS)
 {
 	const size_t gj = get_global_id(0); /* for h, slowest changing index */
 	const size_t gi = get_global_id(1); /* for w, fastest changing index */
@@ -61,7 +62,7 @@ icond_drv(__global real *data,  /**< states of the rays     */
 			DATA(g, s) = ((real *)&d)[s];
 
 		for(s = 0; s < n_info; ++s)
-			INFO(g, s) = getuu(d.g);
+			INFO(g, s) = getuu(d.g, SPACETIME_ARGS);
 	}
 }
 
@@ -71,7 +72,8 @@ evolve_drv(__global real *data,  /**< states of the rays     */
            __global real *info,  /**< diagnostic information */
            const    real  dt,    /**< step size              */
            const    whole n_sub, /**< number of sub-steps    */
-           __local  real *scratch)
+           __local  real *scratch,
+           SPACETIME_PROTOTYPE_ARGS)
 {
 	const size_t gj = get_global_id(0); /* for h, slowest changing index */
 	const size_t gi = get_global_id(1); /* for w, fastest changing index */
@@ -93,7 +95,7 @@ evolve_drv(__global real *data,  /**< states of the rays     */
 				break;
 			if(dh > n - h)
 				dh = n - h;
-			d = integrate(d, dh * dt / n);
+			d = integrate(d, dh * dt / n, SPACETIME_ARGS);
 		}
 
 		/* Output to global array */
@@ -101,6 +103,6 @@ evolve_drv(__global real *data,  /**< states of the rays     */
 			DATA(g, s) = ((real *)&d)[s];
 
 		for(s = 0; s < n_info; ++s)
-			INFO(g, s) = getuu(d.g);
+			INFO(g, s) = getuu(d.g, SPACETIME_ARGS);
 	}
 }

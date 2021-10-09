@@ -40,12 +40,28 @@ evolve(Lux_job *ego, real t, real target, size_t n_sub)
 
 	const  size_t shape[] = {p->h_rays, p->w_rays};
 
-	return ocl->exec(ocl,
-	                 evolve->with(evolve,
-	                              EGO->data,
-	                              EGO->info,
-	                              target - t,
-	                              n_sub,
-	                              sz * max(n_data, n_info)),
-	                 2, shape);
+	size_t arg_num = 0;
+
+	evolve->setM(evolve, arg_num, EGO->data);
+	arg_num++;
+	evolve->setM(evolve, arg_num, EGO->info);
+	arg_num++;
+	evolve->setR(evolve, arg_num, target - t);
+	arg_num++;
+	evolve->setW(evolve, arg_num, n_sub);
+	arg_num++;
+	evolve->setS(evolve, arg_num, sz * max(n_data, n_info));
+	arg_num++;
+	evolve->set(evolve, arg_num, sizeof(cl_float8), &(EGO->bounding_box));
+	arg_num++;
+	evolve->set(evolve, arg_num, sizeof(cl_int4), &(EGO->num_points));
+	arg_num++;
+	/* We have 40 Gammas + 10 metric components + 1 fluid property at t1 */
+	for (size_t old_arg_num = arg_num; arg_num < old_arg_num + 51; arg_num++)
+		evolve->setM(evolve, arg_num, EGO->spacetime_t1[arg_num-old_arg_num]);
+	/* And here the 40 Gammas + 10 metric components + 1 fluid property at t2 */
+	for (size_t old_arg_num = arg_num; arg_num < old_arg_num + 51; arg_num++)
+		evolve->setM(evolve, arg_num, EGO->spacetime_t2[arg_num-old_arg_num]);
+
+	return ocl->exec(ocl, evolve, 2, shape);
 }

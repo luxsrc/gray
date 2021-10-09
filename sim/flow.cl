@@ -35,7 +35,8 @@ struct flow {
 
 struct flow
 getflow(real4 q, /* "up"   position 4-vector q^mu */
-        real4 k) /* "down" momentum 4-vector k_mu */
+        real4 k, /* "down" momentum 4-vector k_mu */
+	SPACETIME_PROTOTYPE_ARGS)
 {
 	struct flow f;
 
@@ -46,7 +47,7 @@ getflow(real4 q, /* "up"   position 4-vector q^mu */
                                            u_nu F_{lambda,kappa},
                                    see Gammie et al. (2003) */
 
-	f.ne = 1.0e9 / sqrt(getrr(q));
+	f.ne = interpolate(q, bounding_box, num_points, rho_t1, rho_t2);
 	f.te = 1e12;
 	f.b  = 0;
 

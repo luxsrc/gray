@@ -49,7 +49,7 @@ real
 getdt(struct gr g, real dt)
 {
 	real r   = sqrt(getrr(g.q));
-	real eps = r - (1.0 + sqrt(1.0 - a_spin * a_spin));
+	real eps = geteps(g.q);
 
 	if(eps < 0.01) /* stop near horizon */
 		return 0;
@@ -64,9 +64,11 @@ getdt(struct gr g, real dt)
 }
 
 struct state
-rhs(struct state s) /**< state of the ray */
+rhs(struct state s, SPACETIME_PROTOTYPE_ARGS) /**< state of the ray */
 {
 	real4 q = s.g.q;
-	real4 k = down(q, s.g.u);
-	return (struct state){gr_rhs(s.g), rt_rhs(getflow(q, k))};
+	real4 k = down(q, s.g.u, SPACETIME_ARGS);
+	return (struct state){
+		gr_rhs(s.g, SPACETIME_ARGS),
+		rt_rhs(s.r, getflow(q, k, SPACETIME_ARGS))};
 }
