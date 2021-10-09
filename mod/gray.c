@@ -31,22 +31,22 @@
 static int
 conf(Lux_job *ego, const char *restrict arg)
 {
-	const char *initcond_org = EGO->opts.initcond;
+	const char *initcond_org = EGO->gray.initcond;
 	int status;
 
 	lux_debug("GRay2: configuring instance %p with \"%s\"\n", ego, arg);
 
-	status = gray_config(&EGO->opts, arg);
+	status = gray_config(&EGO->gray, arg);
 
 	SWITCH {
-	MATCH(opts.initcond, "infcam")
-		if(EGO->opts.initcond != initcond_org)
+	MATCH(gray.initcond, "infcam")
+		if(EGO->gray.initcond != initcond_org)
 			infcam_init(&EGO->initcond.infcam);
 		else if(status)
 			status = infcam_config(&EGO->initcond.infcam, arg);
 	DEFAULT
 		lux_fatal("Unknown initial conditions for rays \"%s\"\n",
-		          EGO->opts.initcond);
+		          EGO->gray.initcond);
 	}
 
 	return status;
@@ -60,14 +60,14 @@ init(Lux_job *ego)
 	lux_print("Setup OpenCL\n");
 	{
 		struct LuxOopencl opts = OPENCL_NULL;
-		opts.iplf    = EGO->opts.i_platform;
-		opts.idev    = EGO->opts.i_device;
-		opts.devtype = EGO->opts.device_type;
+		opts.iplf    = EGO->gray.i_platform;
+		opts.idev    = EGO->gray.i_device;
+		opts.devtype = EGO->gray.device_type;
 		EGO->ocl = lux_load("opencl", &opts);
 	}
 
-	lux_print("spacetime: %s\n",         EGO->opts.spacetime);
-	lux_print("initial condition: %s\n", EGO->opts.initcond);
+	lux_print("spacetime: %s\n",         EGO->gray.spacetime);
+	lux_print("initial condition: %s\n", EGO->gray.initcond);
 
 	return 0;
 }
@@ -93,7 +93,7 @@ LUX_MKMOD(const void *opts)
 		EGO->super.init = init;
 		EGO->super.exec = exec;
 
-		gray_init(&EGO->opts);
+		gray_init(&EGO->gray);
 		infcam_init(&EGO->initcond.infcam);
 	}
 	return ego;

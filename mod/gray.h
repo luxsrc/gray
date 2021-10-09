@@ -31,7 +31,7 @@
 struct gray {
 	Lux_job super;
 
-	struct gray_opts opts;
+	struct gray_opts gray;
 	union {
 		struct infcam_opts infcam;
 	} initcond;
