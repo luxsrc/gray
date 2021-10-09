@@ -28,7 +28,7 @@ typedef struct LuxOgray_initcond Lux_gray_initcond_opts;
 
 struct LuxSgray_initcond {
 	size_t (*getn)(Lux_gray_initcond *);
-	cl_mem (*init)(Lux_gray_initcond *);
+	int    (*init)(Lux_gray_initcond *, cl_mem);
 };
 
 struct LuxOgray_initcond {
