@@ -26,11 +26,15 @@
 #include <lux/task.h>
 
 #include "gray_opts.h"
+#include "infcam_opts.h"
 
 struct gray {
 	Lux_job super;
 
 	struct gray_opts opts;
+	union {
+		struct infcam_opts infcam;
+	} initcond;
 
 	Lux_opencl *ocl;
 

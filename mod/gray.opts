@@ -3,3 +3,5 @@ unsigned	i_device:id	= 0	= strtoul(val, &rem, 0);	/**< Index of device   to use 
 cl_device_type	device_type:type	= CL_DEVICE_TYPE_ALL	= strtotype(val);	/**< Type  of device   to use */
 
 const char *	spacetime:st	= "Kerr"	= val;	/**< Spacetime geometry */
+
+const char *	initcond:ic	= "infcam"	= val;	/**< Initial conditions for the rays */

@@ -1,0 +1,11 @@
+# Camera Setup
+real	w_img:w	= 64	= strtod(val, &rem);	/**< Width  of the image in \f$GM/c^2\f$ */
+real	h_img:h	= 64	= strtod(val, &rem);	/**< Height of the image in \f$GM/c^2\f$ */
+real	r_obs:r	= 1024	= strtod(val, &rem);	/**< Distance of the image from the black hole; TODO: analytically integrate from infinity */
+real	i_obs:i	= 60	= strtod(val, &rem);	/**< Inclination angle of the image in degrees */
+real	j_obs:j	= 0	= strtod(val, &rem);	/**< Azimuthal   angle of the image in degrees */
+
+# Numerical Setup
+const char *	coordinates:coor	= "pxcenter"	= val;	/**< Coordinate system */
+size_t	n_width:W	= 512	= strtoul(val, &rem, 0);	/**< Number of rays along the width  of the image */
+size_t	n_height:H	= 512	= strtoul(val, &rem, 0);	/**< Number of rays along the height of the image */

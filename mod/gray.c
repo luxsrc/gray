@@ -21,16 +21,35 @@
 #include "gray.h"
 
 #include <lux/mangle.h>
+#include <lux/switch.h>
 #include <lux/zalloc.h>
 
 #define EGO ((struct gray *)ego)
 
+#define MATCH(opt, str) CASE(!strcmp(EGO->opt, str))
+
 static int
 conf(Lux_job *ego, const char *restrict arg)
 {
+	const char *initcond_org = EGO->opts.initcond;
+	int status;
+
 	lux_debug("GRay2: configuring instance %p with \"%s\"\n", ego, arg);
 
-	return gray_config(&EGO->opts, arg);
+	status = gray_config(&EGO->opts, arg);
+
+	SWITCH {
+	MATCH(opts.initcond, "infcam")
+		if(EGO->opts.initcond != initcond_org)
+			infcam_init(&EGO->initcond.infcam);
+		else if(status)
+			status = infcam_config(&EGO->initcond.infcam, arg);
+	DEFAULT
+		lux_fatal("Unknown initial conditions for rays \"%s\"\n",
+		          EGO->opts.initcond);
+	}
+
+	return status;
 }
 
 static int
@@ -47,7 +66,8 @@ init(Lux_job *ego)
 		EGO->ocl = lux_load("opencl", &opts);
 	}
 
-	lux_print("spacetime: %s\n", EGO->opts.spacetime);
+	lux_print("spacetime: %s\n",         EGO->opts.spacetime);
+	lux_print("initial condition: %s\n", EGO->opts.initcond);
 
 	return 0;
 }
@@ -74,6 +94,7 @@ LUX_MKMOD(const void *opts)
 		EGO->super.exec = exec;
 
 		gray_init(&EGO->opts);
+		infcam_init(&EGO->initcond.infcam);
 	}
 	return ego;
 }
