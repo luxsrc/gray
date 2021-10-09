@@ -22,6 +22,7 @@
 
 #include <lux.h>
 #include <lux/job.h>
+#include <lux/opencl.h>
 #include <lux/task.h>
 
 #include "gray_opts.h"
@@ -30,6 +31,8 @@ struct gray {
 	Lux_job super;
 
 	struct gray_opts opts;
+
+	Lux_opencl *ocl;
 
 	Lux_task *gi;
 	Lux_task *flow;

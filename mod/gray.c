@@ -40,6 +40,8 @@ init(Lux_job *ego)
 
 	lux_print("spacetime: %s\n", EGO->opts.spacetime);
 
+	EGO->ocl = lux_load("opencl", NULL);
+
 	return 0;
 }
 
@@ -73,6 +75,8 @@ void
 LUX_RMMOD(void *ego)
 {
 	lux_debug("GRay2: destructing instance %p\n", ego);
+
+	lux_unload(EGO->ocl);
 
 	free(ego);
 }
