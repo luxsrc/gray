@@ -9,7 +9,7 @@ clean:
 	rm -fr {.,_}libs
 	rm -f  *.{lo,so,la}
 
-gray.la: gray.h gray.c gray_opts.h infcam_opts.h
+gray.la: gray.h gray.c gray_opts.h Kerr_opts.h infcam_opts.h
 
 %.la:
 	lux-build $^ -o $@

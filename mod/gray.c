@@ -31,12 +31,24 @@
 static int
 conf(Lux_job *ego, const char *restrict arg)
 {
-	const char *initcond_org = EGO->gray.initcond;
+	const char *spacetime_org = EGO->gray.spacetime;
+	const char *initcond_org  = EGO->gray.initcond;
 	int status;
 
 	lux_debug("GRay2: configuring instance %p with \"%s\"\n", ego, arg);
 
 	status = gray_config(&EGO->gray, arg);
+
+	SWITCH {
+	MATCH(gray.spacetime, "Kerr")
+		if(EGO->gray.spacetime != spacetime_org)
+			Kerr_init(&EGO->spacetime.Kerr);
+		else if(status)
+			status = Kerr_config(&EGO->spacetime.Kerr, arg);
+	DEFAULT
+		lux_fatal("Unknown spacetime configuration \"%s\"\n",
+		          EGO->gray.spacetime);
+	}
 
 	SWITCH {
 	MATCH(gray.initcond, "infcam")

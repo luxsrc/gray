@@ -1,0 +1,2 @@
+real	m_bh:M	= 4e6	= strtod(val, &rem);	/**< Mass of the central black hole in unit of solar mass; note that it is needed in radiative transfer but not in geodesic integration */
+real	a_spin:a	= 0	= strtod(val, &rem);	/**< Dimensionless black hole spin */
