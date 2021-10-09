@@ -78,8 +78,8 @@ init(Lux_job *ego)
 		EGO->ocl = lux_load("opencl", &opts);
 	}
 
-	lux_print("spacetime: %s\n",         EGO->gray.spacetime);
-	lux_print("initial condition: %s\n", EGO->gray.initcond);
+	lux_print("spacetime:st: %s\n", EGO->gray.spacetime);
+	lux_print("initcond:ic: %s\n",  EGO->gray.initcond);
 
 	return 0;
 }
