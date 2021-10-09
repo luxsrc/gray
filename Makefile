@@ -8,6 +8,8 @@ endif
 
 all: recursive
 
+doc: recursive
+
 install: recursive
 
 clean: recursive

@@ -1,4 +1,4 @@
-all: html/index.html latex/refman.pdf
+doc: html/index.html latex/refman.pdf
 
 html/index.html:
 	doxygen
