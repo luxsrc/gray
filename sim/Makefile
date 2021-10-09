@@ -7,7 +7,7 @@ install: gray.la
 	lux-optgen $<
 
 gray.la: gray.h *.c icond.h param.h setup.h
-	lux-build gray.h *.c -o gray.la
+	lux-build gray.h *.c -f opencl hdf5 -o gray.la
 
 clean:
 	-rm -fr .libs _libs
