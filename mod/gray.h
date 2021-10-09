@@ -42,6 +42,9 @@ struct gray {
 
 	Lux_opencl *ocl;
 
+	size_t n_rays;
+	cl_mem rays;
+
 	Lux_task *gi;
 	Lux_task *flow;
 	Lux_task *rt;

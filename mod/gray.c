@@ -39,6 +39,7 @@ conf(Lux_job *ego, const char *restrict arg)
 
 	status = gray_config(&EGO->gray, arg);
 
+	/* TODO: take full advantage of dynamic module and avoid switch */
 	SWITCH {
 	MATCH(gray.spacetime, "Kerr")
 		if(EGO->gray.spacetime != spacetime_org)
@@ -50,6 +51,7 @@ conf(Lux_job *ego, const char *restrict arg)
 		          EGO->gray.spacetime);
 	}
 
+	/* TODO: take full advantage of dynamic module and avoid switch */
 	SWITCH {
 	MATCH(gray.initcond, "infcam")
 		if(EGO->gray.initcond != initcond_org)
@@ -80,6 +82,19 @@ init(Lux_job *ego)
 
 	lux_print("spacetime:st: %s\n", EGO->gray.spacetime);
 	lux_print("initcond:ic: %s\n",  EGO->gray.initcond);
+
+	/* TODO: take full advantage of dynamic module and avoid switch */
+	SWITCH {
+	MATCH(gray.initcond, "infcam")
+		EGO->n_rays = (
+			EGO->initcond.infcam.n_width  *
+			EGO->initcond.infcam.n_height);
+	}
+
+	EGO->rays = EGO->ocl->mk(
+		EGO->ocl,
+		8 * sizeof(real) * EGO->n_rays,
+		CL_MEM_READ_WRITE);
 
 	return 0;
 }
@@ -116,6 +131,7 @@ LUX_RMMOD(void *ego)
 {
 	lux_debug("GRay2: destructing instance %p\n", ego);
 
+	EGO->ocl->rm(EGO->ocl, EGO->rays);
 	lux_unload(EGO->ocl);
 
 	free(ego);
