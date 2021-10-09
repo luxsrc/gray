@@ -24,6 +24,8 @@
 #include <lux/switch.h>
 #include <lux/zalloc.h>
 
+#include <stdio.h>
+
 #define EGO ((struct gray *)ego)
 
 #define MATCH(opt, str) CASE(!strcmp(EGO->opt, str))
@@ -69,9 +71,11 @@ conf(Lux_job *ego, const char *restrict arg)
 static int
 init(Lux_job *ego)
 {
+	Lux_gray_initcond *ic;
+
 	lux_debug("GRay2: initializing instance %p\n", ego);
 
-	lux_print("Setup OpenCL\n");
+	lux_print("GRay2:init: setup opencl module\n");
 	{
 		struct LuxOopencl opts = OPENCL_NULL;
 		opts.iplf    = EGO->gray.i_platform;
@@ -80,21 +84,35 @@ init(Lux_job *ego)
 		EGO->ocl = lux_load("opencl", &opts);
 	}
 
-	lux_print("spacetime:st: %s\n", EGO->gray.spacetime);
-	lux_print("initcond:ic: %s\n",  EGO->gray.initcond);
+	lux_print("GRay2:init: spacetime:st: %s\n", EGO->gray.spacetime);
 
-	/* TODO: take full advantage of dynamic module and avoid switch */
-	SWITCH {
-	MATCH(gray.initcond, "infcam")
-		EGO->n_rays = (
-			EGO->initcond.infcam.n_width  *
-			EGO->initcond.infcam.n_height);
+	lux_print("GRay2:init: initcond:ic: %s\n",  EGO->gray.initcond);
+	{
+		Lux_gray_initcond_opts opts = {
+			EGO->ocl->nque,
+			EGO->ocl->que,
+			&EGO->initcond
+		};
+
+		char buf[256];
+		sprintf(buf, "sim/gray/%s", EGO->gray.initcond);
+
+		ic = lux_load(buf, &opts);
+		if(!ic)
+			return -1;
 	}
 
-	EGO->rays = EGO->ocl->mk(
+	lux_print("GRay2:init: allocate memory\n");
+	EGO->n_rays = ic->getn(ic);
+	EGO->rays   = EGO->ocl->mk(
 		EGO->ocl,
 		8 * sizeof(real) * EGO->n_rays,
 		CL_MEM_READ_WRITE);
+
+	lux_print("GRay2:init: initialize rays\n");
+	(void)ic->init(ic, EGO->rays);
+
+	lux_unload(ic);
 
 	return 0;
 }
