@@ -8,10 +8,10 @@
 !*.py
 
 # Optgen-ed files
+!*.rap
 !*.opts
-icond.h
-param.h
-setup.h
+*_rap.h
+*_opts.h
 
 # Makefile etc
 !*file
