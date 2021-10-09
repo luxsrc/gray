@@ -38,9 +38,16 @@ init(Lux_job *ego)
 {
 	lux_debug("GRay2: initializing instance %p\n", ego);
 
-	lux_print("spacetime: %s\n", EGO->opts.spacetime);
+	lux_print("Setup OpenCL\n");
+	{
+		struct LuxOopencl opts = OPENCL_NULL;
+		opts.iplf    = EGO->opts.i_platform;
+		opts.idev    = EGO->opts.i_device;
+		opts.devtype = EGO->opts.device_type;
+		EGO->ocl = lux_load("opencl", &opts);
+	}
 
-	EGO->ocl = lux_load("opencl", NULL);
+	lux_print("spacetime: %s\n", EGO->opts.spacetime);
 
 	return 0;
 }
