@@ -30,13 +30,15 @@ conf(Lux_job *ego, const char *restrict arg)
 {
 	lux_debug("GRay2: configuring instance %p with \"%s\"\n", ego, arg);
 
-	return 0;
+	return gray_config(&EGO->opts, arg);
 }
 
 static int
 init(Lux_job *ego)
 {
 	lux_debug("GRay2: initializing instance %p\n", ego);
+
+	lux_print("spacetime: %s\n", EGO->opts.spacetime);
 
 	return 0;
 }
@@ -61,6 +63,8 @@ LUX_MKMOD(const void *opts)
 		EGO->super.conf = conf;
 		EGO->super.init = init;
 		EGO->super.exec = exec;
+
+		gray_init(&EGO->opts);
 	}
 	return ego;
 }
