@@ -17,39 +17,24 @@
  * You should have received a copy of the GNU General Public License
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef _GRAY_H_
-#define _GRAY_H_
+#ifndef _GRAY_INITCOND_H_
+#define _GRAY_INITCOND_H_
 
 #include <lux.h>
-#include <lux/job.h>
 #include <lux/opencl.h>
-#include <lux/task.h>
 
-#include "initcond.h"
+typedef struct LuxSgray_initcond Lux_gray_initcond;
+typedef struct LuxOgray_initcond Lux_gray_initcond_opts;
 
-#include "gray_opts.h"
-#include "Kerr_opts.h"
-#include "infcam_opts.h"
-
-struct gray {
-	Lux_job super;
-
-	struct gray_opts gray;
-	union {
-		struct Kerr_opts Kerr;
-	} spacetime;
-	union {
-		struct infcam_opts infcam;
-	} initcond;
-
-	Lux_opencl *ocl;
-
-	size_t n_rays;
-	cl_mem rays;
-
-	Lux_task *gi;
-	Lux_task *flow;
-	Lux_task *rt;
+struct LuxSgray_initcond {
+	size_t (*getn)(Lux_gray_initcond *);
+	cl_mem (*init)(Lux_gray_initcond *);
 };
 
-#endif /* _GRAY_H */
+struct LuxOgray_initcond {
+	size_t            nque;
+	cl_command_queue *que;
+	void             *opts;
+};
+
+#endif /* _GRAY_INITCOND_H */
