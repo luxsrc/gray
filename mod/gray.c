@@ -113,24 +113,23 @@ init(Lux_job *ego)
 	}
 
 	lux_print("GRay2:init: allocate memory\n");
-	EGO->n_rays = ic->getn(ic);
-	EGO->rays   = EGO->ocl->mk(
-		EGO->ocl,
-		8 * sizeof(real) * EGO->n_rays,
-		CL_MEM_READ_WRITE);
+	{
+		size_t n_rays = ic->getn(ic);
+		EGO->rays = dmk(EGO->ocl, real[8], n_rays);
+	}
 
 	lux_print("GRay2:init: initialize rays\n");
-	(void)ic->init(ic, EGO->rays);
+	(void)ic->init(ic, EGO->rays.data);
 
 	lux_print("GRay2:init: spacetime:st: %s\n", EGO->gray.spacetime);
 	/* TODO: take full advantage of dynamic module and avoid switch */
 	SWITCH {
 	MATCH(gray.spacetime, "Kerr")
 		Lux_Kerr_problem prob = {
-			EGO->n_rays,
+			dgetn(EGO->rays, 0),
 			EGO->spacetime.Kerr.a_spin,
 			-1.0,
-			EGO->rays
+			EGO->rays.data
 		};
 
 		char buf[256];
@@ -205,7 +204,7 @@ LUX_RMMOD(void *ego)
 {
 	lux_debug("GRay2: destructing instance %p\n", ego);
 
-	EGO->ocl->rm(EGO->ocl, EGO->rays);
+	drm(EGO->ocl, EGO->rays);
 	lux_unload(EGO->ocl);
 
 	free(ego);

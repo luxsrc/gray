@@ -23,8 +23,10 @@
 #include <lux.h>
 #include <lux/io.h>
 #include <lux/job.h>
-#include <lux/opencl.h>
 #include <lux/task.h>
+
+#include <lux/opencl.h>
+#include <lux/darray.h>
 
 #include "initcond.h"
 
@@ -46,8 +48,7 @@ struct gray {
 	Lux_opencl *ocl;
 	Lux_io     *io;
 
-	size_t n_rays;
-	cl_mem rays;
+	struct darray rays;
 
 	struct basealgo gi;
 	struct basealgo flow;
