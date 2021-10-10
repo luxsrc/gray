@@ -1,8 +1,9 @@
-build: infcam.la gray.la
+build: Kerr/ocl.la infcam.la gray.la
 
-install: gray.la
-	lux-install infcam.la +i sim/gray
-	lux-install gray.la   +i sim
+install: Kerr/ocl.la infcam.la gray.la
+	lux-install Kerr/ocl.la +i sim/gray
+	lux-install infcam.la   +i sim/gray
+	lux-install gray.la     +i sim
 
 clean:
 	for f in $$(ls *.rap  2> /dev/null); do rm -f $${f%.rap}_rap.h;   done
@@ -10,8 +11,11 @@ clean:
 	rm -fr {.,_}libs
 	rm -f  *.{lo,so,la}
 
-gray.la:   gray.h initcond.h gray.c gray_opts.h Kerr_opts.h infcam_opts.h
-infcam.la: initcond.h infcam.c infcam_opts.h
+# mod:       interfaces        sources    options etc
+# v          v                 v          v
+Kerr/ocl.la: Kerr_rap.h        Kerr/ocl.c Kerr_opts.h
+infcam.la:   initcond.h        infcam.c   infcam_opts.h
+gray.la:     gray.h initcond.h gray.c     gray_opts.h Kerr_opts.h infcam_opts.h
 
 %.la:
 	lux-build $^ -o $@

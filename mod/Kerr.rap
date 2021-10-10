@@ -1,0 +1,4 @@
+XSPEC	size_t n;
+ISPEC	size_t bsz, gsz;
+PARAMS	double aspin, target;
+STATES	cl_mem rays;
