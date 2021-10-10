@@ -47,9 +47,9 @@ struct gray {
 	size_t n_rays;
 	cl_mem rays;
 
-	Lux_task *gi;
-	Lux_task *flow;
-	Lux_task *rt;
+	struct basealgo gi;
+	struct basealgo flow;
+	struct basealgo rt;
 };
 
 #endif /* _GRAY_H */

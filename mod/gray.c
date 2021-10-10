@@ -21,10 +21,13 @@
 #include "gray.h"
 
 #include <lux/mangle.h>
+#include <lux/planner.h>
 #include <lux/switch.h>
 #include <lux/zalloc.h>
 
 #include <stdio.h>
+
+#include "Kerr_rap.h"
 
 #define EGO ((struct gray *)ego)
 
@@ -71,7 +74,8 @@ conf(Lux_job *ego, const char *restrict arg)
 static int
 init(Lux_job *ego)
 {
-	Lux_gray_initcond *ic;
+	Lux_planner       *gi = NULL;
+	Lux_gray_initcond *ic = NULL;
 
 	lux_debug("GRay2: initializing instance %p\n", ego);
 
@@ -84,9 +88,7 @@ init(Lux_job *ego)
 		EGO->ocl = lux_load("opencl", &opts);
 	}
 
-	lux_print("GRay2:init: spacetime:st: %s\n", EGO->gray.spacetime);
-
-	lux_print("GRay2:init: initcond:ic: %s\n",  EGO->gray.initcond);
+	lux_print("GRay2:init: initcond:ic: %s\n", EGO->gray.initcond);
 	{
 		Lux_gray_initcond_opts opts = {
 			EGO->ocl->nque,
@@ -112,7 +114,31 @@ init(Lux_job *ego)
 	lux_print("GRay2:init: initialize rays\n");
 	(void)ic->init(ic, EGO->rays);
 
-	lux_unload(ic);
+	lux_print("GRay2:init: spacetime:st: %s\n", EGO->gray.spacetime);
+	/* TODO: take full advantage of dynamic module and avoid switch */
+	SWITCH {
+	MATCH(gray.spacetime, "Kerr")
+		Lux_Kerr_problem prob = {
+			EGO->n_rays,
+			EGO->spacetime.Kerr.a_spin,
+			-1.0,
+			EGO->rays
+		};
+
+		char buf[256];
+		sprintf(buf, "sim/gray/%s", EGO->gray.spacetime);
+		gi = lux_load("planner", buf);
+
+		EGO->gi = gi->plan(gi, (Lux_problem *)&prob, LUX_PLAN_DEFAULT);
+	DEFAULT
+		lux_fatal("Unknown spacetime configuration \"%s\"\n",
+		          EGO->gray.spacetime);
+	}
+
+	if(gi)
+		lux_unload(gi);
+	if(ic)
+		lux_unload(ic);
 
 	return 0;
 }
