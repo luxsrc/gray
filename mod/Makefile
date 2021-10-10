@@ -16,6 +16,7 @@ clean:
 Kerr/ocl.la: Kerr_rap.h        Kerr/ocl.c Kerr_opts.h
 infcam.la:   initcond.h        infcam.c   infcam_opts.h
 gray.la:     gray.h initcond.h gray.c     gray_opts.h Kerr_opts.h infcam_opts.h
+	lux-build $^ -f hdf5 -o $@
 
 %.la:
 	lux-build $^ -o $@

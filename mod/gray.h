@@ -21,6 +21,7 @@
 #define _GRAY_H_
 
 #include <lux.h>
+#include <lux/io.h>
 #include <lux/job.h>
 #include <lux/opencl.h>
 #include <lux/task.h>
@@ -43,6 +44,7 @@ struct gray {
 	} initcond;
 
 	Lux_opencl *ocl;
+	Lux_io     *io;
 
 	size_t n_rays;
 	cl_mem rays;

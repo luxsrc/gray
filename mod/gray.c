@@ -20,6 +20,7 @@
 
 #include "gray.h"
 
+#include <lux/hdf5.h>
 #include <lux/mangle.h>
 #include <lux/planner.h>
 #include <lux/switch.h>
@@ -93,6 +94,8 @@ init(Lux_job *ego)
 		EGO->ocl = lux_load("opencl", &opts);
 	}
 
+	EGO->io = lux_load("hdf5", NULL);
+
 	lux_print("GRay2:init: initcond:ic: %s\n", EGO->gray.initcond);
 	{
 		Lux_gray_initcond_opts opts = {
@@ -158,10 +161,16 @@ exec(Lux_job *ego)
 		double t      = EGO->t;
 		double target = EGO->dt * next;
 
+		Lux_file *file;
+		char buf[256];
+
 		lux_print("%zu: %4.1f -> %4.1f", next, t, target);
 
 		/* TODO: EGO->gi->exec(EGO->gi); */
-		/* TODO: dump(); */
+
+		sprintf(buf, EGO->gray.rayfile, next);
+		file = EGO->io(buf, H5F_ACC_EXCL);
+		/* TODO: dump to file */
 
 		lux_print(": DONE\n");
 

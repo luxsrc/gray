@@ -10,3 +10,5 @@ real	t_init:t0	= 0	= strtod(val, &rem);	/**< Initial time */
 real	dt_dump:dt	= -32	= strtod(val, &rem);	/**< Time interval between dumps */
 size_t	i_init:i0	= 0	= strtoul(val, &rem, 0);	/**< Initial dump id */
 size_t	n_dump:N	= 64	= strtoul(val, &rem, 0);	/**< Number of dumps (in addition to the initial condition) */
+
+const char *	rayfile:ray	= "ray%04d.h5"	= val;	/**< File name format for ray dump */
