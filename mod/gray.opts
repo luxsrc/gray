@@ -5,3 +5,8 @@ cl_device_type	device_type:type	= CL_DEVICE_TYPE_ALL	= strtotype(val);	/**< Type
 const char *	spacetime:st	= "Kerr"	= val;	/**< Spacetime geometry */
 
 const char *	initcond:ic	= "infcam"	= val;	/**< Initial conditions for the rays */
+
+real	t_init:t0	= 0	= strtod(val, &rem);	/**< Initial time */
+real	dt_dump:dt	= -32	= strtod(val, &rem);	/**< Time interval between dumps */
+size_t	i_init:i0	= 0	= strtoul(val, &rem, 0);	/**< Initial dump id */
+size_t	n_dump:N	= 64	= strtoul(val, &rem, 0);	/**< Number of dumps (in addition to the initial condition) */

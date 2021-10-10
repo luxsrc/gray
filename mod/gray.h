@@ -50,6 +50,9 @@ struct gray {
 	struct basealgo gi;
 	struct basealgo flow;
 	struct basealgo rt;
+
+	double t, dt;
+	size_t i, n;
 };
 
 #endif /* _GRAY_H */

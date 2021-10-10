@@ -79,6 +79,11 @@ init(Lux_job *ego)
 
 	lux_debug("GRay2: initializing instance %p\n", ego);
 
+	EGO->t  = EGO->gray.t_init;
+	EGO->dt = EGO->gray.dt_dump;
+	EGO->i  = EGO->gray.i_init;
+	EGO->n  = EGO->gray.n_dump;
+
 	lux_print("GRay2:init: setup opencl module\n");
 	{
 		struct LuxOopencl opts = OPENCL_NULL;
@@ -147,6 +152,22 @@ static int
 exec(Lux_job *ego)
 {
 	lux_debug("GRay2: executing instance %p\n", ego);
+
+	while(EGO->i < EGO->n) {
+		size_t next   = EGO->i + 1;
+		double t      = EGO->t;
+		double target = EGO->dt * next;
+
+		lux_print("%zu: %4.1f -> %4.1f", next, t, target);
+
+		/* TODO: EGO->gi->exec(EGO->gi); */
+		/* TODO: dump(); */
+
+		lux_print(": DONE\n");
+
+		EGO->i = next;
+		EGO->t = target;
+	}
 
 	return 0;
 }
