@@ -30,16 +30,9 @@ struct infcam {
 	Lux_gray_initcond  super;
 	size_t             nque;
 	cl_command_queue  *que;
-	size_t             n;
 };
 
 #define EGO ((struct infcam *)ego)
-
-static size_t
-getn(Lux_gray_initcond *ego)
-{
-	return EGO->n;
-}
 
 static int
 init(Lux_gray_initcond *ego, cl_mem rays)
@@ -58,11 +51,13 @@ LUX_MKMOD(const void *opts)
 	ego = zalloc(sizeof(struct infcam));
 	if(ego) {
 		struct infcam_opts *o = ((Lux_gray_initcond_opts*)opts)->opts;
-		EGO->super.getn = getn;
-		EGO->super.init = init;
+
+		EGO->super.init     = init;
+		EGO->super.n_width  = o->n_width;
+		EGO->super.n_height = o->n_height;
+
 		EGO->nque = ((Lux_gray_initcond_opts*)opts)->nque;
 		EGO->que  = ((Lux_gray_initcond_opts*)opts)->que;
-		EGO->n    = o->n_width * o->n_height;
 	}
 	return ego;
 }

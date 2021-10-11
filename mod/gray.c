@@ -113,11 +113,8 @@ init(Lux_job *ego)
 	}
 
 	lux_print("GRay2:init: allocate memory\n");
-	{
-		size_t n_rays  = ic->getn(ic);
-		EGO->rays      = dmk(EGO->ocl, real[8], n_rays);
-		EGO->rays_host = palloc(real, n_rays, 8);
-	}
+	EGO->rays      = dmk(EGO->ocl, real[8], ic->n_width * ic->n_height);
+	EGO->rays_host = palloc(real, ic->n_width, ic->n_height, 8);
 
 	lux_print("GRay2:init: initialize rays\n");
 	(void)ic->init(ic, EGO->rays.data);
