@@ -49,6 +49,7 @@ struct gray {
 	Lux_io     *io;
 
 	struct darray rays;
+	real         *rays_host;
 
 	struct basealgo gi;
 	struct basealgo flow;

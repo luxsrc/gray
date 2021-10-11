@@ -114,8 +114,9 @@ init(Lux_job *ego)
 
 	lux_print("GRay2:init: allocate memory\n");
 	{
-		size_t n_rays = ic->getn(ic);
-		EGO->rays = dmk(EGO->ocl, real[8], n_rays);
+		size_t n_rays  = ic->getn(ic);
+		EGO->rays      = dmk(EGO->ocl, real[8], n_rays);
+		EGO->rays_host = palloc(real, n_rays, 8);
 	}
 
 	lux_print("GRay2:init: initialize rays\n");
@@ -167,9 +168,13 @@ exec(Lux_job *ego)
 
 		/* TODO: EGO->gi->exec(EGO->gi); */
 
+		EGO->ocl->d2h(EGO->ocl,
+			EGO->rays_host,
+			EGO->rays.data, dope_getsz(EGO->rays.dope));
+
 		sprintf(buf, EGO->gray.rayfile, next);
 		file = EGO->io(buf, H5F_ACC_EXCL);
-		/* TODO: dump to file */
+		file->write_pa(file, "/rays", typecodeof(real), EGO->rays_host);
 
 		lux_print(": DONE\n");
 
@@ -204,6 +209,7 @@ LUX_RMMOD(void *ego)
 {
 	lux_debug("GRay2: destructing instance %p\n", ego);
 
+	pfree(EGO->rays_host);
 	drm(EGO->ocl, EGO->rays);
 	lux_unload(EGO->ocl);
 
