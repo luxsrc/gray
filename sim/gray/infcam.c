@@ -24,7 +24,7 @@
 #include <lux/switch.h>
 #include <lux/zalloc.h>
 
-#include "infcam_opts.h"
+#include "../infcam_opts.h"
 
 struct infcam {
 	Lux_gray_initcond  super;

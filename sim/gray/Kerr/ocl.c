@@ -25,7 +25,7 @@
 #include <lux/solver.h>
 
 #define  LUX_RAP_CASTING 1
-#include "../Kerr_rap.h"
+#include "../../Kerr_rap.h"
 
 static int
 driver(Lux_spec *s, Lux_args *a)
