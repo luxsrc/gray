@@ -1,4 +1,14 @@
+default: doc
+
+all:
+
 doc: html/index.html latex/refman.pdf
+
+check:
+
+install:
+
+clean:
 
 html/index.html:
 	doxygen

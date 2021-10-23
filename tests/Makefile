@@ -1,7 +1,13 @@
+default: check
+
 all: sample.la ck_sample
 
-check: build
+doc:
+
+check: all
 	for ck in $$(ls -1 ck_* | grep -v '\.'); do ./$$ck --debug; done
+
+install:
 
 clean:
 	for f in $$(ls *.rap  2> /dev/null); do rm -f $${f%.rap}_rap.h;   done

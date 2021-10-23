@@ -1,4 +1,10 @@
+default: all
+
 all: gray/Kerr/ocl.la gray/infcam.la gray.la
+
+doc:
+
+check:
 
 install: gray/Kerr/ocl.la gray/infcam.la gray.la
 	lux-install $^ +i sim
@@ -6,8 +12,8 @@ install: gray/Kerr/ocl.la gray/infcam.la gray.la
 clean:
 	for f in $$(ls *.rap  2> /dev/null); do rm -f $${f%.rap}_rap.h;   done
 	for g in $$(ls *.opts 2> /dev/null); do rm -f $${g%.opts}_opts.h; done
-	rm -fr {.,_}libs
-	rm -f  *.{lo,so,la}
+	rm -fr {,*/,*/*/}{.,_}libs
+	rm -f  {,*/,*/*/}*.{lo,so,la}
 
 # mod:            interfaces                   sources         options etc
 # v               v                            v               v
