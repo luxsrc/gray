@@ -1,3 +1,4 @@
+OPTS	size_t nque; cl_command_queue *que;
 XSPEC	size_t n;
 ISPEC	size_t bsz, gsz;
 PARAMS	double aspin, target;

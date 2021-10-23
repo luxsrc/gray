@@ -124,6 +124,8 @@ init(Lux_job *ego)
 	SWITCH {
 	MATCH(gray.spacetime, "Kerr")
 		Lux_Kerr_problem prob = {
+			EGO->ocl->nque,
+			EGO->ocl->que,
 			dgetn(EGO->rays, 0),
 			EGO->spacetime.Kerr.a_spin,
 			-1.0,

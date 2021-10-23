@@ -41,6 +41,9 @@ driver(Lux_spec *s, Lux_args *a)
 Lux_solution *
 LUX_MOD(Lux_problem *prob, unsigned flags)
 {
+	Lux_opencl       *ocl  = NULL;
+	struct LuxOopencl opts = OPENCL_NULL;
+
 	Lux_spec *spec1 = mkspec(prob, (prob->n+ 1-1)/ 1,  1);
 	Lux_spec *spec2 = mkspec(prob, (prob->n+ 2-1)/ 2,  2);
 	Lux_spec *spec3 = mkspec(prob, (prob->n+ 4-1)/ 4,  4);
@@ -50,6 +53,12 @@ LUX_MOD(Lux_problem *prob, unsigned flags)
 	Lux_spec *spec7 = mkspec(prob, (prob->n+64-1)/64, 64);
 
 	Lux_args *args  = mkargs(prob);
+
+	opts.nque = prob->nque;
+	opts.que  = prob->que;
+	ocl = lux_load("opencl", &opts);
+
+	lux_unload(ocl);
 
 	return pvector(
 		Lux_solution,
