@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016 Chi-kwan Chan
- * Copyright (C) 2016 Steward Observatory
+ * Copyright (C) 2021 Gabriele Bozzola and Chi-kwan Chan
+ * Copyright (C) 2021 Steward Observatory
  *
  * This file is part of GRay2.
  *
@@ -17,106 +17,46 @@
  * You should have received a copy of the GNU General Public License
  * along with GRay2.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-/** \file
- **
- ** Data structure definitions and function declarations for GRay2
- **
- ** GRay2 is implemented as a lux module.  Its run-time data is stored
- ** in a subclass of Lux_job, which is defined in this header file.
- ** Additional structure that holds run-time adjustable parameters,
- ** constructor, destructor, internal functions, and standard methods
- ** in Lux_job, are all declared here as well.
- **/
 #ifndef _GRAY_H_
 #define _GRAY_H_
 
 #include <lux.h>
-#include <lux/check.h>
+#include <lux/io.h>
 #include <lux/job.h>
-#include <lux/numeric.h>
+#include <lux/task.h>
+
 #include <lux/opencl.h>
-#include <lux/strutils.h>
+#include <lux/darray.h>
 
-#include "icond.h"
-#include "param.h"
-#include "setup.h"
+#include "initcond.h"
 
-/* Max number of times in the HDF5 file and max length of the group
- * name in the files */
-#define MAX_AVAILABLE_TIMES 1024
-#define MAX_TIME_NAME_LENGTH 64
+#include "gray_opts.h"
+#include "Kerr_opts.h"
+#include "infcam_opts.h"
 
-/**
- ** Run-time data structure for GRay2
- **
- ** To take advantage of all the low level features provided by lux,
- ** GRay2 is implemented as a lux module.  Its runtime data is stored
- ** in a subclass of Lux_job so that it can be loaded by the lux
- ** runtime.
- **/
 struct gray {
 	Lux_job super;
 
-	struct icond icond;
-	struct param param;
-	struct setup setup;
-
-	size_t n_coor;
-	size_t n_freq;
-	size_t n_info;
+	struct gray_opts gray;
+	union {
+		struct Kerr_opts Kerr;
+	} spacetime;
+	union {
+		struct infcam_opts infcam;
+	} initcond;
 
 	Lux_opencl *ocl;
-	cl_mem data;
-	cl_mem info;
-	Lux_opencl_kernel *evolve;
+	Lux_io     *io;
 
-	/* Grid details */
-	/* Bounding_box is a vector with 8 numbers:
-	 * {tmin, xmin, ymin, zmin, tmax, xmax, ymax, zmax} */
-	/* tmin and tmax are between the two lodaded timesteps */
+	struct darray rays;
+	real         *rays_host;
 
-	/* We need these quantities to convert from unnormalized OpenCL coordiantes
-	   to physical coordiantes and viceversa. */
-	cl_float8 bounding_box;
-	/* Points along the various coordinates */
-	cl_int4 num_points;			/* The .s0 coordinate is not used */
-	/* num_points.s1 contains point along the x direction */
-	/* num_points.s2 contains point along the y direction */
-	/* num_points.s3 contains point along the z direction */
+	struct basealgo gi;
+	struct basealgo flow;
+	struct basealgo rt;
 
-	/* We need 40+10+1 == 51 images to contain all the 40 christoffel
-	   symbols, 10 metric components, and 1 fluid quality */
-
-	/* We always have two timesteps loaded */
-	cl_mem spacetime_t1[40+10+1];
-	cl_mem spacetime_t2[40+10+1];
-
-	char available_times[MAX_AVAILABLE_TIMES][MAX_TIME_NAME_LENGTH];
-
-	cl_float max_available_time;
-
+	double t, dt;
+	size_t i, n;
 };
-
-#define EGO ((struct gray *)ego)
-#define CKR lux_check_func_success
-
-/** Build the OpenCL module for GRay2 */
-extern Lux_opencl *build(Lux_job *);
-
-/** Set the initial conditions */
-extern void icond(Lux_job *, real);
-
-/** Evolve the states of photons to the next (super) step */
-extern real evolve(Lux_job *, real, real, size_t);
-
-/** Output data to a file */
-extern void dump(Lux_job *, size_t);
-
-/** I/O helper functions */
-extern size_t populate_ego_available_times(Lux_job *);
-extern size_t load_coordinates(Lux_job *);
-extern size_t load_snapshot(Lux_job *, size_t, size_t);
-extern void   copy_snapshot(Lux_job *, size_t);
 
 #endif /* _GRAY_H */

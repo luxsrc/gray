@@ -1,4 +1,4 @@
-SUBDIRS = tests mod sim doc
+SUBDIRS = doc tests sim
 
 ifeq ($(MAKECMDGOALS),)
 	GOALS = all

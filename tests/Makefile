@@ -1,4 +1,4 @@
-build: sample.la ck_sample
+all: sample.la ck_sample
 
 check: build
 	for ck in $$(ls -1 ck_* | grep -v '\.'); do ./$$ck --debug; done
