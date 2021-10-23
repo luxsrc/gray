@@ -32,6 +32,8 @@
 int
 main(int argc, char *argv[])
 {
+	int failed = 0;
+
 	Lux_problem   prob;
 	Lux_solver   *solve;
 	Lux_solution *sols;
@@ -41,7 +43,7 @@ main(int argc, char *argv[])
 	size_t i_best = 0;
 
 	prob.n     = 1024 * 1024;
-	prob.alpha = 1.0;
+	prob.alpha = 3.0;
 	prob.x     = malloc(sizeof(double) * prob.n);
 	prob.y     = malloc(sizeof(double) * prob.n);
 	prob.z     = malloc(sizeof(double) * prob.n);
@@ -79,11 +81,26 @@ main(int argc, char *argv[])
 
 	lux_print("5. Run the optimal solutoin %zu ... ", i_best);
 	{
-		Lux_task *t = mkluxbasetask(sols[i_best].task);
+		Lux_task *t;
+
+		for(i = 0; i < n; ++i) {
+			prob.x[i] =     i;
+			prob.y[i] = 2 * i;
+		}
+
+		t = mkluxbasetask(sols[i_best].task);
 		t->exec(t);
 		free(t);
+
+		for(i = 0; i < n; ++i)
+			if(prob.z[i] != 7.0 * i)
+				failed = 1;
 	}
-	lux_print("DONE\n");
+	if(failed) {
+		lux_print("FAILED\n");
+		lux_abort();
+	} else
+		lux_print("DONE\n");
 
 	lux_print("6. Free the solutions ... ");
 	for(i = 0; i < n; ++i)
@@ -100,5 +117,5 @@ main(int argc, char *argv[])
 	free(prob.y);
 	free(prob.z);
 
-	return 0;
+	return failed;
 }
