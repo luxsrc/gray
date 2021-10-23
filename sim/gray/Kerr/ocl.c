@@ -41,8 +41,7 @@ driver(Lux_spec *s, Lux_args *a)
 Lux_solution *
 LUX_MOD(Lux_problem *prob, unsigned flags)
 {
-	Lux_opencl       *ocl  = NULL;
-	struct LuxOopencl opts = OPENCL_NULL;
+	Lux_opencl *ocl;
 
 	Lux_spec *spec1 = mkspec(prob, (prob->n+ 1-1)/ 1,  1);
 	Lux_spec *spec2 = mkspec(prob, (prob->n+ 2-1)/ 2,  2);
@@ -54,8 +53,23 @@ LUX_MOD(Lux_problem *prob, unsigned flags)
 
 	Lux_args *args  = mkargs(prob);
 
-	opts.nque = prob->nque;
-	opts.que  = prob->que;
+	const char *src[] = {
+		"preamble.cl",
+		"KS",
+		prob->morder,
+		prob->scheme,
+		"driver.cl",
+		NULL
+	};
+
+	struct LuxOopencl opts = OPENCL_NULL;
+	opts.base   = LUX_MOD; /* this function to identify module path */
+	opts.nque   = prob->nque;
+	opts.que    = prob->que;
+	opts.realsz = prob->precision;
+	opts.flags  = prob->kflags;
+	opts.src    = src;
+
 	ocl = lux_load("opencl", &opts);
 
 	lux_unload(ocl);

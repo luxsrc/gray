@@ -1,5 +1,11 @@
 OPTS	size_t nque; cl_command_queue *que;
+OPTS	size_t precision;
+OPTS	const char *morder, *scheme, *kflags;
+
 XSPEC	size_t n;
+
 ISPEC	size_t bsz, gsz;
+
 PARAMS	double aspin, target;
+
 STATES	cl_mem rays;

@@ -126,6 +126,10 @@ init(Lux_job *ego)
 		Lux_Kerr_problem prob = {
 			EGO->ocl->nque,
 			EGO->ocl->que,
+			sizeof(float),
+			"SoA",
+			"RK4",
+			"-w",
 			dgetn(EGO->rays, 0),
 			EGO->spacetime.Kerr.a_spin,
 			-1.0,
