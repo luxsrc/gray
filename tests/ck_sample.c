@@ -29,6 +29,28 @@
 #define LUX_RAP_CASTING 1
 #include "sample_rap.h"
 
+static double test_alpha = 3.0;
+
+static void
+test_init(Lux_problem *p)
+{
+	int i;
+	for(i = 0; i < (int)p->n; ++i) {
+		p->x[i] = i;
+		p->y[i] = i * 2.0;
+	}
+}
+
+static int
+test_check(Lux_problem *p)
+{
+	int failed = 0, i;
+	for(i = 0; i < (int)p->n; ++i)
+		if(p->z[i] != 7.0 * i)
+			failed = 1;
+	return failed;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -43,7 +65,7 @@ main(int argc, char *argv[])
 	size_t i_best = 0;
 
 	prob.n     = 1024 * 1024;
-	prob.alpha = 3.0;
+	prob.alpha = test_alpha;
 	prob.x     = malloc(sizeof(double) * prob.n);
 	prob.y     = malloc(sizeof(double) * prob.n);
 	prob.z     = malloc(sizeof(double) * prob.n);
@@ -83,18 +105,13 @@ main(int argc, char *argv[])
 	{
 		Lux_task *t;
 
-		for(i = 0; i < n; ++i) {
-			prob.x[i] =     i;
-			prob.y[i] = 2 * i;
-		}
+		test_init(&prob);
 
 		t = mkluxbasetask(sols[i_best].task);
 		t->exec(t);
 		free(t);
 
-		for(i = 0; i < n; ++i)
-			if(prob.z[i] != 7.0 * i)
-				failed = 1;
+		failed = test_check(&prob);
 	}
 	if(failed) {
 		lux_print("FAILED\n");
